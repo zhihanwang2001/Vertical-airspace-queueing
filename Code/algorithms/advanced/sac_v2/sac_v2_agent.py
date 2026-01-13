@@ -1,0 +1,391 @@
+"""
+SAC v2 Agent Implementation
+SAC v2智能体实现，包含自动熵调节和双Q网络
+"""
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+import numpy as np
+from typing import Dict, Tuple, Optional, List, Any
+import random
+
+from .networks import create_sac_v2_networks
+from .replay_buffer import SAC_ReplayBuffer
+
+
+class SAC_v2_Agent:
+    """SAC v2智能体"""
+    
+    def __init__(self,
+                 state_space,
+                 action_space,
+                 config: Dict = None):
+        """
+        初始化SAC v2智能体
+        
+        Args:
+            state_space: 状态空间
+            action_space: 动作空间
+            config: 配置参数
+        """
+        
+        # 默认配置
+        default_config = {
+            # 网络配置
+            'hidden_dim': 256,
+            'max_action': 1.0,
+            
+            # 学习参数
+            'actor_lr': 3e-4,
+            'critic_lr': 3e-4,
+            'alpha_lr': 3e-4,
+            'gamma': 0.99,
+            'tau': 0.005,  # 软更新系数
+            
+            # SAC特定参数
+            'alpha': 0.2,  # 初始熵系数
+            'automatic_entropy_tuning': True,
+            'target_entropy_scale': 1.0,  # 目标熵缩放因子
+            
+            # 回放缓冲区
+            'buffer_size': 100000,
+            'batch_size': 256,
+            
+            # 训练参数
+            'learning_starts': 10000,
+            'train_freq': 1,
+            'gradient_steps': 1,
+            
+            # 其他
+            'seed': 42,
+            'device': 'auto'
+        }
+        
+        if config:
+            default_config.update(config)
+        self.config = default_config
+        
+        # 设置设备
+        if self.config['device'] == 'auto':
+            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        else:
+            self.device = torch.device(self.config['device'])
+        
+        # 设置随机种子
+        if self.config['seed'] is not None:
+            random.seed(self.config['seed'])
+            np.random.seed(self.config['seed'])
+            torch.manual_seed(self.config['seed'])
+        
+        self.state_space = state_space
+        self.action_space = action_space
+        
+        # 创建网络
+        network_config = {
+            'hidden_dim': self.config['hidden_dim'],
+            'max_action': self.config['max_action']
+        }
+        
+        self.networks = create_sac_v2_networks(
+            state_space, action_space, network_config
+        )
+        self.networks.device = self.device
+        
+        # 移动到正确设备
+        for network in [self.networks.actor, self.networks.critic1, self.networks.critic2,
+                       self.networks.target_critic1, self.networks.target_critic2]:
+            network.to(self.device)
+        self.networks.log_alpha = self.networks.log_alpha.to(self.device)
+        
+        # 优化器
+        self.actor_optimizer = optim.Adam(
+            self.networks.actor.parameters(),
+            lr=self.config['actor_lr']
+        )
+        
+        self.critic1_optimizer = optim.Adam(
+            self.networks.critic1.parameters(),
+            lr=self.config['critic_lr']
+        )
+        
+        self.critic2_optimizer = optim.Adam(
+            self.networks.critic2.parameters(), 
+            lr=self.config['critic_lr']
+        )
+        
+        # 自动熵调节优化器
+        if self.config['automatic_entropy_tuning']:
+            self.alpha_optimizer = optim.Adam(
+                [self.networks.log_alpha],
+                lr=self.config['alpha_lr']
+            )
+            # 调整目标熵
+            self.networks.target_entropy *= self.config['target_entropy_scale']
+        else:
+            self.alpha_optimizer = None
+            # 固定alpha
+            self.networks.log_alpha = torch.log(torch.tensor(self.config['alpha'])).to(self.device)
+        
+        # 经验回放缓冲区
+        self.replay_buffer = SAC_ReplayBuffer(
+            capacity=self.config['buffer_size'],
+            batch_size=self.config['batch_size'],
+            device=self.device
+        )
+        
+        # 训练统计
+        self.training_step = 0
+        self.episode_rewards = []
+        self.losses = {
+            'actor_loss': [],
+            'critic1_loss': [],
+            'critic2_loss': [],
+            'alpha_loss': []
+        }
+        
+        print(f"🎭 SAC v2 Agent initialized on {self.device}")
+        print(f"   State space: {state_space.shape}")
+        print(f"   Action space: {action_space.shape}")
+        print(f"   Automatic entropy tuning: {self.config['automatic_entropy_tuning']}")
+        print(f"   Target entropy: {self.networks.target_entropy}")
+        print(f"   Initial alpha: {self.networks.alpha.item():.4f}")
+    
+    def act(self, state: np.ndarray, training: bool = True) -> np.ndarray:
+        """选择动作"""
+        if not isinstance(state, np.ndarray):
+            state = np.array(state)
+        
+        # 转换为tensor
+        state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
+        
+        with torch.no_grad():
+            # 采样动作
+            action, _ = self.networks.actor.sample_action(
+                state_tensor, deterministic=not training
+            )
+            action = action.cpu().numpy()[0]
+        
+        # 确保动作在有效范围内
+        action = np.clip(action, self.action_space.low, self.action_space.high)
+        
+        return action
+    
+    def store_transition(self,
+                        state: np.ndarray,
+                        action: np.ndarray,
+                        reward: float,
+                        next_state: np.ndarray,
+                        done: bool):
+        """存储转换到缓冲区"""
+        self.replay_buffer.add(state, action, reward, next_state, done)
+    
+    def train(self) -> Optional[Dict]:
+        """训练一步"""
+        if not self.replay_buffer.is_ready:
+            return None
+        
+        if self.replay_buffer.total_samples < self.config['learning_starts']:
+            return None
+        
+        if self.training_step % self.config['train_freq'] != 0:
+            self.training_step += 1
+            return None
+        
+        # 执行多个梯度更新步骤
+        total_losses = {
+            'actor_loss': 0.0,
+            'critic1_loss': 0.0,
+            'critic2_loss': 0.0,
+            'alpha_loss': 0.0
+        }
+        
+        for _ in range(self.config['gradient_steps']):
+            losses = self._update_networks()
+            if losses:
+                for key, value in losses.items():
+                    total_losses[key] += value
+        
+        # 平均损失
+        for key in total_losses:
+            total_losses[key] /= self.config['gradient_steps']
+            self.losses[key].append(total_losses[key])
+        
+        self.training_step += 1
+        
+        # 返回训练信息
+        return {
+            'actor_loss': total_losses['actor_loss'],
+            'critic1_loss': total_losses['critic1_loss'],
+            'critic2_loss': total_losses['critic2_loss'],
+            'alpha_loss': total_losses['alpha_loss'],
+            'alpha': self.networks.alpha.item(),
+            'buffer_size': len(self.replay_buffer),
+            'training_step': self.training_step
+        }
+    
+    def _update_networks(self) -> Optional[Dict]:
+        """更新网络参数"""
+        # 采样批次
+        batch = self.replay_buffer.sample()
+        if batch is None:
+            return None
+        
+        states = batch['states']
+        actions = batch['actions']
+        rewards = batch['rewards']
+        next_states = batch['next_states']
+        dones = batch['dones']
+        
+        # 更新Critic网络
+        critic1_loss, critic2_loss = self._update_critics(
+            states, actions, rewards, next_states, dones
+        )
+        
+        # 更新Actor网络
+        actor_loss = self._update_actor(states)
+        
+        # 更新Alpha（如果启用自动熵调节）
+        alpha_loss = 0.0
+        if self.config['automatic_entropy_tuning']:
+            alpha_loss = self._update_alpha(states)
+        
+        # 软更新目标网络
+        self.networks.soft_update_target_networks(self.config['tau'])
+        
+        return {
+            'actor_loss': actor_loss,
+            'critic1_loss': critic1_loss,
+            'critic2_loss': critic2_loss,
+            'alpha_loss': alpha_loss
+        }
+    
+    def _update_critics(self, states, actions, rewards, next_states, dones):
+        """更新Critic网络"""
+        with torch.no_grad():
+            # 计算目标Q值
+            next_actions, next_log_probs = self.networks.actor.sample_action(next_states)
+            
+            target_q1 = self.networks.target_critic1(next_states, next_actions)
+            target_q2 = self.networks.target_critic2(next_states, next_actions)
+            target_q = torch.min(target_q1, target_q2) - self.networks.alpha * next_log_probs
+            
+            target_q_values = rewards + self.config['gamma'] * (1 - dones) * target_q
+        
+        # 当前Q值
+        current_q1 = self.networks.critic1(states, actions)
+        current_q2 = self.networks.critic2(states, actions)
+        
+        # Critic损失
+        critic1_loss = F.mse_loss(current_q1, target_q_values)
+        critic2_loss = F.mse_loss(current_q2, target_q_values)
+        
+        # 更新Critic 1
+        self.critic1_optimizer.zero_grad()
+        critic1_loss.backward()
+        self.critic1_optimizer.step()
+        
+        # 更新Critic 2  
+        self.critic2_optimizer.zero_grad()
+        critic2_loss.backward()
+        self.critic2_optimizer.step()
+        
+        return critic1_loss.item(), critic2_loss.item()
+    
+    def _update_actor(self, states):
+        """更新Actor网络"""
+        # 采样动作
+        actions, log_probs = self.networks.actor.sample_action(states)
+        
+        # 计算Q值
+        q1 = self.networks.critic1(states, actions)
+        q2 = self.networks.critic2(states, actions)
+        q = torch.min(q1, q2)
+        
+        # Actor损失（最大化期望奖励和熵）
+        actor_loss = (self.networks.alpha * log_probs - q).mean()
+        
+        # 更新Actor
+        self.actor_optimizer.zero_grad()
+        actor_loss.backward()
+        self.actor_optimizer.step()
+        
+        return actor_loss.item()
+    
+    def _update_alpha(self, states):
+        """更新Alpha（熵系数）"""
+        with torch.no_grad():
+            actions, log_probs = self.networks.actor.sample_action(states)
+        
+        # Alpha损失
+        alpha_loss = -(self.networks.log_alpha * (log_probs + self.networks.target_entropy)).mean()
+        
+        # 更新Alpha
+        self.alpha_optimizer.zero_grad()
+        alpha_loss.backward()
+        self.alpha_optimizer.step()
+        
+        return alpha_loss.item()
+    
+    def save(self, filepath: str):
+        """保存模型"""
+        save_dict = {
+            'actor': self.networks.actor.state_dict(),
+            'critic1': self.networks.critic1.state_dict(),
+            'critic2': self.networks.critic2.state_dict(),
+            'target_critic1': self.networks.target_critic1.state_dict(),
+            'target_critic2': self.networks.target_critic2.state_dict(),
+            'log_alpha': self.networks.log_alpha,
+            'actor_optimizer': self.actor_optimizer.state_dict(),
+            'critic1_optimizer': self.critic1_optimizer.state_dict(),
+            'critic2_optimizer': self.critic2_optimizer.state_dict(),
+            'config': self.config,
+            'training_step': self.training_step
+        }
+        
+        if self.alpha_optimizer:
+            save_dict['alpha_optimizer'] = self.alpha_optimizer.state_dict()
+        
+        torch.save(save_dict, filepath)
+    
+    def load(self, filepath: str):
+        """加载模型"""
+        checkpoint = torch.load(filepath, map_location=self.device)
+        
+        self.networks.actor.load_state_dict(checkpoint['actor'])
+        self.networks.critic1.load_state_dict(checkpoint['critic1'])
+        self.networks.critic2.load_state_dict(checkpoint['critic2'])
+        self.networks.target_critic1.load_state_dict(checkpoint['target_critic1'])
+        self.networks.target_critic2.load_state_dict(checkpoint['target_critic2'])
+        self.networks.log_alpha = checkpoint['log_alpha'].to(self.device)
+        
+        self.actor_optimizer.load_state_dict(checkpoint['actor_optimizer'])
+        self.critic1_optimizer.load_state_dict(checkpoint['critic1_optimizer'])
+        self.critic2_optimizer.load_state_dict(checkpoint['critic2_optimizer'])
+        
+        if self.alpha_optimizer and 'alpha_optimizer' in checkpoint:
+            self.alpha_optimizer.load_state_dict(checkpoint['alpha_optimizer'])
+        
+        self.training_step = checkpoint['training_step']
+        
+        print(f"✅ SAC v2 model loaded from {filepath}")
+    
+    def get_stats(self) -> Dict:
+        """获取训练统计"""
+        buffer_stats = self.replay_buffer.get_stats()
+        
+        stats = {
+            'training_step': self.training_step,
+            'alpha': self.networks.alpha.item(),
+            'target_entropy': self.networks.target_entropy,
+            'episodes_trained': len(self.episode_rewards),
+            **buffer_stats
+        }
+        
+        # 添加损失统计
+        for key, losses in self.losses.items():
+            if losses:
+                stats[f'avg_{key}'] = np.mean(losses[-100:])
+        
+        return stats

@@ -1,0 +1,418 @@
+{
+  "metadata": {
+    "total_experiments": 21,
+    "configurations": 7,
+    "algorithms": [
+      "A2C",
+      "PPO",
+      "TD7"
+    ],
+    "evaluation_protocol": {
+      "A2C_PPO": "max_episode_steps=200",
+      "TD7": "max_episode_steps=10000"
+    },
+    "high_load_multiplier": 10.0,
+    "eval_episodes": 50
+  },
+  "experiments": [
+    {
+      "config_name": "inverted_pyramid",
+      "config_type": "倒金字塔",
+      "capacity_distribution": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "total_capacity": 23,
+      "algorithm": "A2C",
+      "mean_reward": 9864.39959401897,
+      "std_reward": 3690.6263695813986,
+      "crash_rate": 0.16,
+      "completion_rate": 0.84,
+      "mean_episode_length": 180.98,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "inverted_pyramid",
+      "config_type": "倒金字塔",
+      "capacity_distribution": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "total_capacity": 23,
+      "algorithm": "PPO",
+      "mean_reward": 7822.993835608014,
+      "std_reward": 4103.768685329602,
+      "crash_rate": 0.42,
+      "completion_rate": 0.58,
+      "mean_episode_length": 150.6,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "inverted_pyramid",
+      "config_type": "倒金字塔",
+      "capacity_distribution": [
+        8,
+        6,
+        4,
+        3,
+        2
+      ],
+      "total_capacity": 23,
+      "algorithm": "TD7",
+      "mean_reward": 545491.0635827435,
+      "std_reward": 2159.0076279676,
+      "crash_rate": 0.0,
+      "completion_rate": 1.0,
+      "mean_episode_length": 10000.0,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "uniform",
+      "config_type": "均匀",
+      "capacity_distribution": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "total_capacity": 25,
+      "algorithm": "A2C",
+      "mean_reward": 9239.085501764408,
+      "std_reward": 3033.3773857932238,
+      "crash_rate": 0.1,
+      "completion_rate": 0.9,
+      "mean_episode_length": 186.92,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "uniform",
+      "config_type": "均匀",
+      "capacity_distribution": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "total_capacity": 25,
+      "algorithm": "PPO",
+      "mean_reward": 6395.0633919821175,
+      "std_reward": 3583.7526787624756,
+      "crash_rate": 0.6,
+      "completion_rate": 0.4,
+      "mean_episode_length": 130.34,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "uniform",
+      "config_type": "均匀",
+      "capacity_distribution": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "total_capacity": 25,
+      "algorithm": "TD7",
+      "mean_reward": 507561.1541864782,
+      "std_reward": 2100.9991958253963,
+      "crash_rate": 0.0,
+      "completion_rate": 1.0,
+      "mean_episode_length": 10000.0,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "high_capacity",
+      "config_type": "高容量",
+      "capacity_distribution": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "total_capacity": 40,
+      "algorithm": "A2C",
+      "mean_reward": -30.210018947669354,
+      "std_reward": 26.119109503641724,
+      "crash_rate": 1.0,
+      "completion_rate": 0.0,
+      "mean_episode_length": 1.0,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "high_capacity",
+      "config_type": "高容量",
+      "capacity_distribution": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "total_capacity": 40,
+      "algorithm": "PPO",
+      "mean_reward": -34.608664138578995,
+      "std_reward": 24.22195144273539,
+      "crash_rate": 1.0,
+      "completion_rate": 0.0,
+      "mean_episode_length": 1.0,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "high_capacity",
+      "config_type": "高容量",
+      "capacity_distribution": [
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "total_capacity": 40,
+      "algorithm": "TD7",
+      "mean_reward": -34.87702130760765,
+      "std_reward": 30.054088128548404,
+      "crash_rate": 1.0,
+      "completion_rate": 0.0,
+      "mean_episode_length": 1.0,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "reverse_pyramid",
+      "config_type": "正金字塔",
+      "capacity_distribution": [
+        2,
+        3,
+        4,
+        6,
+        8
+      ],
+      "total_capacity": 23,
+      "algorithm": "A2C",
+      "mean_reward": 5326.445947657571,
+      "std_reward": 4539.219179306521,
+      "crash_rate": 0.4,
+      "completion_rate": 0.6,
+      "mean_episode_length": 148.2,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "reverse_pyramid",
+      "config_type": "正金字塔",
+      "capacity_distribution": [
+        2,
+        3,
+        4,
+        6,
+        8
+      ],
+      "total_capacity": 23,
+      "algorithm": "PPO",
+      "mean_reward": 2573.842597947448,
+      "std_reward": 2841.7242248910366,
+      "crash_rate": 0.9,
+      "completion_rate": 0.1,
+      "mean_episode_length": 77.32,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "reverse_pyramid",
+      "config_type": "正金字塔",
+      "capacity_distribution": [
+        2,
+        3,
+        4,
+        6,
+        8
+      ],
+      "total_capacity": 23,
+      "algorithm": "TD7",
+      "mean_reward": 405833.48623062513,
+      "std_reward": 1578.9527079263942,
+      "crash_rate": 0.0,
+      "completion_rate": 1.0,
+      "mean_episode_length": 10000.0,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "low_capacity",
+      "config_type": "低容量",
+      "capacity_distribution": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "total_capacity": 10,
+      "algorithm": "A2C",
+      "mean_reward": 11146.434806013298,
+      "std_reward": 240.1813700815174,
+      "crash_rate": 0.0,
+      "completion_rate": 1.0,
+      "mean_episode_length": 200.0,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "low_capacity",
+      "config_type": "低容量",
+      "capacity_distribution": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "total_capacity": 10,
+      "algorithm": "PPO",
+      "mean_reward": 11213.90388976815,
+      "std_reward": 237.5209233828538,
+      "crash_rate": 0.0,
+      "completion_rate": 1.0,
+      "mean_episode_length": 200.0,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "low_capacity",
+      "config_type": "低容量",
+      "capacity_distribution": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "total_capacity": 10,
+      "algorithm": "TD7",
+      "mean_reward": 558413.7019406264,
+      "std_reward": 1479.087757067935,
+      "crash_rate": 0.0,
+      "completion_rate": 1.0,
+      "mean_episode_length": 10000.0,
+      "source": "ablation_study_final"
+    },
+    {
+      "config_name": "capacity_4x5",
+      "config_type": "均匀20",
+      "capacity_distribution": [
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "total_capacity": 20,
+      "algorithm": "A2C",
+      "mean_reward": 9623.91196862017,
+      "std_reward": 6120.622492122637,
+      "crash_rate": 0.18,
+      "completion_rate": 0.82,
+      "mean_episode_length": 183.06,
+      "source": "ablation_study_supplementary_10x"
+    },
+    {
+      "config_name": "capacity_4x5",
+      "config_type": "均匀20",
+      "capacity_distribution": [
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "total_capacity": 20,
+      "algorithm": "PPO",
+      "mean_reward": 12085.182984330431,
+      "std_reward": 349.21680967096705,
+      "crash_rate": 0.02,
+      "completion_rate": 0.98,
+      "mean_episode_length": 199.96,
+      "source": "ablation_study_supplementary_10x"
+    },
+    {
+      "config_name": "capacity_4x5",
+      "config_type": "均匀20",
+      "capacity_distribution": [
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "total_capacity": 20,
+      "algorithm": "TD7",
+      "mean_reward": 609782.7759760213,
+      "std_reward": 2109.6089822585845,
+      "crash_rate": 0.0,
+      "completion_rate": 1.0,
+      "mean_episode_length": 10000.0,
+      "source": "ablation_study_supplementary"
+    },
+    {
+      "config_name": "capacity_6x5",
+      "config_type": "均匀30",
+      "capacity_distribution": [
+        6,
+        6,
+        6,
+        6,
+        6
+      ],
+      "total_capacity": 30,
+      "algorithm": "A2C",
+      "mean_reward": 13.782811903989119,
+      "std_reward": 22.789628917691658,
+      "crash_rate": 1.0,
+      "completion_rate": 0.0,
+      "mean_episode_length": 1.0,
+      "source": "ablation_study_supplementary_10x"
+    },
+    {
+      "config_name": "capacity_6x5",
+      "config_type": "均匀30",
+      "capacity_distribution": [
+        6,
+        6,
+        6,
+        6,
+        6
+      ],
+      "total_capacity": 30,
+      "algorithm": "PPO",
+      "mean_reward": 13.217024864024866,
+      "std_reward": 22.854757658693178,
+      "crash_rate": 1.0,
+      "completion_rate": 0.0,
+      "mean_episode_length": 1.0,
+      "source": "ablation_study_supplementary_10x"
+    },
+    {
+      "config_name": "capacity_6x5",
+      "config_type": "均匀30",
+      "capacity_distribution": [
+        6,
+        6,
+        6,
+        6,
+        6
+      ],
+      "total_capacity": 30,
+      "algorithm": "TD7",
+      "mean_reward": 12.977055259632024,
+      "std_reward": 24.413033944952268,
+      "crash_rate": 1.0,
+      "completion_rate": 0.0,
+      "mean_episode_length": 1.0,
+      "source": "ablation_study_supplementary"
+    }
+  ]
+}

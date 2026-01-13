@@ -1,0 +1,128 @@
+% ============================================================
+% Batch 6: Results and Analysis (Part 3 of 3)
+% Overall Performance and Statistical Summary
+% Created: 2026-01-06
+% ============================================================
+
+\subsection{Overall Performance Comparison Among 15 Methods}
+
+We evaluate \textbf{15 methods} (10 RL algorithms + 5 traditional schedulers) across the baseline inverted pyramid configuration (K=23). All comparisons below apply Bonferroni-corrected significance testing (105 pairwise tests, $\alpha' = 0.000476$). Figure~\ref{fig:performance_ranking} presents the complete performance ranking, while Figure~\ref{fig:top_tier_comparison} provides detailed comparison of the top-tier algorithms.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.9\textwidth]{Figures/publication/figure3_performance_ranking.png}
+\caption{Performance ranking of all 15 methods. A2C (4,437.86±128.41) and PPO (4,419.98±135.71) achieve statistically tied first place ($p_{\text{adj}}=0.836$), followed by TD7 (4,351.8±51.1) with the lowest evaluation variance. All top-tier DRL methods significantly outperform traditional heuristics ($p_{\text{adj}}<0.000476$, Bonferroni corrected). The ranking reveals three distinct performance tiers: top tier (>4,200), mid tier (2,000-4,000), and low tier (<2,000), with policy-based methods dominating the top positions.}
+\label{fig:performance_ranking}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{Figures/publication/figure1_top_tier_comparison.png}
+\caption{Detailed comparison of top-tier algorithms (A2C, PPO, TD7). Bar chart shows final episode rewards with 95\% confidence intervals. A2C achieves the highest mean performance with staged learning rate scheduling (6.9 min training time), while TD7 demonstrates the lowest variance (std=51.1) despite longer training (126 min). PPO provides a balanced option with stable performance (30.8 min training). The error bars indicate robust reproducibility across 5 independent runs.}
+\label{fig:top_tier_comparison}
+\end{figure}
+
+\textbf{Top-Tier Performance ($>$4,200)}: \textbf{A2C} (4,437.86 $\pm$ 128.41, staged learning rate scheduling), PPO (4,419.98 $\pm$ 135.71), \textbf{TD7} (4,351.8 $\pm$ 51.1; final evaluation 4,409.13), R2D2 (4,289.22 $\pm$ 82.23), SAC-v2 (4,282.94 $\pm$ 80.70). All top-tier methods \textbf{significantly outperform} the heuristic baseline (2,860.69 $\pm$ 87.96) with $p_{\text{adj}} < \alpha'$ and large effect sizes.
+
+\textbf{Key Pairwise Comparisons (Bonferroni-Corrected $\alpha'=0.000476$)}:
+
+\begin{itemize}
+\item \textbf{A2C vs PPO}: $\Delta\mu = 17.88$, $p_{\text{adj}} = 0.836$ (not significant), Cohen's d = 0.13 (negligible effect), 95\% CI = [$-$155.2, 191.0] $\rightarrow$ \textbf{statistically tied for first place}
+
+\item \textbf{TD7 vs TD3}: $\Delta\mu = 379.15$, $p_{\text{adj}} < 0.0001$ (significant), Cohen's d = 2.56 (huge effect), 95\% CI = [285.4, 472.9] $\rightarrow$ TD7 significantly outperforms TD3
+
+\item \textbf{A2C vs Heuristic}: $\Delta\mu = 1,577.17$, $p_{\text{adj}} < 0.0001$ (significant), Cohen's d = 13.62 (huge effect), 95\% CI = [1,489.3, 1,665.0] $\rightarrow$ A2C significantly outperforms traditional methods
+
+\item \textbf{PPO vs R2D2}: $\Delta\mu = 130.76$, $p_{\text{adj}} = 1.000$ (not significant; original $p=0.04$, truncated to 1.000 post-correction), Cohen's d = 1.21 (large effect), 95\% CI = [$-$35.8, 297.3] $\rightarrow$ large effect size but not significant after correction
+
+\item \textbf{TD7 (final) vs PPO}: $\Delta\mu = (4,409.13 - 4,419.98) = -10.85$, Cohen's d = 0.08 $\rightarrow$ TD7 final evaluation performance equivalent to PPO
+\end{itemize}
+
+\textbf{Mid-Tier Performance (2,000--4,000)}: TD3 (3,972.69 $\pm$ 168.56), SAC (3,659.63 $\pm$ 1,386.03; high variance), Heuristic baseline (2,860.69 $\pm$ 87.96), Rainbow DQN (2,360.53 $\pm$ 45.50; stability-optimized version).
+
+\textbf{Low-Tier Performance ($<$2,000)}: Priority scheduling (2,040.04 $\pm$ 67.63), FCFS (2,024.75 $\pm$ 66.64), SJF (2,011.16 $\pm$ 66.58), IMPALA (1,682.19 $\pm$ 73.85; conservative V-trace version), Random baseline (294.75 $\pm$ 308.75).
+
+\textbf{Key Observations}:
+
+\textbf{1. Policy-Based Dominance.} Policy-based methods (A2C, PPO, TD7) occupy the top tier, demonstrating superior performance in mixed action spaces (6D continuous + 5D discrete). This validates policy gradient approaches for complex action structures.
+
+\textbf{2. Hyperparameter Optimization Criticality.} A2C with staged learning rate scheduling (4,437 $\pm$ 128) achieves top-tier performance, tied statistically with PPO (4,420 $\pm$ 136), highlighting the critical role of \textbf{learning rate schedule timing} in training effectiveness.
+
+\textbf{3. Advanced RL Superiority.} Advanced algorithms (TD7, R2D2, SAC-v2) significantly outperform classical RL (DDPG, vanilla SAC), while strong domain heuristics still exceed some classical RL methods, further emphasizing the necessity of \textbf{queueing-aware design}.
+
+\textbf{4. Low Variance Indicates Reproducibility.} Top performers (A2C, PPO, TD7) exhibit low standard deviations ($\sigma \in [51, 136]$), demonstrating robust reproducibility across 5 independent experiments. This reliability is critical for production deployment.
+
+\subsection{Statistical Testing Summary}
+
+\textbf{Reporting Convention Recap.} Unless otherwise noted, all significance results in this paper report \textbf{Bonferroni-corrected $p$-values} (denoted $p_{\text{adj}}$) with family-wise error control at $\alpha' = 0.000476$. Complete statistical details for key pairwise comparisons appear in Supplementary Table S1.
+
+\textbf{Top-Tier Statistical Summary} (Bonferroni-corrected, $\alpha'=0.000476$):
+\begin{itemize}
+\item A2C vs PPO: Not significant ($p_{\text{adj}} = 0.836$)
+\item A2C vs TD7: Not significant ($p_{\text{adj}} = 0.372$)
+\item PPO vs TD7: Not significant ($p_{\text{adj}} = 0.341$)
+\item PPO vs R2D2: Not significant ($p_{\text{adj}} = 1.000$; original $p=0.04$, truncated post-correction)
+\end{itemize}
+
+The non-significance among top performers (A2C, PPO, TD7) reflects their \textbf{comparable performance levels}, while low variances confirm strong reproducibility. All results are based on \textbf{5 independent experimental replications}, ensuring statistical reliability.
+
+\textbf{A2C Statistical Significance.} A2C (4,437 $\pm$ 128) demonstrates the effectiveness of staged learning rate scheduling, achieving efficient convergence while maintaining exploration. The method successfully balances exploration-exploitation, as evidenced by its top-tier performance achieved in just 6.9 minutes of wall-clock training time.
+
+\textbf{Interpretation Caution.} While top-tier algorithms (A2C, PPO, TD7) are statistically indistinguishable after Bonferroni correction, \textbf{practical differences} remain relevant:
+\begin{itemize}
+\item \textbf{Training efficiency}: A2C (6.9 min) vs PPO (30.8 min) vs TD7 (126 min)
+\item \textbf{Robustness}: TD7 (0\% crash) vs A2C (16.8\%) vs PPO (38.8\%) across viable configs
+\item \textbf{Variance}: TD7 (51.1) vs A2C (128.4) vs PPO (135.7)
+\end{itemize}
+
+These operational characteristics inform deployment decisions beyond raw reward comparisons.
+
+\subsection{Synthesis and Core Insights}
+
+Across 21 experimental conditions (7 configurations $\times$ 3 algorithms), our systematic investigation reveals five core insights:
+
+\textbf{Insight 1: Capacity Paradox Challenges Scaling Assumptions.} Minimal capacity (K=10) achieves optimal performance (11,180), outperforming larger configs including baseline K=23 (8,844) and K=25 (7,817). Sharp threshold at K=25: beyond this, systems collapse immediately (K=30: reward=13, crash=100\%). We attribute this to exponential state space growth ($3^{10}=59$K vs $3^{30}=2.1 \times 10^{14}$) overwhelming fixed training budgets. Practical implication: \textbf{capacity expansion is not a panacea}; optimal range K=10--20 balances buffering with learning feasibility.
+
+\textbf{Insight 2: Structural Design Dominates Raw Capacity.} At equal capacity (K=23), inverted pyramid [8,6,4,3,2] outperforms normal pyramid [2,3,4,6,8] by +124\% reward, $-$36pp crash rate (Cohen's d=2.856). Traffic-capacity matching principle: high-traffic layers (L5: 30\% arrivals) require high capacity (C=8). Mismatched designs create bottlenecks (normal pyramid L5: $\rho=125\%$ instability). Generalization: \textbf{structure matters more than magnitude}.
+
+\textbf{Insight 3: Algorithmic Robustness Varies Under Stress.} TD7 achieves 0\% crash across all viable configs; A2C exhibits 16.8\% vs PPO's 38.8\% crash rate ($-$56.7\% relative). PPO degrades severely at K=23--25 (40--60\% crash), while A2C maintains robustness. Hypothesis: \textbf{on-policy batch updates} (PPO) suffer from non-stationarity under extreme load; \textbf{synchronous single-step updates} (A2C) adapt better to rapid queue state changes.
+
+\textbf{Insight 4: Representation Learning Enables Dual-Jump Breakthroughs.} TD7's SALE triggers discontinuous learning: Jump 1 (+857\% @ 26,689 steps) marks representation threshold; Jump 2 (+95\% @ 26,989 steps, interval=300 steps) reflects policy convergence. This tight coupling demonstrates strong synergy among SALE, LAP, and Checkpoints. Contrast with DDPG's gradual failure illustrates the value of \textbf{explicit representation learning} in complex state spaces.
+
+\textbf{Insight 5: Learning Rate Scheduling Timing Matters.} A2C's staged schedule (high rate 7e-4 for 200k steps $\rightarrow$ anneal to 1e-5) achieves SOTA performance (4,438) in 6.9 minutes, tied with PPO (4,420 in 30.8 min) but 4.5$\times$ faster. Transition timing (200k steps) corresponds to policy stabilization checkpoint. Practical value: \textbf{well-timed exploration-convergence transition} outperforms both fixed rates and standard decay schedules.
+
+These insights collectively inform UAM capacity planning, algorithm selection, and hyperparameter optimization, demonstrating that \textbf{intelligent design trumps brute-force scaling} in high-load queueing systems.
+
+\subsection{Multi-Dimensional Performance Analysis}
+
+Beyond single-metric comparisons, we evaluate algorithms across six performance dimensions to provide comprehensive decision support. Figure~\ref{fig:radar_chart} presents a multi-dimensional radar chart comparison, while Figure~\ref{fig:efficiency_analysis} analyzes the performance-efficiency tradeoff.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{Figures/publication/figure5_radar_chart.png}
+\caption{Multi-dimensional performance comparison using radar chart. Six objectives are evaluated: throughput (J₁), delay (J₂), fairness (J₃), stability (J₄), safety (J₅), and transfer efficiency (J₆). Top-tier algorithms (A2C, PPO, TD7) demonstrate balanced performance across all dimensions, achieving high scores in throughput, fairness, and stability while maintaining low delay. Traditional heuristics show significant weaknesses in fairness and stability dimensions. The radar chart reveals that DRL methods achieve superior multi-objective balance compared to rule-based approaches.}
+\label{fig:radar_chart}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{Figures/publication/figure6_efficiency_analysis.png}
+\caption{Sample efficiency analysis: final performance vs. training time. A2C achieves the best efficiency trade-off (4,437.86 reward in 6.9 min), representing the optimal point on the efficiency frontier (dashed line). TD7 requires longer training (126 min) but achieves the lowest variance (std=51.1), making it suitable for applications prioritizing robustness over training speed. PPO provides a middle ground (30.8 min, 4,419.98 reward). The efficiency frontier highlights algorithms that dominate in the performance-time space, providing practical guidance for deployment scenarios with different computational budgets.}
+\label{fig:efficiency_analysis}
+\end{figure}
+
+\textbf{Multi-Objective Tradeoff Insights.} The radar chart analysis reveals that top-tier DRL methods achieve superior balance across competing objectives compared to traditional heuristics. While heuristics may excel in single dimensions (e.g., FCFS in fairness), they fail to maintain performance across multiple objectives simultaneously. This validates the necessity of learning-based approaches for complex multi-objective optimization in UAM systems.
+
+\textbf{Efficiency-Performance Tradeoff.} The efficiency analysis identifies three deployment scenarios: (1) \textbf{Fast prototyping}: A2C provides rapid training (6.9 min) with top-tier performance, ideal for iterative development; (2) \textbf{Production deployment}: PPO balances training time (30.8 min) and performance stability, suitable for operational systems; (3) \textbf{High-reliability applications}: TD7's low variance (std=51.1) justifies longer training (126 min) for safety-critical scenarios. These insights enable practitioners to select algorithms based on operational constraints beyond raw performance metrics.
+
+% ============================================================
+% Data authenticity statement (Part 3)
+% ============================================================
+% All numerical values verified against:
+% - Chinese guide §6.1: Overall performance comparison
+% - Chinese guide §6.4: Statistical testing summary
+% - DATA_SUMMARY_FOR_PAPER.md §2.2: Algorithm performance table
+% - Bonferroni correction: α'=0.05/105≈0.000476
+% - Cohen's d values: A2C vs PPO (0.13), TD7 vs TD3 (2.56), A2C vs Heuristic (13.62)
+% - Training times: A2C 6.9min, PPO 30.8min, TD7 126min (from Chinese guide §5.2)
+% ============================================================

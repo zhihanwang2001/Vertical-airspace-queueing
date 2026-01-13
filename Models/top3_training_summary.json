@@ -1,0 +1,18 @@
+[
+  {
+    "algorithm": "A2C",
+    "training_time": 182.96045207977295,
+    "mean_reward": 4368.03481327819,
+    "std_reward": 148.5711451451006,
+    "mean_length": 200.0,
+    "model_path": "./models/a2c/a2c_model_500000"
+  },
+  {
+    "algorithm": "PPO",
+    "training_time": 170.50497007369995,
+    "mean_reward": 4471.074241248833,
+    "std_reward": 174.83899591194387,
+    "mean_length": 200.0,
+    "model_path": "./models/ppo/ppo_model_500000"
+  }
+]

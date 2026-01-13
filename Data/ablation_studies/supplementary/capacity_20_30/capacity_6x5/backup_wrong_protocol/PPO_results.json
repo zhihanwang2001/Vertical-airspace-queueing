@@ -1,0 +1,11 @@
+{
+  "algorithm": "PPO",
+  "config": "capacity_6x5",
+  "mean_reward": 13.228905104599423,
+  "std_reward": 23.117487549096786,
+  "crash_rate": 1.0,
+  "completion_rate": 0.0,
+  "mean_episode_length": 1.0,
+  "training_time_minutes": 5.66099187930425,
+  "eval_episodes": 50
+}

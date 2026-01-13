@@ -1,0 +1,11 @@
+{
+  "algorithm": "A2C",
+  "config": "capacity_4x5",
+  "mean_reward": 9623.91196862017,
+  "std_reward": 6120.622492122637,
+  "crash_rate": 0.18,
+  "completion_rate": 0.82,
+  "mean_episode_length": 183.06,
+  "training_time_minutes": 3.965896721680959,
+  "eval_episodes": 50
+}

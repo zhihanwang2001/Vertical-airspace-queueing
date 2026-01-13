@@ -1,0 +1,17 @@
+{
+  "seed": null,
+  "action_bounds": {
+    "service_intensities": [
+      0.1,
+      2.0
+    ],
+    "arrival_multiplier": [
+      0.5,
+      5.0
+    ],
+    "emergency_transfers": [
+      0,
+      1
+    ]
+  }
+}

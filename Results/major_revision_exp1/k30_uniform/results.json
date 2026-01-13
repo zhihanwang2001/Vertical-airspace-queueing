@@ -1,0 +1,46 @@
+{
+  "algorithm": "A2C",
+  "capacity_type": "k30_uniform",
+  "config_name": "K=30 Uniform",
+  "seed": 42,
+  "total_timesteps": 1000000,
+  "training_time_minutes": 114.83316204547882,
+  "final_eval": {
+    "episode_steps": 200,
+    "n_episodes": 10,
+    "mean_reward": 4.468478561549105,
+    "std_reward": 16.069983278641832,
+    "mean_episode_length": 1.0,
+    "crash_rate": 100.0,
+    "completion_rate": 0.0,
+    "all_rewards": [
+      1.740663900414944,
+      26.48755186721992,
+      9.989626556016603,
+      18.638589211618267,
+      9.989626556016617,
+      17.23858921161826,
+      -7.308298755186726,
+      -31.40622406639004,
+      -10.1749654218534,
+      9.489626556016603
+    ],
+    "all_lengths": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  },
+  "metadata": {
+    "timestamp": "2026-01-08T17:44:21.121278",
+    "purpose": "Major Revision Exp 1.1: Extended Training",
+    "hypothesis_test": "Capacity paradox: inherent vs training budget"
+  }
+}

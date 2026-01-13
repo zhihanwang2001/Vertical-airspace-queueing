@@ -1,0 +1,21 @@
+{
+  "load_balance_threshold": 0.7978259396460943,
+  "utilization_target": 0.6017157886591178,
+  "emergency_threshold": 0.9,
+  "service_rate_bounds": [
+    0.1,
+    2.0
+  ],
+  "arrival_rate_bounds": [
+    0.5,
+    5.0
+  ],
+  "adaptive_factor": 0.1,
+  "priority_weights": [
+    1.0,
+    0.8,
+    0.6,
+    0.4,
+    0.2
+  ]
+}

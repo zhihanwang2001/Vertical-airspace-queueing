@@ -1,0 +1,227 @@
+final/RP1
+├── ARCHIVE_SUMMARY.txt
+├── Code
+│   ├── __init__.py
+│   ├── algorithms
+│   │   ├── __init__.py
+│   │   ├── advanced
+│   │   └── baselines
+│   ├── analysis_scripts
+│   │   ├── ablation_configs.py
+│   │   ├── analyze_ablation_results.py
+│   │   ├── final_validation_test.py
+│   │   ├── fix_ranking_figure_correct.py
+│   │   ├── generate_ccf_professional_figures.py
+│   │   ├── generate_framework_architecture.py
+│   │   ├── generate_paper_figures.py
+│   │   ├── monitor_training.py
+│   │   ├── optimized_config.py
+│   │   ├── pareto_analysis.py
+│   │   ├── pareto_analysis_final.py
+│   │   ├── plot_a2c_v3_detailed_training.py
+│   │   ├── plot_beautiful_3d_structure.py
+│   │   ├── plot_beautiful_performance_ranking.py
+│   │   ├── plot_beautiful_td7_jump.py
+│   │   ├── plot_elegant_3d_structure.py
+│   │   ├── plot_optimization_curves.py
+│   │   ├── plot_td7_jump_learning_simple.py
+│   │   ├── plot_td7_jump_learning_updated.py
+│   │   ├── plot_updated_optimization_curves.py
+│   │   ├── plot_updated_performance_ranking.py
+│   │   ├── verify_impala_rollback.py
+│   │   └── verify_optimized_rainbow.py
+│   ├── batch_fix_imports.py
+│   ├── env
+│   │   ├── README.md
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── configurable_env_wrapper.py
+│   │   ├── delivery_cabinet.py
+│   │   ├── drl_optimized_env_fixed.py
+│   │   ├── drl_wrapper_fixed.py
+│   │   ├── queue_dynamics.py
+│   │   ├── reward_function.py
+│   │   ├── state_manager.py
+│   │   ├── utils.py
+│   │   └── vertical_queue_env.py
+│   ├── fix_imports.py
+│   ├── heterogeneous_configs.py
+│   ├── training_scripts
+│   │   ├── run_ablation_experiments.py
+│   │   ├── run_advanced_algorithm_comparison.py
+│   │   ├── run_baseline_comparison.py
+│   │   ├── run_optimized_impala.py
+│   │   ├── run_optimized_impala_with_csv.py
+│   │   ├── save_models_manually.py
+│   │   ├── test_all_models_generalization.py
+│   │   ├── test_all_models_generalization_v2.py
+│   │   ├── test_all_models_generalization_v3.py
+│   │   ├── test_sb3_save.py
+│   │   ├── test_td7_generalization.py
+│   │   └── train_top3_models.py
+│   └── verify_imports.py
+├── DIRECTORY_TREE.txt
+├── Documentation
+│   ├── guides
+│   │   ├── FINAL_TRANSITION_NARRATIVE.md
+│   │   ├── Final_Paper_Chinese_Version.md
+│   │   ├── GENERALIZATION_TEST_README.md
+│   │   ├── GENERALIZATION_V2_README.md
+│   │   ├── QUICK_REFERENCE_FINAL.md
+│   │   ├── RP1_完整研究报告.md
+│   │   ├── RUN_GENERALIZATION_TEST.md
+│   │   ├── RUN_V2_TEST.md
+│   │   ├── RUN_V3_TEST.md
+│   │   ├── Related_Work.md
+│   │   ├── TRANSITION_DESIGN_V3.md
+│   │   ├── V3_DIAGNOSIS_AND_FIX.md
+│   │   ├── V3_IMPLEMENTATION_SUMMARY.md
+│   │   ├── V3_RESULTS_ANALYSIS.md
+│   │   └── result.md
+│   └── references
+│       ├── A1_TD7.pdf
+│       ├── A1_TD7_SALE_Analysis.md
+│       ├── A2_RainbowDQN.pdf
+│       ├── A2_Rainbow_DQN_Analysis.md
+│       ├── A3_IMPALA.pdf
+│       ├── A3_IMPALA_Analysis.md
+│       ├── A4_R2D2.pdf
+│       ├── A4_R2D2_Analysis.md
+│       ├── S1_Dynamic_Order_Recommendation_Food_Delivery.pdf
+│       ├── S1_Dynamic_Order_Recommendation_Food_Delivery_Analysis.md
+│       ├── S2_Jahanshahi_MealDelivery_DRL_Analysis.md
+│       ├── S2_Meal_Delivery_Deep_Reinforcement_Learning_Knowledge_Based_Systems_2022.pdf
+│       ├── S3_Online_DRL_Order_Recommendation_Rider_Centered_IEEE_TITS_2023.pdf
+│       ├── S3_Online_DRL_Order_Recommendation_Rider_Centered_IEEE_TITS_2023_Analysis.md
+│       ├── S4.pdf
+│       ├── S4_Li_PowerIoT_FairnessAware_Analysis.md
+│       ├── S5.pdf
+│       ├── S5_Chen_WFQ_SingleQueue_Analysis.md
+│       ├── S6.pdf
+│       ├── S6_WFQ_SingleQueue_Fairness_Analysis.md
+│       ├── S7_Do_Gini_Fairness_Rankings_Analysis.md
+│       ├── S7_Optimizing_generalized_Gini_indices_for_fairness_i.pdf
+│       ├── T10_Balanced_Truck_Dispatching_Strategy_Container_Transportation_Mathematics_2025.pdf
+│       ├── T10_Zhao_Container_Transportation_Analysis.md
+│       ├── T11_Efrosinin_MultiQueue_Scheduling_Analysis.md
+│       ├── T11_Optimal_Scheduling_Multi_Queue_Neural_Network_Sensors_2023.pdf
+│       ├── T12_Hanukov_OrbitQueue_Analysis.md
+│       ├── T12_MG1_Queue_Repeated_Orbit_Service_Mathematics_2024.pdf
+│       ├── T13_Amjath_QueueingNetworkReview.pdf
+│       ├── T13_Amjath_QueueingNetworkReview_Analysis.md
+│       ├── T14_Core_Allocation_Multicore_Analysis.md
+│       ├── T15_Choi_StateDependent_BatterySwapping.pdf
+│       ├── T15_Choi_StateDependent_BatterySwapping_Analysis.md
+│       ├── T4_Moore_HMAS_Taxonomy_Analysis.md
+│       ├── T4_Taxonomy_Hierarchical_Multi_Agent_Systems_ArXiv_2025.pdf
+│       ├── T6_Deep_Reinforcement_Learning_Chronological_Overview_AI_2025.pdf
+│       ├── T6_Deep_Reinforcement_Learning_Chronological_Overview_AI_2025_Analysis.md
+│       ├── T7_Blockchain_Queueing_Systems_Markov_Healthcare_ScientificReports_2025.pdf
+│       ├── T7_Blockchain_Queueing_Systems_Markov_Healthcare_ScientificReports_2025_Analysis.md
+│       ├── T8_Mitzenmacher_Queueing_Predictions_Analysis.md
+│       ├── T8_Queueing_Predictions_Large_Language_Models_Stochastic_Systems_2025.pdf
+│       ├── U1_Multi_UAV_Target_Assignment_Path_Planning_Frontiers_Neurorobotics_2024.pdf
+│       ├── U1_Multi_UAV_Target_Assignment_Path_Planning_Frontiers_Neurorobotics_2024_Analysis.md
+│       ├── U2_Multi_UAV_Cooperative_Search_Moving_Targets_Drones_2024.pdf
+│       ├── U2_Multi_UAV_Cooperative_Search_Moving_Targets_Drones_2024_Analysis.md
+│       ├── U3_UAV_Cluster_Communication_Constraints_Decision_Making_Journal_Cloud_Computing_2025.pdf
+│       ├── U3_UAV_Cluster_Communication_Constraints_Decision_Making_Journal_Cloud_Computing_2025_Analysis.md
+│       ├── U4_Data_Driven_Drone_Delivery_Online_Demand_Transportation_Research_E_2025.pdf
+│       ├── U4_Data_Driven_Drone_Delivery_Online_Demand_Transportation_Research_E_2025_Analysis.md
+│       ├── U5.pdf
+│       ├── U5_Pongsakornsathien_LAAM_Advances_Analysis.md
+│       ├── U6.pdf
+│       ├── U6_Stuive_Airspace_Network_Design_Analysis.md
+│       ├── U7.pdf
+│       ├── U7_Xie_Hybrid_AI_4D_Trajectory_Analysis.md
+│       ├── U8.pdf
+│       ├── U8_Albalawi_CloudLoadBalancing_Analysis.md
+│       ├── t14.pdf
+│       └── 文献引用格式规范.md
+├── FINAL_CHECK_SUMMARY.txt
+├── Figures
+│   ├── analysis
+│   │   ├── a2c_v3_detailed_analysis.png
+│   │   ├── a2c_v3_detailed_training_curves.png
+│   │   ├── optimization_training_curves.png
+│   │   ├── pareto_analysis_complete.png
+│   │   ├── pareto_analysis_complete_3d.png
+│   │   └── pareto_analysis_complete_conflicts.png
+│   └── publication
+│       ├── figure1_3d_structure.png
+│       ├── figure1_top_tier_comparison.png
+│       ├── figure2_architecture.png
+│       ├── figure2_learning_curves.png
+│       ├── figure3_performance_ranking.png
+│       ├── figure4_td7_jump_learning.png
+│       ├── figure4_td7_jump_learning_zoom.png
+│       ├── figure5_radar_chart.png
+│       └── figure6_efficiency_analysis.png
+├── IMPORT_AUDIT_REPORT.md
+├── Models
+│   ├── a2c
+│   │   ├── a2c_model_500000.pth
+│   │   └── a2c_model_500000.zip
+│   ├── impala_final.pt
+│   ├── impala_optimized_final.pt
+│   ├── ppo
+│   │   ├── ppo_model_500000.pth
+│   │   └── ppo_model_500000.zip
+│   ├── r2d2_final.pt
+│   ├── rainbow_dqn_final.pt
+│   ├── sac_v2_final.pt
+│   ├── sb3_a2c_best
+│   ├── sb3_a2c_checkpoints
+│   ├── sb3_ppo_best
+│   ├── sb3_ppo_checkpoints
+│   ├── td7
+│   │   ├── td7_model_125000.pt
+│   │   ├── td7_model_250000.pt
+│   │   ├── td7_model_375000.pt
+│   │   └── td7_model_500000.pt
+│   └── top3_training_summary.json
+├── README.md
+└── Results
+    ├── comparison
+    │   ├── A2C_history.json
+    │   ├── DDPG_history.json
+    │   ├── FCFS
+    │   ├── FCFS_model
+    │   ├── Heuristic
+    │   ├── Heuristic_model
+    │   ├── PPO_history.json
+    │   ├── Priority
+    │   ├── Priority_model
+    │   ├── Random
+    │   ├── Random_model
+    │   ├── SAC_history.json
+    │   ├── SB3_A2C_history.json
+    │   ├── SB3_PPO_history.json
+    │   ├── SJF
+    │   ├── SJF_model
+    │   ├── TD3_history.json
+    │   ├── comparison_data.json
+    │   └── comparison_report.txt
+    ├── excel
+    │   ├── IMPALA.csv
+    │   ├── R2D2.csv
+    │   ├── Rainbow_DQN.csv
+    │   ├── SAC_v2.csv
+    │   ├── SB3_A2C.csv
+    │   ├── SB3_PPO.csv
+    │   ├── SB3_SAC.csv
+    │   ├── SB3_TD3.csv
+    │   ├── TD7.csv
+    │   └── prepare_fix.md
+    └── generalization
+        ├── all_models_generalization_results.json
+        ├── all_models_generalization_results_v2.json
+        ├── all_models_generalization_results_v3.json
+        ├── all_models_generalization_summary.csv
+        ├── all_models_generalization_summary_v2.csv
+        ├── all_models_generalization_summary_v3.csv
+        ├── generalization_ranking.txt
+        ├── td7_generalization_results.json
+        └── td7_generalization_summary.csv
+
+31 directories, 194 files

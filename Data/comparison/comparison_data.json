@@ -1,0 +1,31 @@
+{
+  "SB3_A2C": [
+    {
+      "algorithm": "SB3_A2C",
+      "eval_mean_reward": 4392.8629418285045,
+      "eval_std_reward": 145.4193405926933,
+      "training_time": 438.3421380519867,
+      "total_episodes": 0,
+      "config": {
+        "initial_lr": 0.0007,
+        "min_lr": 1e-05,
+        "warmup_steps": 300000,
+        "total_steps": 500000,
+        "n_steps": 5,
+        "gamma": 0.99,
+        "gae_lambda": 1.0,
+        "ent_coef": 0.0,
+        "vf_coef": 0.5,
+        "max_grad_norm": 0.5,
+        "rms_prop_eps": 1e-05,
+        "use_rms_prop": true,
+        "use_sde": false,
+        "normalize_advantage": true,
+        "tensorboard_log": "./tensorboard_logs/",
+        "verbose": 1,
+        "seed": 42,
+        "learning_rate": 0.0007
+      }
+    }
+  ]
+}

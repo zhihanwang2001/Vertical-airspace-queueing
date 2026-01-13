@@ -1,0 +1,215 @@
+"""
+补充实验：验证状态空间大小假设
+Supplementary Experiments: Verify State Space Size Hypothesis
+
+新增配置：
+- capacity_4x5: [4,4,4,4,4] total=20
+- capacity_6x5: [6,6,6,6,6] total=30
+
+验证假设：容量越大 → 状态空间越大 → TD7训练越困难
+"""
+
+import sys
+import os
+from pathlib import Path
+
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+import gymnasium as gym
+import numpy as np
+import json
+import time
+import argparse
+from datetime import datetime
+from stable_baselines3 import A2C, PPO
+
+from env.config import VerticalQueueConfig
+from env.configurable_env_wrapper import ConfigurableEnvWrapper
+from env.drl_wrapper_fixed import DictToBoxActionWrapperFixed, ObservationWrapperFixed
+from gymnasium.wrappers import TimeLimit  # 用于限制episode长度
+
+
+def create_config(config_type='capacity_4x5', high_load_multiplier=10.0):
+    """创建配置 - 新增4x5和6x5"""
+    config = VerticalQueueConfig()
+
+    # 设置容量
+    if config_type == 'capacity_4x5':
+        config.layer_capacities = [4, 4, 4, 4, 4]  # 总20
+    elif config_type == 'capacity_6x5':
+        config.layer_capacities = [6, 6, 6, 6, 6]  # 总30
+    else:
+        raise ValueError(f"Unknown config type: {config_type}")
+
+    # 固定真实UAM流量模式
+    config.arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]
+
+    # 计算到达率
+    total_capacity = sum(config.layer_capacities)
+    avg_service_rate = np.mean(config.layer_service_rates)
+    base_rate_v3 = 0.75 * total_capacity * avg_service_rate / 5
+    config.base_arrival_rate = base_rate_v3 * high_load_multiplier
+
+    # 计算每层的理论负载
+    layer_loads = []
+    for i, (w, c) in enumerate(zip(config.arrival_weights, config.layer_capacities)):
+        layer_arrival = config.base_arrival_rate * w
+        actual_service_rate = config.layer_service_rates[i]
+        layer_load = layer_arrival / (c * actual_service_rate)
+        layer_loads.append(layer_load)
+
+    print(f"\n{'='*80}")
+    print(f"配置: {config_type}")
+    print(f"容量: {config.layer_capacities} (总计: {total_capacity})")
+    print(f"到达权重: {config.arrival_weights}")
+    print(f"总到达率: {config.base_arrival_rate:.2f} (v3的{high_load_multiplier:.1f}倍)")
+    print(f"\n各层理论负载 (ρ = λ/(μ·c)):")
+    for i, load in enumerate(layer_loads):
+        mu = config.layer_service_rates[i]
+        status = "🔴过载!" if load >= 1.0 else "🟡临界" if load > 0.8 else "🟢正常"
+        print(f"  Layer {i} (容量{config.layer_capacities[i]}, μ={mu:.1f}): {load*100:.1f}% {status}")
+    print(f"平均负载: {np.mean(layer_loads)*100:.1f}%")
+    config.max_episode_steps = 200  # A2C/PPO使用与其他配置一致的评估协议
+    print(f"{'='*80}\n")
+
+    return config
+
+
+def create_wrapped_env(config):
+    """创建包装后的环境"""
+    base_env = ConfigurableEnvWrapper(config=config)
+    dict_to_box_env = DictToBoxActionWrapperFixed(base_env)
+    wrapped_env = ObservationWrapperFixed(dict_to_box_env)
+    # 应用TimeLimit限制episode长度 - 关键修复！
+    max_steps = getattr(config, "max_episode_steps", 1000)
+    wrapped_env = TimeLimit(wrapped_env, max_episode_steps=max_steps)
+
+    return wrapped_env
+
+
+def train_and_evaluate(algorithm='A2C', config_type='capacity_4x5',
+                       timesteps=100000, eval_episodes=50, high_load_multiplier=10.0):
+    """训练和评估"""
+
+    print(f"\n{'='*80}")
+    print(f"实验: {algorithm} + {config_type}")
+    print(f"评估轮次: {eval_episodes}")
+    print(f"{'='*80}\n")
+
+    config = create_config(config_type, high_load_multiplier)
+    env = create_wrapped_env(config)
+
+    save_dir = Path(project_root) / 'Results' / 'ablation_study_supplementary_10x' / config_type
+    save_dir.mkdir(parents=True, exist_ok=True)
+
+    start_time = time.time()
+
+    # 创建模型
+    if algorithm == 'A2C':
+        model = A2C('MlpPolicy', env, verbose=1, device='cuda')
+    elif algorithm == 'PPO':
+        model = PPO('MlpPolicy', env, verbose=1, device='cuda')
+    else:
+        raise ValueError(f"Unknown algorithm: {algorithm}")
+
+    print(f"\n开始训练{algorithm}...")
+    model.learn(total_timesteps=timesteps)
+
+    training_time = time.time() - start_time
+    print(f"训练完成！用时：{training_time/60:.2f}分钟\n")
+
+    # 评估
+    print(f"开始评估 ({eval_episodes} episodes)...")
+    eval_env = create_wrapped_env(config)
+
+    rewards = []
+    episode_lengths = []
+    crashes = 0
+    completions = 0
+
+    for ep in range(eval_episodes):
+        obs, _ = eval_env.reset()
+        episode_reward = 0
+        episode_length = 0
+        terminated = False
+
+        while True:
+            action, _ = model.predict(obs, deterministic=True)
+            obs, reward, done, truncated, info = eval_env.step(action)
+            episode_reward += reward
+            episode_length += 1
+
+            if done:
+                terminated = True
+                break
+            if truncated:
+                break
+
+        rewards.append(episode_reward)
+        episode_lengths.append(episode_length)
+
+        if terminated:
+            crashes += 1
+        else:
+            completions += 1
+
+        if (ep + 1) % 10 == 0:
+            print(f"  评估进度: {ep+1}/{eval_episodes}")
+
+    # 统计结果
+    crash_rate = crashes / eval_episodes
+    completion_rate = completions / eval_episodes
+
+    results = {
+        'algorithm': algorithm,
+        'config': config_type,
+        'mean_reward': float(np.mean(rewards)),
+        'std_reward': float(np.std(rewards)),
+        'crash_rate': float(crash_rate),
+        'completion_rate': float(completion_rate),
+        'mean_episode_length': float(np.mean(episode_lengths)),
+        'training_time_minutes': float(training_time / 60),
+        'eval_episodes': eval_episodes
+    }
+
+    # 保存结果
+    results_file = save_dir / f'{algorithm}_results.json'
+    with open(results_file, 'w') as f:
+        json.dump(results, f, indent=2)
+
+    print(f"\n{'='*80}")
+    print(f"评估结果:")
+    print(f"  平均奖励: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
+    print(f"  {'🔴' if crash_rate > 0 else '✅'} 崩溃率: {crash_rate*100:.1f}% ({crashes}/{eval_episodes})")
+    print(f"  ✅ 完成率: {completion_rate*100:.1f}% ({completions}/{eval_episodes})")
+    print(f"  平均回合长度: {results['mean_episode_length']:.1f}")
+    print(f"  训练时间: {results['training_time_minutes']:.2f}分钟")
+    print(f"  结果已保存至: {results_file}")
+    print(f"{'='*80}\n")
+
+    return results
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='补充实验：验证状态空间大小假设')
+    parser.add_argument('--algorithm', type=str, required=True, choices=['A2C', 'PPO'],
+                       help='算法: A2C or PPO')
+    parser.add_argument('--config', type=str, required=True, choices=['capacity_4x5', 'capacity_6x5'],
+                       help='配置: capacity_4x5 or capacity_6x5')
+    parser.add_argument('--timesteps', type=int, default=100000,
+                       help='训练步数 (default: 100000)')
+    parser.add_argument('--eval-episodes', type=int, default=50,
+                       help='评估轮次 (default: 50)')
+    parser.add_argument('--high-load-multiplier', type=float, default=10.0,
+                       help='高负载倍数 (default: 10.0)')
+
+    args = parser.parse_args()
+
+    train_and_evaluate(
+        algorithm=args.algorithm,
+        config_type=args.config,
+        timesteps=args.timesteps,
+        eval_episodes=args.eval_episodes,
+        high_load_multiplier=args.high_load_multiplier
+    )

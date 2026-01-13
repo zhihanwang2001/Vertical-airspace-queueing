@@ -1,0 +1,11 @@
+{
+  "priority_weights": [
+    2.0,
+    1.8,
+    1.5,
+    1.2,
+    1.0
+  ],
+  "emergency_threshold": 0.8,
+  "load_balance_factor": 0.3
+}

@@ -1,0 +1,6 @@
+Region,Mean Reward,Std Reward,Mean Length,Diff from Baseline (%)
+Region_A_Standard,3766.45,105.50,200.0,+0.0%
+Region_B_Weather,4003.10,125.09,200.0,+6.3%
+Region_C_Traffic,5130.15,226.92,200.0,+36.2%
+Region_D_Regulation,3887.57,147.72,200.0,+3.2%
+Region_E_EnergyCost,3888.27,168.48,200.0,+3.2%
