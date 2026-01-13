@@ -1,12 +1,11 @@
 """
-垂直分层队列环境
 Vertical Stratified Queuing Environment
 
-基于01理论文档的完整实现：
-- 垂直分层队列系统 V = (L, C, T, S)
-- 5层倒金字塔容量结构 
-- 层间转移动力学
-- 多目标优化目标函数
+Complete implementation based on theoretical framework:
+- Vertical layered queue system V = (L, C, T, S)
+- 5-layer inverted pyramid capacity structure
+- Inter-layer transfer dynamics
+- Multi-objective optimization objective function
 """
 
 try:
@@ -30,37 +29,37 @@ from .utils import MathUtils
 
 class VerticalQueueEnv(gym.Env):
     """
-    垂直分层队列环境
-    
-    实现01理论中的核心概念：
-    1. 垂直分层队列系统 V = (L, C, T, S)
-    2. 倒金字塔容量结构 C = {8, 6, 4, 3, 2}
-    3. 分层转移动力学 T(li, li-1 | Q(t))
-    4. 多目标优化 J(π) = w1·Throughput - w2·W̄ - w3·Var(W) + w4·Fairness
+    Vertical Layered Queue Environment
+
+    Implements core concepts from theory:
+    1. Vertical layered queue system V = (L, C, T, S)
+    2. Inverted pyramid capacity structure C = {8, 6, 4, 3, 2}
+    3. Layered transfer dynamics T(li, li-1 | Q(t))
+    4. Multi-objective optimization J(π) = w1·Throughput - w2·W̄ - w3·Var(W) + w4·Fairness
     """
-    
+
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
-    
-    def __init__(self, config: Optional[VerticalQueueConfig] = None, render_mode: str = None, 
+
+    def __init__(self, config: Optional[VerticalQueueConfig] = None, render_mode: str = None,
                  reward_weights: Optional['RewardWeights'] = None, **kwargs):
         super().__init__()
-        
-        # 配置参数
+
+        # Configuration parameters
         self.config = config or VerticalQueueConfig()
         self.render_mode = render_mode
-        
-        # 核心组件初始化
+
+        # Core component initialization
         self.state_manager = StateManager(self.config)
         self.queue_dynamics = QueueDynamics(self.config)
         self.delivery_cabinet = DeliveryCabinet(self.config)
         self.reward_function = RewardFunction(self.config, weights=reward_weights)
         self.math_utils = MathUtils()
-        
-        # 环境状态
+
+        # Environment state
         self.current_step = 0
         self.max_steps = self.config.max_episode_steps
-        
-        # 性能统计
+
+        # Performance statistics
         self.performance_stats = {
             'total_throughput': 0,
             'total_waiting_time': 0,
@@ -68,60 +67,60 @@ class VerticalQueueEnv(gym.Env):
             'successful_transfers': 0,
             'blocked_arrivals': 0
         }
-        
-        # 定义动作和观测空间
+
+        # Define action and observation spaces
         self._setup_spaces()
-        
-        # 初始化状态
+
+        # Initialize state
         self.reset()
     
     def _setup_spaces(self):
         """
-        设置动作空间和观测空间
-        
-        基于01理论设计：
-        - 观测空间：128维状态向量 (6个维度段)
-        - 动作空间：混合动作空间 (连续移动 + 离散队列决策)
+        Setup action space and observation space
+
+        Based on theoretical design:
+        - Observation space: 128-dim state vector (6 dimension segments)
+        - Action space: Hybrid action space (continuous movement + discrete queue decisions)
         """
-        # 观测空间: 128维状态向量
-        # 按照state_manager.py中的6个维度段设计
+        # Observation space: 128-dim state vector
+        # Designed according to 6 dimension segments in state_manager.py
         self.observation_space = spaces.Box(
             low=0.0,
             high=1.0,
             shape=(128,),
             dtype=np.float32
         )
-        
-        # 动作空间: 混合动作空间
-        # 1. 层间转移决策 (5层，每层可选择转移到下一层或留在当前层)
-        # 2. 服务调度策略 (优先级调整)
-        # 3. 到达率控制 (动态调整各层到达权重)
+
+        # Action space: Hybrid action space
+        # 1. Inter-layer transfer decisions (5 layers, each can choose to transfer to next layer or stay)
+        # 2. Service scheduling strategy (priority adjustment)
+        # 3. Arrival rate control (dynamically adjust arrival weights for each layer)
         self.action_space = spaces.Dict({
-            # 层间转移决策 (5层，每层二选一：转移/不转移)
+            # Inter-layer transfer decisions (5 layers, binary choice: transfer/no transfer)
             'transfer_decisions': spaces.MultiBinary(self.config.num_layers),
-            
-            # 服务优先级权重 (5层连续权重，归一化后使用)
+
+            # Service priority weights (5 layers continuous weights, normalized before use)
             'service_priorities': spaces.Box(
-                low=0.0, high=1.0, 
-                shape=(self.config.num_layers,), 
+                low=0.0, high=1.0,
+                shape=(self.config.num_layers,),
                 dtype=np.float32
             ),
-            
-            # 到达分配权重 (5层到达权重调整)
+
+            # Arrival allocation weights (5 layers arrival weight adjustment)
             'arrival_weights': spaces.Box(
                 low=0.0, high=1.0,
                 shape=(self.config.num_layers,),
                 dtype=np.float32
             )
         })
-    
+
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         """
-        重置环境到初始状态
-        
+        Reset environment to initial state
+
         Returns:
-            observation: 128维初始状态向量
-            info: 环境信息字典
+            observation: 128-dim initial state vector
+            info: Environment information dictionary
         """
         super().reset(seed=seed)
         
