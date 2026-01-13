@@ -310,133 +310,133 @@ class VerticalQueueEnv(gym.Env):
 
     def _is_performance_degraded(self) -> bool:
         """
-        检查性能是否严重恶化
-        
-        基于以下指标判断：
-        1. 平均等待时间过长
-        2. 吞吐量过低
-        3. 阻塞率过高
+        Check if performance is severely degraded
+
+        Based on the following indicators:
+        1. Average waiting time too long
+        2. Throughput too low
+        3. Blocking rate too high
         """
-        if self.current_step < 100:  # 给系统一些预热时间
+        if self.current_step < 100:  # Give system some warm-up time
             return False
-        
+
         avg_waiting_time = self.performance_stats['total_waiting_time'] / self.current_step
         avg_throughput = self.performance_stats['total_throughput'] / self.current_step
         block_rate = self.performance_stats['blocked_arrivals'] / self.current_step
-        
-        # 性能阈值 (可以根据需要调整)
-        MAX_WAITING_TIME = 50  # 最大平均等待时间
-        MIN_THROUGHPUT = 0.1   # 最小平均吞吐量
-        MAX_BLOCK_RATE = 0.5   # 最大阻塞率
-        
-        return (avg_waiting_time > MAX_WAITING_TIME or 
-                avg_throughput < MIN_THROUGHPUT or 
+
+        # Performance thresholds (can be adjusted as needed)
+        MAX_WAITING_TIME = 50  # Maximum average waiting time
+        MIN_THROUGHPUT = 0.1   # Minimum average throughput
+        MAX_BLOCK_RATE = 0.5   # Maximum blocking rate
+
+        return (avg_waiting_time > MAX_WAITING_TIME or
+                avg_throughput < MIN_THROUGHPUT or
                 block_rate > MAX_BLOCK_RATE)
     
     def render(self):
         """
-        渲染环境状态
-        
-        显示：
-        1. 5层队列状态
-        2. 外卖柜占用情况  
-        3. 性能指标
+        Render environment state
+
+        Display:
+        1. 5-layer queue status
+        2. Delivery cabinet occupancy
+        3. Performance metrics
         """
         if self.render_mode == "human":
             self._render_human()
         elif self.render_mode == "rgb_array":
             return self._render_rgb_array()
-    
+
     def _render_human(self):
         """
-        控制台文本渲染
+        Console text rendering
         """
-        print(f"\n=== 垂直分层队列环境 Step {self.current_step} ===")
-        
-        # 显示队列状态
+        print(f"\n=== Vertical Layered Queue Environment Step {self.current_step} ===")
+
+        # Display queue status
         queue_lengths = self.queue_dynamics.get_queue_lengths()
         waiting_times = self.queue_dynamics.get_waiting_times()
         load_factors = self._check_stability_condition()
-        
-        print("队列状态:")
+
+        print("Queue Status:")
         for i in range(self.config.num_layers):
             height = self.config.layer_heights[i]
             capacity = self.config.layer_capacities[i]
             length = queue_lengths[i]
             wait_time = waiting_times[i]
             rho = load_factors.get(f'layer_{i}', 0)
-            
+
             print(f"  L{i+1}({height}m): {length:2d}/{capacity} UAVs, "
                   f"Wait={wait_time:5.1f}, ρ={rho:.3f}")
-        
-        # 显示外卖柜状态
+
+        # Display delivery cabinet status
         occupancy = self.delivery_cabinet.get_occupancy_rate()
-        print(f"外卖柜占用率: {occupancy:.1%}")
-        
-        # 显示性能指标
+        print(f"Delivery Cabinet Occupancy: {occupancy:.1%}")
+
+        # Display performance metrics
         system_util = self._calculate_system_utilization()
-        print(f"系统利用率: {system_util:.1%}")
-        
-        avg_throughput = (self.performance_stats['total_throughput'] / 
+        print(f"System Utilization: {system_util:.1%}")
+
+        avg_throughput = (self.performance_stats['total_throughput'] /
                          max(self.current_step, 1))
-        print(f"平均吞吐量: {avg_throughput:.3f} 订单/步")
-    
+        print(f"Average Throughput: {avg_throughput:.3f} orders/step")
+
     def _render_rgb_array(self):
         """
-        图像渲染 (简单实现)
+        Image rendering (simple implementation)
         """
-        # 这里可以实现更复杂的可视化
-        # 目前返回简单的状态表示
+        # More complex visualization can be implemented here
+        # Currently returns simple state representation
         return np.zeros((400, 600, 3), dtype=np.uint8)
-    
+
     def close(self):
         """
-        关闭环境，清理资源
+        Close environment and clean up resources
         """
         pass
     
     def get_theoretical_performance(self) -> Dict:
         """
-        获取基于01理论的性能预测
-        
+        Get performance prediction based on theory
+
         Returns:
-            理论性能指标字典
+            Dictionary of theoretical performance metrics
         """
         return {
-            'theoretical_waiting_time_range': (15, 25),  # 01理论预测
-            'theoretical_throughput_range': (0.8, 1.2),  # 01理论预测
-            'theoretical_utilization_range': (0.75, 0.85),  # 01理论预测
-            'theoretical_efficiency_improvement': (0.4, 0.6)  # 相比传统方法
+            'theoretical_waiting_time_range': (15, 25),  # Theory prediction
+            'theoretical_throughput_range': (0.8, 1.2),  # Theory prediction
+            'theoretical_utilization_range': (0.75, 0.85),  # Theory prediction
+            'theoretical_efficiency_improvement': (0.4, 0.6)  # Compared to traditional methods
         }
 
 
-# 测试环境类
+# Test environment class
 if __name__ == "__main__":
-    # 创建环境实例
+    # Create environment instance
     env = VerticalQueueEnv()
-    
-    # 简单测试
-    print("环境创建成功!")
-    print(f"观测空间: {env.observation_space}")
-    print(f"动作空间: {env.action_space}")
-    
-    # 重置环境
+
+    # Simple test
+    print("Environment created successfully!")
+    print(f"Observation space: {env.observation_space}")
+    print(f"Action space: {env.action_space}")
+
+    # Reset environment
     obs, info = env.reset()
-    print(f"初始观测维度: {obs.shape}")
-    print(f"初始信息: {info}")
-    
-    # 随机动作测试
+    print(f"Initial observation dimension: {obs.shape}")
+    print(f"Initial info: {info}")
+
+    # Random action test
     for step in range(5):
         action = env.action_space.sample()
         obs, reward, terminated, truncated, info = env.step(action)
-        
+
         print(f"\nStep {step + 1}:")
         print(f"  Reward: {reward:.3f}")
         print(f"  Terminated: {terminated}")
-        print(f"  队列长度: {info['queue_lengths']}")
-        
+        print(f"  Queue lengths: {info['queue_lengths']}")
+
         if terminated or truncated:
             break
-    
+
     env.close()
-    print("\n环境测试完成!")
+    print("\nEnvironment test complete!")
