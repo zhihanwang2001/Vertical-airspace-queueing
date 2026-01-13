@@ -282,71 +282,71 @@ class RewardFunction:
             avg_space_util = np.mean(space_utilizations)
         else:
             avg_space_util = 0.0
-        
-        # 地面效率：外卖柜利用率
+
+        # Ground efficiency: delivery cabinet utilization
         cabinet_occupancy = cabinet_info.get('occupancy_rate', 0)
-        
-        # 协调效率：空域和地面的平衡程度
+
+        # Coordination efficiency: balance between airspace and ground
         coordination_efficiency = 1.0 - abs(avg_space_util - cabinet_occupancy)
-        
-        # 综合效率
-        efficiency = (avg_space_util * 0.4 + 
-                     cabinet_occupancy * 0.3 + 
+
+        # Comprehensive efficiency
+        efficiency = (avg_space_util * 0.4 +
+                     cabinet_occupancy * 0.3 +
                      coordination_efficiency * 0.3)
-        
+
         return min(efficiency, 1.0)
-    
-    def _calculate_penalties(self, queue_info: Dict, cabinet_info: Dict, 
+
+    def _calculate_penalties(self, queue_info: Dict, cabinet_info: Dict,
                            performance_stats: Dict) -> Dict[str, float]:
         """
-        计算各种惩罚
+        Calculate various penalties
         """
         penalties = {
             'instability': 0.0,
             'constraint_violation': 0.0,
             'performance_degradation': 0.0
         }
-        
-        # 1. 不稳定惩罚
+
+        # 1. Instability penalty
         load_factors = queue_info.get('load_factors', {})
         for rho in load_factors.values():
             if rho >= 1.0:
-                penalties['instability'] += (rho - 1.0) * 2.0  # 严重惩罚不稳定
-        
-        # 2. 约束违反惩罚
-        # 容量约束违反
+                penalties['instability'] += (rho - 1.0) * 2.0  # Severe penalty for instability
+
+        # 2. Constraint violation penalty
+        # Capacity constraint violation
         queue_lengths = queue_info.get('queue_lengths', [])
         capacities = self.config.layer_capacities
-        
+
         for i, (length, capacity) in enumerate(zip(queue_lengths, capacities)):
             if length > capacity:
                 violations = length - capacity
                 penalties['constraint_violation'] += violations * 0.1
-        
-        # 外卖柜约束违反
+
+        # Delivery cabinet constraint violation
         if cabinet_info.get('system_failed', False):
             penalties['constraint_violation'] += 1.0
-        
-        # 3. 性能恶化惩罚
+
+        # 3. Performance degradation penalty
         if len(self.component_history['throughput']) > 5:
             recent_throughput = np.mean(self.component_history['throughput'][-5:])
             earlier_throughput = np.mean(self.component_history['throughput'][-10:-5])
-            
-            if recent_throughput < earlier_throughput * 0.8:  # 性能下降20%以上
+
+            if recent_throughput < earlier_throughput * 0.8:  # Performance drop over 20%
                 penalties['performance_degradation'] += 0.5
-        
+
         return penalties
-    
-    def _calculate_adaptive_weights(self, components: Dict[str, float], 
+
+    def _calculate_adaptive_weights(self, components: Dict[str, float],
                                   performance_stats: Dict) -> RewardWeights:
         """
-        计算自适应权重
-        
-        根据系统状态动态调整奖励权重
+        Calculate adaptive weights
+
+        Dynamically adjust reward weights based on system state
         """
         adaptive_weights = RewardWeights()
-        
-        # 基础权重
+
+        # Base weights
         base_weights = [
             self.weights.throughput,
             self.weights.waiting_time,
@@ -354,65 +354,65 @@ class RewardFunction:
             self.weights.stability,
             self.weights.efficiency
         ]
-        
-        # 根据系统性能调整权重
-        # 1. 如果稳定性较差，增加稳定性权重
+
+        # Adjust weights based on system performance
+        # 1. If stability is poor, increase stability weight
         if components['stability'] < 0.7:
-            base_weights[3] *= 1.5  # 增加稳定性权重
-            base_weights[0] *= 0.8  # 减少吞吐量权重
-        
-        # 2. 如果公平性较差，增加公平性权重
+            base_weights[3] *= 1.5  # Increase stability weight
+            base_weights[0] *= 0.8  # Decrease throughput weight
+
+        # 2. If fairness is poor, increase fairness weight
         if components['fairness'] < 0.6:
-            base_weights[2] *= 1.3  # 增加公平性权重
-            base_weights[1] *= 0.9  # 减少等待时间权重
-        
-        # 3. 如果效率较低，增加效率权重
+            base_weights[2] *= 1.3  # Increase fairness weight
+            base_weights[1] *= 0.9  # Decrease waiting time weight
+
+        # 3. If efficiency is low, increase efficiency weight
         if components['efficiency'] < 0.5:
-            base_weights[4] *= 1.4  # 增加效率权重
-        
-        # 归一化权重
+            base_weights[4] *= 1.4  # Increase efficiency weight
+
+        # Normalize weights
         normalized_weights = self.math_utils.normalize_vector(base_weights, method='sum')
-        
-        # 更新自适应权重
+
+        # Update adaptive weights
         adaptive_weights.throughput = normalized_weights[0]
         adaptive_weights.waiting_time = normalized_weights[1]
         adaptive_weights.fairness = normalized_weights[2]
         adaptive_weights.stability = normalized_weights[3]
         adaptive_weights.efficiency = normalized_weights[4]
-        
-        # 惩罚权重保持不变
+
+        # Penalty weights remain unchanged
         adaptive_weights.instability_penalty = self.weights.instability_penalty
         adaptive_weights.constraint_violation = self.weights.constraint_violation
         adaptive_weights.performance_degradation = self.weights.performance_degradation
-        
+
         return adaptive_weights
-    
+
     def _update_reward_history(self, components: Dict[str, float], total_reward: float):
         """
-        更新奖励历史记录
+        Update reward history
         """
         self.reward_history.append(total_reward)
-        
+
         for component_name, value in components.items():
             if component_name in self.component_history:
                 self.component_history[component_name].append(value)
-        
-        # 保持历史长度
+
+        # Maintain history length
         max_history = 1000
         if len(self.reward_history) > max_history:
             self.reward_history.pop(0)
-            
+
         for component_list in self.component_history.values():
             if len(component_list) > max_history:
                 component_list.pop(0)
-    
+
     def get_reward_analysis(self) -> Dict:
         """
-        获取奖励分析结果
+        Get reward analysis results
         """
         if not self.reward_history:
             return {}
-        
+
         analysis = {
             'total_reward': {
                 'mean': np.mean(self.reward_history),
@@ -432,63 +432,63 @@ class RewardFunction:
                 }
         
         return analysis
-    
+
     def _calculate_trend(self, data: List[float], window: int = 20) -> str:
         """
-        计算数据趋势
+        Calculate data trend
         """
         if len(data) < window:
             return "insufficient_data"
-        
+
         recent_data = data[-window:]
         slope, _, _ = self.math_utils.linear_regression(
-            np.arange(len(recent_data)), 
+            np.arange(len(recent_data)),
             np.array(recent_data)
         )
-        
+
         if slope > 0.01:
             return "increasing"
         elif slope < -0.01:
             return "decreasing"
         else:
             return "stable"
-    
+
     def set_weights(self, **kwargs):
         """
-        设置奖励权重
+        Set reward weights
         """
         for key, value in kwargs.items():
             if hasattr(self.weights, key):
                 setattr(self.weights, key, value)
-    
+
     def enable_adaptive_weights(self, enabled: bool = True):
         """
-        启用/禁用自适应权重
+        Enable/disable adaptive weights
         """
         self.adaptive_weights_enabled = enabled
-    
+
     def reset_history(self):
         """
-        重置历史记录
+        Reset history
         """
         self.reward_history.clear()
         for component_list in self.component_history.values():
             component_list.clear()
-    
+
     def get_current_weights(self) -> RewardWeights:
         """
-        获取当前权重
+        Get current weights
         """
         return self.weights
 
 
-# 预定义奖励配置
+# Predefined reward configurations
 class RewardPresets:
-    """预定义奖励配置"""
-    
+    """Predefined reward configurations"""
+
     @staticmethod
     def get_balanced_weights() -> RewardWeights:
-        """平衡配置"""
+        """Balanced configuration"""
         return RewardWeights(
             throughput=0.25,
             waiting_time=0.25,
@@ -496,10 +496,10 @@ class RewardPresets:
             stability=0.15,
             efficiency=0.1
         )
-    
+
     @staticmethod
     def get_throughput_focused_weights() -> RewardWeights:
-        """吞吐量优先配置"""
+        """Throughput-focused configuration"""
         return RewardWeights(
             throughput=0.5,
             waiting_time=0.2,
@@ -507,10 +507,10 @@ class RewardPresets:
             stability=0.15,
             efficiency=0.05
         )
-    
+
     @staticmethod
     def get_fairness_focused_weights() -> RewardWeights:
-        """公平性优先配置"""
+        """Fairness-focused configuration"""
         return RewardWeights(
             throughput=0.2,
             waiting_time=0.2,
@@ -518,10 +518,10 @@ class RewardPresets:
             stability=0.15,
             efficiency=0.05
         )
-    
+
     @staticmethod
     def get_stability_focused_weights() -> RewardWeights:
-        """稳定性优先配置"""
+        """Stability-focused configuration"""
         return RewardWeights(
             throughput=0.15,
             waiting_time=0.2,
@@ -531,39 +531,39 @@ class RewardPresets:
         )
 
 
-# 测试奖励函数
+# Test reward function
 if __name__ == "__main__":
     from .config import VerticalQueueConfig
-    
+
     config = VerticalQueueConfig()
     reward_function = RewardFunction(config)
-    
-    print("奖励函数创建成功!")
-    print(f"基准值: {reward_function.baseline_values}")
-    
-    # 测试奖励计算
+
+    print("Reward function created successfully!")
+    print(f"Baseline values: {reward_function.baseline_values}")
+
+    # Test reward calculation
     dummy_queue_info = {
         'throughput': 0.8,
         'waiting_times': [12, 15, 18, 20, 25],
         'queue_lengths': [3, 4, 2, 2, 1],
         'load_factors': {'layer_0': 0.6, 'layer_1': 0.7, 'layer_2': 0.5, 'layer_3': 0.8, 'layer_4': 0.4}
     }
-    
+
     dummy_cabinet_info = {
         'occupancy_rate': 0.6,
         'system_failed': False
     }
-    
+
     dummy_performance_stats = {}
-    
+
     reward = reward_function.calculate_reward(dummy_queue_info, dummy_cabinet_info, dummy_performance_stats)
-    print(f"计算奖励: {reward:.4f}")
-    
-    # 测试奖励分析
+    print(f"Calculated reward: {reward:.4f}")
+
+    # Test reward analysis
     for _ in range(10):
         reward_function.calculate_reward(dummy_queue_info, dummy_cabinet_info, dummy_performance_stats)
-    
+
     analysis = reward_function.get_reward_analysis()
-    print(f"奖励分析: {analysis}")
-    
-    print("✅ 奖励函数测试完成!")
+    print(f"Reward analysis: {analysis}")
+
+    print("✅ Reward function testing complete!")
