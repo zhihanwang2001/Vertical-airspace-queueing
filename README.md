@@ -188,9 +188,7 @@ final/RP1/
 
 #### Guides (`guides/` - 15 documents)
 - `FINAL_TRANSITION_NARRATIVE.md` - Complete RP1 research story
-- `Final_Paper_Chinese_Version.md` - Chinese manuscript (98 KB)
 - `Related_Work.md` - Literature review (60+ papers)
-- `RP1_完整研究报告.md` - Complete research report (Chinese)
 - `GENERALIZATION_TEST_README.md` - Generalization experiment guide
 - `V3_RESULTS_ANALYSIS.md` - Final results analysis
 - `QUICK_REFERENCE_FINAL.md` - Quick reference guide
@@ -278,7 +276,7 @@ python generate_paper_figures.py
 1. **Reproduce Results**: Use `Code/training_scripts/run_baseline_comparison.py`
 2. **Analyze Data**: Results in `Results/comparison/comparison_data.json`
 3. **Visualize**: Run scripts in `Code/analysis_scripts/`
-4. **Read Documentation**: Start with `Documentation/guides/RP1_完整研究报告.md`
+4. **Read Documentation**: Start with `Documentation/guides/FINAL_TRANSITION_NARRATIVE.md`
 
 ### For Practitioners
 1. **Use Best Model**: `Models/sb3_a2c_best/final_model`
