@@ -123,16 +123,16 @@ class VerticalQueueEnv(gym.Env):
             info: Environment information dictionary
         """
         super().reset(seed=seed)
-        
-        # 重置时间步
+
+        # Reset time step
         self.current_step = 0
-        
-        # 重置所有组件
+
+        # Reset all components
         self.state_manager.reset()
         self.queue_dynamics.reset()
         self.delivery_cabinet.reset()
-        
-        # 重置性能统计
+
+        # Reset performance statistics
         self.performance_stats = {
             'total_throughput': 0,
             'total_waiting_time': 0,
@@ -140,69 +140,69 @@ class VerticalQueueEnv(gym.Env):
             'successful_transfers': 0,
             'blocked_arrivals': 0
         }
-        
-        # 获取初始观测
+
+        # Get initial observation
         observation = self.state_manager.get_observation()
-        
-        # 环境信息
+
+        # Environment information
         info = {
             'step': self.current_step,
             'queue_lengths': self.queue_dynamics.get_queue_lengths(),
             'cabinet_occupancy': self.delivery_cabinet.get_occupancy_rate(),
             'system_utilization': self._calculate_system_utilization()
         }
-        
+
         return observation, info
     
     def step(self, action: Dict):
         """
-        环境步进函数
-        
-        实现01理论中的系统动力学：
-        1. 执行动作 (层间转移、服务调度)
-        2. 更新队列状态 (到达、服务、转移)
-        3. 计算奖励 (多目标优化函数)
-        4. 更新外卖柜状态
-        5. 检查终止条件
-        
+        Environment step function
+
+        Implements system dynamics from theory:
+        1. Execute action (inter-layer transfer, service scheduling)
+        2. Update queue state (arrival, service, transfer)
+        3. Calculate reward (multi-objective optimization function)
+        4. Update delivery cabinet state
+        5. Check termination condition
+
         Args:
-            action: 动作字典，包含transfer_decisions, service_priorities, arrival_weights
-            
+            action: Action dictionary containing transfer_decisions, service_priorities, arrival_weights
+
         Returns:
-            observation: 新的128维状态向量
-            reward: 标量奖励值
-            terminated: 是否达到终止条件
-            truncated: 是否达到时间限制
-            info: 环境信息字典
+            observation: New 128-dim state vector
+            reward: Scalar reward value
+            terminated: Whether termination condition is reached
+            truncated: Whether time limit is reached
+            info: Environment information dictionary
         """
-        # 增加时间步
+        # Increment time step
         self.current_step += 1
-        
-        # 1. 处理动作
+
+        # 1. Process action
         self._process_action(action)
-        
-        # 2. 更新队列动力学 (基于01理论的状态转移)
+
+        # 2. Update queue dynamics (state transition based on theory)
         queue_info = self.queue_dynamics.step(action)
-        
-        # 3. 更新外卖柜状态
+
+        # 3. Update delivery cabinet state
         cabinet_info = self.delivery_cabinet.step(queue_info['service_requests'])
-        
-        # 4. 更新性能统计
+
+        # 4. Update performance statistics
         self._update_performance_stats(queue_info, cabinet_info)
-        
-        # 5. 计算奖励 (多目标优化函数)
+
+        # 5. Calculate reward (multi-objective optimization function)
         reward = self.reward_function.calculate_reward(
             queue_info, cabinet_info, self.performance_stats
         )
-        
-        # 6. 获取新的观测状态
+
+        # 6. Get new observation state
         observation = self.state_manager.get_observation()
-        
-        # 7. 检查终止条件
+
+        # 7. Check termination condition
         terminated = self._check_termination()
         truncated = self.current_step >= self.max_steps
-        
-        # 8. 准备返回信息
+
+        # 8. Prepare return information
         info = {
             'step': self.current_step,
             'queue_lengths': queue_info['queue_lengths'],
@@ -213,101 +213,101 @@ class VerticalQueueEnv(gym.Env):
             'stability_condition': self._check_stability_condition(),
             'performance_stats': self.performance_stats.copy()
         }
-        
+
         return observation, reward, terminated, truncated, info
-    
+
     def _process_action(self, action: Dict):
         """
-        处理智能体动作
-        
-        将动作转换为系统参数调整：
-        1. transfer_decisions -> 层间转移概率调整
-        2. service_priorities -> 服务率权重调整  
-        3. arrival_weights -> 到达率分配调整
+        Process agent action
+
+        Convert action to system parameter adjustments:
+        1. transfer_decisions -> Inter-layer transfer probability adjustment
+        2. service_priorities -> Service rate weight adjustment
+        3. arrival_weights -> Arrival rate allocation adjustment
         """
-        # 归一化动作参数
+        # Normalize action parameters
         service_priorities = self.math_utils.normalize_vector(action['service_priorities'])
         arrival_weights = self.math_utils.normalize_vector(action['arrival_weights'])
-        
-        # 更新队列动力学参数
+
+        # Update queue dynamics parameters
         self.queue_dynamics.update_transfer_probabilities(action['transfer_decisions'])
         self.queue_dynamics.update_service_priorities(service_priorities)
         self.queue_dynamics.update_arrival_weights(arrival_weights)
-        
-        # 更新状态管理器
+
+        # Update state manager
         self.state_manager.update_action_history(action)
-    
+
     def _update_performance_stats(self, queue_info: Dict, cabinet_info: Dict):
         """
-        更新性能统计信息
-        
-        跟踪关键性能指标用于奖励计算和分析
+        Update performance statistics
+
+        Track key performance indicators for reward calculation and analysis
         """
         self.performance_stats['total_throughput'] += queue_info['throughput']
         self.performance_stats['total_waiting_time'] += sum(queue_info['waiting_times'])
-        
-        # 更新层利用率
+
+        # Update layer utilization
         for i, length in enumerate(queue_info['queue_lengths']):
             capacity = self.config.layer_capacities[i]
             utilization = length / capacity if capacity > 0 else 0
             self.performance_stats['layer_utilizations'][i] += utilization
-        
+
         self.performance_stats['successful_transfers'] += queue_info.get('transfers', 0)
         self.performance_stats['blocked_arrivals'] += queue_info.get('blocked', 0)
-    
+
     def _calculate_system_utilization(self) -> float:
         """
-        计算系统整体利用率
-        
-        基于01理论的利用率定义：
+        Calculate overall system utilization
+
+        Based on utilization definition from theory:
         Utilization = (1/2)(Σni/N_total + Σcj/C_total)
         """
         queue_lengths = self.queue_dynamics.get_queue_lengths()
         total_queue = sum(queue_lengths)
         total_capacity = sum(self.config.layer_capacities)
-        
+
         cabinet_occupancy = self.delivery_cabinet.get_occupancy_rate()
-        
+
         queue_util = total_queue / total_capacity if total_capacity > 0 else 0
         system_util = (queue_util + cabinet_occupancy) / 2
-        
+
         return min(system_util, 1.0)
-    
+
     def _check_stability_condition(self) -> Dict[str, float]:
         """
-        检查01理论中的稳定性条件
-        
-        稳定性条件：ρi = λi^eff/(μi·ci) < 1, ∀i
-        
+        Check stability condition from theory
+
+        Stability condition: ρi = λi^eff/(μi·ci) < 1, ∀i
+
         Returns:
-            各层的负载系数ρi
+            Load factor ρi for each layer
         """
         return self.queue_dynamics.get_load_factors()
-    
+
     def _check_termination(self) -> bool:
         """
-        检查环境终止条件
-        
-        终止条件:
-        1. 系统不稳定 (任一层ρi >= 1)
-        2. 外卖柜故障
-        3. 性能极度恶化
+        Check environment termination condition
+
+        Termination conditions:
+        1. System unstable (any layer ρi >= 1)
+        2. Delivery cabinet failure
+        3. Severe performance degradation
         """
-        # 检查稳定性
+        # Check stability
         load_factors = self._check_stability_condition()
         if any(rho >= 1.0 for rho in load_factors.values()):
             return True
-        
-        # 检查外卖柜状态
+
+        # Check delivery cabinet status
         if self.delivery_cabinet.is_failed():
             return True
-        
-        # 检查性能恶化
+
+        # Check performance degradation
         if self._is_performance_degraded():
             return True
-        
+
         return False
-    
+
     def _is_performance_degraded(self) -> bool:
         """
         检查性能是否严重恶化
