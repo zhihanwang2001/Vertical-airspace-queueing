@@ -1,6 +1,6 @@
 """
-手动保存已训练的A2C和PPO模型
-使用PyTorch的state_dict直接保存，绕过pickle问题
+Manually save trained A2C and PPO models
+Use PyTorch's state_dict to save directly, bypassing pickle issues
 """
 import sys
 import os
@@ -12,11 +12,11 @@ from algorithms.baselines.sb3_ppo_baseline import SB3PPOBaseline
 
 def save_model_state_dict(model, save_path, algorithm_name):
     """
-    保存模型的PyTorch state dict和必要的配置
+    Save model's PyTorch state dict and necessary configuration
     """
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
-    # 保存模型参数
+    # Save model parameters
     model_state = {
         'policy_state_dict': model.policy.state_dict(),
         'observation_space': model.observation_space,
@@ -25,7 +25,7 @@ def save_model_state_dict(model, save_path, algorithm_name):
         '_n_updates': model._n_updates,
     }
 
-    # 算法特定参数
+    # Algorithm-specific parameters
     if hasattr(model, 'learning_rate'):
         model_state['learning_rate'] = model.learning_rate
     if hasattr(model, 'gamma'):
@@ -34,55 +34,55 @@ def save_model_state_dict(model, save_path, algorithm_name):
         model_state['n_steps'] = model.n_steps
 
     torch.save(model_state, save_path + '.pth')
-    print(f"✅ {algorithm_name} model saved to: {save_path}.pth")
+    print(f"{algorithm_name} model saved to: {save_path}.pth")
 
-    # 验证文件大小
+    # Verify file size
     size = os.path.getsize(save_path + '.pth')
-    print(f"   文件大小: {size / 1024:.2f} KB")
+    print(f"   File size: {size / 1024:.2f} KB")
 
     return size > 0
 
 def main():
     print("\n" + "="*80)
-    print("手动保存A2C和PPO模型（绕过pickle问题）")
+    print("Manually save A2C and PPO models (bypassing pickle issues)")
     print("="*80 + "\n")
 
-    # 训练并保存A2C
-    print("1. 训练A2C模型...")
+    # Train and save A2C
+    print("1. Training A2C model...")
     a2c = SB3A2CBaseline()
     a2c.train(total_timesteps=500000)
 
-    print("\n评估A2C模型...")
+    print("\nEvaluating A2C model...")
     eval_results = a2c.evaluate(n_episodes=20, deterministic=True, verbose=True)
-    print(f"A2C评估结果: {eval_results['mean_reward']:.2f} ± {eval_results['std_reward']:.2f}")
+    print(f"A2C evaluation results: {eval_results['mean_reward']:.2f} +/- {eval_results['std_reward']:.2f}")
 
-    print("\n保存A2C模型state dict...")
+    print("\nSaving A2C model state dict...")
     a2c_path = "../../Models/a2c/a2c_model_500000"
     save_model_state_dict(a2c.model, a2c_path, "A2C")
 
-    # 训练并保存PPO
+    # Train and save PPO
     print("\n" + "-"*80)
-    print("2. 训练PPO模型...")
+    print("2. Training PPO model...")
     ppo = SB3PPOBaseline()
     ppo.train(total_timesteps=500000)
 
-    print("\n评估PPO模型...")
+    print("\nEvaluating PPO model...")
     eval_results = ppo.evaluate(n_episodes=20, deterministic=True, verbose=True)
-    print(f"PPO评估结果: {eval_results['mean_reward']:.2f} ± {eval_results['std_reward']:.2f}")
+    print(f"PPO evaluation results: {eval_results['mean_reward']:.2f} +/- {eval_results['std_reward']:.2f}")
 
-    print("\n保存PPO模型state dict...")
+    print("\nSaving PPO model state dict...")
     ppo_path = "../../Models/ppo/ppo_model_500000"
     save_model_state_dict(ppo.model, ppo_path, "PPO")
 
     print("\n" + "="*80)
-    print("✅ 所有模型已成功保存！")
+    print("All models saved successfully!")
     print("="*80)
 
-    print("\n模型文件:")
+    print("\nModel files:")
     print(f"  A2C: {a2c_path}.pth")
     print(f"  PPO: {ppo_path}.pth")
 
-    print("\n注意: 这些是PyTorch state dict文件，加载时需要重新创建环境和模型结构")
+    print("\nNote: These are PyTorch state dict files, loading requires recreating environment and model structure")
 
 if __name__ == "__main__":
     main()
