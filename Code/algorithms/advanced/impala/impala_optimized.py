@@ -1,177 +1,107 @@
 """
-IMPALA Optimized for Vertical Stratified Queue System
-IMPALA implementation specifically optimized for vertical stratified queue environment
-
-Core optimizations:
-1. Support for hybrid action space (continuous + discrete)
-2. Queue system-specific network architecture
-3. Conservative V-trace parameter settings
-4. State feature extraction tailored to environment characteristics
+Optimized IMPALA implementation
+Specifically optimized for queue system environment
 """
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.tensorboard import SummaryWriter
+import numpy as np
+from typing import Dict, Any, Tuple
 import time
-from typing import Dict, Any, Optional, Tuple
+import os
+from torch.utils.tensorboard import SummaryWriter
 
-from env.drl_optimized_env_fixed import DRLOptimizedQueueEnvFixed
-from baselines.space_utils import SB3DictWrapper
+# Import environment
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+from Code.env.drl_optimized_env_fixed import DRLOptimizedQueueEnvFixed
+from Code.env.sb3_dict_wrapper import SB3DictWrapper
 
 
 class QueueSpecificNetwork(nn.Module):
-    """Network architecture specifically designed for queue system"""
+    """Queue-specific network architecture
+    
+    Designed for 5-layer queue system:
+    - Continuous actions: service_intensities (5) + arrival_multiplier (1) = 6
+    - Discrete actions: emergency_transfers (5 binary choices)
+    """
 
-    def __init__(self, state_dim: int, config: Dict = None):
+    def __init__(self, state_dim: int, config: Dict):
         super().__init__()
+        self.state_dim = state_dim
+        self.config = config
 
-        # Default configuration
-        self.config = config or {}
-        self.hidden_dim = self.config.get('hidden_dim', 512)
-        self.num_layers = self.config.get('num_layers', 3)
-
-        # Queue feature dimensions (environment fixed at 5 layers)
-        self.n_layers = 5
+        hidden_dim = config.get('hidden_dim', 512)
+        num_layers = config.get('num_layers', 3)
 
         # Hierarchical feature extraction
-        # 1. Queue state feature extractor (specialized processing for 5-layer queue)
-        self.queue_feature_extractor = nn.Sequential(
-            nn.Linear(self.n_layers * 7, 256),  # 7个特征per layer: lengths, util, changes, load, service, capacity, weights
-            nn.ReLU(),
-            nn.Linear(256, 128),
-            nn.ReLU()
-        )
-
-        # 2. System-level feature extractor
-        self.system_feature_extractor = nn.Sequential(
-            nn.Linear(4, 64),  # system_metrics (3) + prev_reward (1)
-            nn.ReLU(),
-            nn.Linear(64, 32),
-            nn.ReLU()
-        )
-
-        # 3. Fusion layer
-        fusion_input_dim = 128 + 32  # queue features + system features
-        self.fusion_layers = nn.Sequential(
-            nn.Linear(fusion_input_dim, self.hidden_dim),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(self.hidden_dim, self.hidden_dim),
+        # Layer 1: Extract basic features
+        self.feature_layer1 = nn.Sequential(
+            nn.Linear(state_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
             nn.ReLU(),
             nn.Dropout(0.1)
         )
 
-        # 4. Output heads
-        # Actor: Hybrid action space
-        # Continuous actions: service_intensities (5) + arrival_multiplier (1) = 6
-        self.continuous_actor_mean = nn.Linear(self.hidden_dim, 6)
-        self.continuous_actor_logstd = nn.Linear(self.hidden_dim, 6)
+        # Layer 2: Extract advanced features
+        self.feature_layer2 = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(0.1)
+        )
 
-        # Discrete actions: emergency_transfers (5 binary choices)
-        self.discrete_actor = nn.Linear(self.hidden_dim, self.n_layers)
+        # Layer 3: Extract abstract features
+        self.feature_layer3 = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim // 2),
+            nn.LayerNorm(hidden_dim // 2),
+            nn.ReLU()
+        )
 
-        # Critic: Value function
-        self.critic = nn.Linear(self.hidden_dim, 1)
+        # Continuous action head (service_intensities + arrival_multiplier)
+        self.continuous_mean = nn.Linear(hidden_dim // 2, 6)
+        self.continuous_logstd = nn.Linear(hidden_dim // 2, 6)
+
+        # Discrete action head (emergency_transfers)
+        self.discrete_logits = nn.Linear(hidden_dim // 2, 5)
+
+        # Value head
+        self.value_head = nn.Linear(hidden_dim // 2, 1)
 
         # Initialize weights
-        self._init_weights()
+        self._initialize_weights()
 
-        print(f"🏗️  Queue-Specific Network initialized:")
-        print(f"   - Queue layers: {self.n_layers}")
-        print(f"   - Hidden dim: {self.hidden_dim}")
-        print(f"   - Continuous actions: 6 (service_intensities + arrival_multiplier)")
-        print(f"   - Discrete actions: {self.n_layers} (emergency_transfers)")
-
-    def _init_weights(self):
+    def _initialize_weights(self):
         """Initialize network weights"""
-        for module in self.modules():
-            if isinstance(module, nn.Linear):
-                nn.init.orthogonal_(module.weight, gain=np.sqrt(2))
-                nn.init.constant_(module.bias, 0.0)
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.orthogonal_(m.weight, gain=np.sqrt(2))
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
 
-        # Actor output layers use small initialization values
-        nn.init.orthogonal_(self.continuous_actor_mean.weight, gain=0.01)
-        nn.init.orthogonal_(self.continuous_actor_logstd.weight, gain=0.01)
-        nn.init.orthogonal_(self.discrete_actor.weight, gain=0.01)
+        # Special initialization for action heads
+        nn.init.orthogonal_(self.continuous_mean.weight, gain=0.01)
+        nn.init.orthogonal_(self.continuous_logstd.weight, gain=0.01)
+        nn.init.orthogonal_(self.discrete_logits.weight, gain=0.01)
+        nn.init.orthogonal_(self.value_head.weight, gain=1.0)
 
-    def extract_queue_features(self, state: torch.Tensor) -> torch.Tensor:
-        """Extract queue-related features"""
-        # Assume state is flattened 35-dimensional vector
-        # Reconstruct into meaningful queue features
+    def forward(self, state: torch.Tensor):
+        """Forward pass"""
+        # Hierarchical feature extraction
+        x = self.feature_layer1(state)
+        x = self.feature_layer2(x)
+        features = self.feature_layer3(x)
 
-        batch_size = state.shape[0]
+        # Continuous action distribution parameters
+        continuous_mean = torch.tanh(self.continuous_mean(features))
+        continuous_logstd = torch.clamp(self.continuous_logstd(features), -5, 2)
 
-        # Extract features according to environment's observation space
-        # queue_lengths (5) + utilization_rates (5) + queue_changes (5) +
-        # load_rates (5) + service_rates (5) + prev_reward (1) + system_metrics (3) = 29
-        # Remaining dimensions are extended features
+        # Discrete action logits
+        discrete_logits = self.discrete_logits(features)
 
-        queue_lengths = state[:, :5]
-        utilization_rates = state[:, 5:10]
-        queue_changes = state[:, 10:15]
-        load_rates = state[:, 15:20]
-        service_rates = state[:, 20:25]
-        # prev_reward = state[:, 25:26]  # 后面单独处理
-        # system_metrics = state[:, 26:29]  # 后面单独处理
-
-        # Add fixed queue features (capacity and weights)
-        device = state.device
-        capacities = torch.tensor([8, 6, 4, 3, 2], dtype=torch.float32, device=device).unsqueeze(0).expand(batch_size, -1)
-        arrival_weights = torch.tensor([0.3, 0.25, 0.2, 0.15, 0.1], dtype=torch.float32, device=device).unsqueeze(0).expand(batch_size, -1)
-
-        # Merge queue features [batch, 5*7]
-        queue_features = torch.cat([
-            queue_lengths, utilization_rates, queue_changes,
-            load_rates, service_rates, capacities, arrival_weights
-        ], dim=1)
-
-        return self.queue_feature_extractor(queue_features)
-
-    def extract_system_features(self, state: torch.Tensor) -> torch.Tensor:
-        """Extract system-level features"""
-        batch_size = state.shape[0]
-
-        # Extract system-level features
-        if state.shape[1] >= 29:
-            prev_reward = state[:, 25:26]
-            system_metrics = state[:, 26:29]
-        else:
-            # If dimensions are insufficient, pad with zeros
-            prev_reward = torch.zeros(batch_size, 1, device=state.device)
-            system_metrics = torch.zeros(batch_size, 3, device=state.device)
-
-        system_features = torch.cat([system_metrics, prev_reward], dim=1)
-        return self.system_feature_extractor(system_features)
-
-    def forward(self, state: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-        """
-        Forward pass
-
-        Returns:
-            continuous_mean: Continuous action mean [batch, 6]
-            continuous_logstd: Continuous action log std [batch, 6]
-            discrete_logits: Discrete action logits [batch, 5]
-            value: State value [batch, 1]
-        """
-        # Feature extraction
-        queue_features = self.extract_queue_features(state)
-        system_features = self.extract_system_features(state)
-
-        # Feature fusion
-        combined_features = torch.cat([queue_features, system_features], dim=1)
-        fused_features = self.fusion_layers(combined_features)
-
-        # Output computation
-        continuous_mean = self.continuous_actor_mean(fused_features)
-        continuous_logstd = torch.clamp(self.continuous_actor_logstd(fused_features), -10, 2)
-        discrete_logits = self.discrete_actor(fused_features)
-        value = self.critic(fused_features)
+        # Value
+        value = self.value_head(features)
 
         return continuous_mean, continuous_logstd, discrete_logits, value
 
@@ -180,22 +110,18 @@ class QueueSpecificNetwork(nn.Module):
         continuous_mean, continuous_logstd, discrete_logits, value = self.forward(state)
 
         if deterministic:
-            # Deterministic policy
+            # Deterministic action
             continuous_action = continuous_mean
-            discrete_action = torch.sigmoid(discrete_logits) > 0.5
-
-            # Compute log_prob (for consistency)
-            continuous_log_prob = torch.zeros_like(continuous_mean).sum(dim=-1, keepdim=True)
-            discrete_log_prob = torch.zeros_like(discrete_logits).sum(dim=-1, keepdim=True)
+            discrete_action = (torch.sigmoid(discrete_logits) > 0.5).float()
         else:
-            # Stochastic policy
-            # Continuous action sampling
+            # Sample continuous action
             continuous_std = torch.exp(continuous_logstd)
             continuous_dist = torch.distributions.Normal(continuous_mean, continuous_std)
             continuous_action = continuous_dist.sample()
+            continuous_action = torch.clamp(continuous_action, -1, 1)
             continuous_log_prob = continuous_dist.log_prob(continuous_action).sum(dim=-1, keepdim=True)
 
-            # Discrete action sampling
+            # Sample discrete action
             discrete_dist = torch.distributions.Bernoulli(logits=discrete_logits)
             discrete_action = discrete_dist.sample()
             discrete_log_prob = discrete_dist.log_prob(discrete_action).sum(dim=-1, keepdim=True)
@@ -321,7 +247,7 @@ class OptimizedIMPALAAgent:
         self.training_step = 0
         self.episode_count = 0
 
-        print(f"🚀 Optimized IMPALA Agent initialized on {self.device}")
+        print(f"Optimized IMPALA Agent initialized on {self.device}")
         print(f"   - Conservative V-trace: rho_bar={self.config['rho_bar']}, c_bar={self.config['c_bar']}")
         print(f"   - Lower learning rate: {self.config['learning_rate']}")
         print(f"   - Larger buffer: {self.config['buffer_size']}")
@@ -518,14 +444,14 @@ class OptimizedIMPALABaseline:
             'training_steps': []
         }
 
-        print("🎯 Optimized IMPALA Baseline initialized with queue-specific optimizations")
+        print("Optimized IMPALA Baseline initialized with queue-specific optimizations")
 
     def setup_env(self):
         """Setup environment"""
         base_env = DRLOptimizedQueueEnvFixed()
         self.env = SB3DictWrapper(base_env)
 
-        print(f"✅ Environment setup completed")
+        print(f"Environment setup completed")
         print(f"   Observation space: {self.env.observation_space}")
         print(f"   Action space: {self.env.action_space}")
 
@@ -542,7 +468,7 @@ class OptimizedIMPALABaseline:
             config=self.config
         )
 
-        print("✅ Optimized IMPALA Agent created successfully")
+        print("Optimized IMPALA Agent created successfully")
         return self.agent
 
     def train(self, total_timesteps: int, eval_freq: int = 10000, save_freq: int = 50000):
@@ -554,7 +480,7 @@ class OptimizedIMPALABaseline:
         tb_log_name = f"IMPALA_Optimized_{int(time.time())}"
         writer = SummaryWriter(log_dir=f"./tensorboard_logs/{tb_log_name}")
 
-        print(f"🚀 Starting Optimized IMPALA training for {total_timesteps:,} timesteps...")
+        print(f"Starting Optimized IMPALA training for {total_timesteps:,} timesteps...")
         print(f"   TensorBoard log: {tb_log_name}")
         print(f"   Key optimizations:")
         print(f"   - Mixed action space support")
@@ -584,7 +510,7 @@ class OptimizedIMPALABaseline:
                 else:
                     next_state, reward, done, info = step_result
             except Exception as e:
-                print(f"❌ Environment step error: {e}")
+                print(f"Environment step error: {e}")
                 break
 
             # Store experience
@@ -652,21 +578,21 @@ class OptimizedIMPALABaseline:
                 writer.add_scalar('eval/mean_reward', eval_results['mean_reward'], timestep)
                 writer.add_scalar('eval/std_reward', eval_results['std_reward'], timestep)
 
-                print(f"📊 Evaluation at step {timestep}: "
-                      f"Mean reward: {eval_results['mean_reward']:.2f} ± {eval_results['std_reward']:.2f}")
+                print(f"Evaluation at step {timestep}: "
+                      f"Mean reward: {eval_results['mean_reward']:.2f} +/- {eval_results['std_reward']:.2f}")
 
             # Save model
             if save_freq > 0 and timestep % save_freq == 0 and timestep > 0:
                 save_path = f"../../../../Models/impala_optimized_step_{timestep}.pt"
                 os.makedirs(os.path.dirname(save_path), exist_ok=True)
                 self.agent.save(save_path)
-                print(f"💾 Model saved at step {timestep}: {save_path}")
+                print(f"Model saved at step {timestep}: {save_path}")
 
         # Training completed
         total_time = time.time() - start_time
         writer.close()
 
-        print(f"✅ Optimized IMPALA training completed!")
+        print(f"Optimized IMPALA training completed!")
         print(f"   Total episodes: {episode}")
         print(f"   Total time: {total_time:.2f}s")
         final_avg = np.mean(self.training_history['episode_rewards'][-100:]) if len(self.training_history['episode_rewards']) >= 100 else np.mean(self.training_history['episode_rewards']) if self.training_history['episode_rewards'] else 0
@@ -709,7 +635,7 @@ class OptimizedIMPALABaseline:
                     else:
                         next_state, reward, done, info = step_result
                 except Exception as e:
-                    print(f"❌ Evaluation error: {e}")
+                    print(f"Evaluation error: {e}")
                     break
 
                 episode_reward += reward
@@ -734,8 +660,8 @@ class OptimizedIMPALABaseline:
         }
 
         if verbose:
-            print(f"📈 Optimized IMPALA Evaluation Results:")
-            print(f"   Mean reward: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
+            print(f"Optimized IMPALA Evaluation Results:")
+            print(f"   Mean reward: {results['mean_reward']:.2f} +/- {results['std_reward']:.2f}")
             print(f"   Mean length: {results['mean_length']:.1f}")
 
         return results
@@ -754,7 +680,7 @@ class OptimizedIMPALABaseline:
                     serializable_history[key] = value
             json.dump(serializable_history, f, indent=2)
 
-        print(f"💾 Optimized IMPALA results saved to: {path_prefix}")
+        print(f"Optimized IMPALA results saved to: {path_prefix}")
 
     def save(self, path: str):
         """Save model"""
@@ -762,7 +688,7 @@ class OptimizedIMPALABaseline:
             raise ValueError("Agent not trained yet!")
 
         self.agent.save(path)
-        print(f"💾 Optimized IMPALA model saved to: {path}")
+        print(f"Optimized IMPALA model saved to: {path}")
 
     def load(self, path: str):
         """Load model"""
@@ -773,14 +699,14 @@ class OptimizedIMPALABaseline:
             self.create_agent()
 
         self.agent.load(path)
-        print(f"📂 Optimized IMPALA model loaded from: {path}")
+        print(f"Optimized IMPALA model loaded from: {path}")
 
         return self.agent
 
 
 def test_optimized_impala():
     """Test optimized IMPALA"""
-    print("🧪 Testing Optimized IMPALA...")
+    print("Testing Optimized IMPALA...")
 
     baseline = OptimizedIMPALABaseline()
 
@@ -793,7 +719,7 @@ def test_optimized_impala():
     print(f"Evaluation results: {eval_results}")
 
     baseline.save("../../../../Models/impala_optimized_test.pt")
-    print("✅ Optimized IMPALA test completed!")
+    print("Optimized IMPALA test completed!")
 
 
 if __name__ == "__main__":
