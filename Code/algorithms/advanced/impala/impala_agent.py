@@ -121,7 +121,7 @@ class IMPALAAgent:
         # Current episode behavior policy log_probs (for V-trace)
         self.behavior_log_probs = []
 
-        print(f"🎯 IMPALA Agent initialized on {self.device}")
+        print(f"IMPALA Agent initialized on {self.device}")
         print(f"   State space: {state_space.shape}")
         print(f"   Action space: {action_space.shape}")
         print(f"   Network: Actor-Critic with V-trace")
@@ -288,7 +288,7 @@ class IMPALAAgent:
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.training_step = checkpoint['training_step']
 
-        print(f"✅ IMPALA model loaded from {filepath}")
+        print(f"IMPALA model loaded from {filepath}")
 
     def get_stats(self) -> Dict:
         """Get training statistics"""
