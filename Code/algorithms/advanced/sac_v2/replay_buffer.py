@@ -35,7 +35,7 @@ class SAC_ReplayBuffer:
         # Statistics
         self.total_samples = 0
         
-        print(f"📦 SAC Replay Buffer initialized")
+        print(f"SAC Replay Buffer initialized")
         print(f"   Capacity: {capacity:,}")
         print(f"   Batch size: {batch_size}")
     
