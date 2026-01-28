@@ -1,5 +1,4 @@
 """
-SB3 DDPG算法基线
 SB3 DDPG Baseline Algorithm
 """
 
@@ -19,26 +18,26 @@ from .space_utils import SB3DictWrapper
 
 
 class SB3DDPGBaseline:
-    """SB3 DDPG基线算法"""
+    """SB3 DDPG Baseline Algorithm"""
     
     def __init__(self, config=None):
-        # 🔧 优化配置 - 提高DDPG训练稳定性
+        # Configuration optimization - Improve DDPG training stability
         default_config = {
-            # 学习参数优化
-            'learning_rate': 5e-5,          # 🔧 优化: 1e-4 → 5e-5 (降低50%防止震荡)
-            'buffer_size': 500000,          # 🔧 优化: 1M → 500k (减少陈旧经验)
-            'learning_starts': 10000,       # 🔧 优化: 100 → 10000 (充分warm-up)
-            'batch_size': 256,              # ✅ 保持不变
-            'tau': 0.005,                   # ✅ 保持不变 (软更新率)
-            'gamma': 0.99,                  # ✅ 保持不变
-            'train_freq': 1,                # ✅ 保持不变
-            'gradient_steps': 1,            # ✅ 保持不变
+            # Learning parameter optimization
+            'learning_rate': 5e-5,          # Optimization: 1e-4 → 5e-5 (reduce 50% to prevent oscillation)
+            'buffer_size': 500000,          # Optimization: 1M → 500k (reduce stale experience)
+            'learning_starts': 10000,       # Optimization: 100 → 10000 (sufficient warm-up)
+            'batch_size': 256,              # Keep unchanged
+            'tau': 0.005,                   # Keep unchanged (soft update rate)
+            'gamma': 0.99,                  # Keep unchanged
+            'train_freq': 1,                # Keep unchanged
+            'gradient_steps': 1,            # Keep unchanged
 
-            # 探索噪声配置
-            'action_noise_type': 'ou',      # 🔧 优化: normal → ou (OU噪声更平滑)
-            'action_noise_sigma': 0.15,     # 🔧 优化: 0.1 → 0.15 (初始探索更充分)
+            # Exploration noise configuration
+            'action_noise_type': 'ou',      # Optimization: normal → ou (OU noise is smoother)
+            'action_noise_sigma': 0.15,     # Optimization: 0.1 → 0.15 (more initial exploration)
 
-            # 其他配置
+            # Other configurations
             'tensorboard_log': "./tensorboard_logs/",
             'verbose': 1,
             'seed': 42
@@ -52,46 +51,46 @@ class SB3DDPGBaseline:
         self.env = None
         
     def setup_env(self):
-        """设置环境"""
+        """Setup environment"""
         base_env = DRLOptimizedQueueEnvFixed()
         wrapped_env = SB3DictWrapper(base_env)
         self.env = Monitor(wrapped_env, filename=None)
         
-        # 创建向量化环境
+        # Create vectorized environment
         self.vec_env = DummyVecEnv([lambda: self.env])
         
         return self.env
     
     def create_model(self):
-        """创建DDPG模型"""
+        """Create DDPG model"""
         if self.env is None:
             self.setup_env()
         
-        # 设置动作噪声
-        # 使用包装后的向量化环境获取动作维度
+        # Setup action noise
+        # Get action dimension from wrapped vectorized environment
         n_actions = self.vec_env.action_space.shape[-1]
         
         print(f"Action space dimension: {n_actions}")
         
         if self.config['action_noise_type'] == 'ou':
-            # Ornstein-Uhlenbeck噪声（更适合连续控制）
+            # Ornstein-Uhlenbeck noise (better for continuous control)
             action_noise = OrnsteinUhlenbeckActionNoise(
                 mean=np.zeros(n_actions),
                 sigma=self.config['action_noise_sigma'] * np.ones(n_actions)
             )
         else:
-            # 正态噪声
+            # Normal noise
             action_noise = NormalActionNoise(
                 mean=np.zeros(n_actions), 
                 sigma=self.config['action_noise_sigma'] * np.ones(n_actions)
             )
         
-        # 🔧 优化: 添加policy网络配置和梯度裁剪
+        # Optimization: Add policy network configuration and gradient clipping
         policy_kwargs = dict(
-            net_arch=[512, 512, 256],  # 🔧 优化: 增加网络容量提高表达能力
+            net_arch=[512, 512, 256],  # Optimization: Increase network capacity to improve expressiveness
         )
 
-        # 创建DDPG模型
+        # Create DDPG model
         self.model = DDPG(
             "MlpPolicy",
             self.vec_env,
@@ -104,7 +103,7 @@ class SB3DDPGBaseline:
             train_freq=self.config['train_freq'],
             gradient_steps=self.config['gradient_steps'],
             action_noise=action_noise,
-            policy_kwargs=policy_kwargs,           # 🔧 新增: 网络架构配置
+            policy_kwargs=policy_kwargs,           # New: Network architecture configuration
             tensorboard_log=self.config['tensorboard_log'],
             verbose=self.config['verbose'],
             seed=self.config['seed'],
@@ -116,22 +115,22 @@ class SB3DDPGBaseline:
         return self.model
     
     def train(self, total_timesteps, eval_freq=10000, save_freq=50000):
-        """训练模型"""
+        """Train model"""
         if self.model is None:
             self.create_model()
         
-        # 创建必要的目录
+        # Create necessary directories
         os.makedirs('./logs/', exist_ok=True)
         os.makedirs('../../../Models/sb3_ddpg_best/', exist_ok=True)
         os.makedirs('../../../Models/sb3_ddpg_checkpoints/', exist_ok=True)
         
-        # 创建评估环境
+        # Create evaluation environment
         eval_env = DummyVecEnv([lambda: Monitor(
             SB3DictWrapper(DRLOptimizedQueueEnvFixed()), 
             filename=None
         )])
         
-        # 创建回调
+        # Create callbacks
         eval_callback = EvalCallback(
             eval_env,
             best_model_save_path='../../../Models/sb3_ddpg_best/',
@@ -149,31 +148,31 @@ class SB3DDPGBaseline:
             name_prefix='sb3_ddpg'
         )
         
-        # 开始训练
+        # Start training
         print(f"Starting SB3 DDPG training for {total_timesteps:,} timesteps...")
         
         self.model.learn(
             total_timesteps=total_timesteps,
-            callback=None,  # 移除有问题的callbacks
+            callback=None,  # Remove problematic callbacks
             log_interval=10,
             tb_log_name="SB3_DDPG"
         )
         
         print("SB3 DDPG training completed!")
         
-        # 返回训练结果字典以兼容比较框架
+        # Return training results dictionary to be compatible with comparison framework
         return {
-            'episodes': 0,  # SB3没有直接的episode计数
+            'episodes': 0,  # SB3 doesn't have direct episode counting
             'total_timesteps': total_timesteps,
-            'final_reward': 0  # 将在评估中获得
+            'final_reward': 0  # Will be obtained in evaluation
         }
     
     def evaluate(self, n_episodes=10, deterministic=True, verbose=True):
-        """评估模型"""
+        """Evaluate model"""
         if self.model is None:
             raise ValueError("Model not trained yet!")
         
-        # 创建评估环境
+        # Create evaluation environment
         eval_env = SB3DictWrapper(DRLOptimizedQueueEnvFixed())
         
         episode_rewards = []
@@ -193,7 +192,7 @@ class SB3DDPGBaseline:
                 episode_reward += reward
                 episode_length += 1
                 
-                if episode_length >= 200:  # 防止无限循环
+                if episode_length >= 200:  # Prevent infinite loop
                     break
             
             episode_rewards.append(episode_reward)
@@ -208,17 +207,17 @@ class SB3DDPGBaseline:
             'mean_length': np.mean(episode_lengths),
             'episode_rewards': episode_rewards,
             'episode_lengths': episode_lengths,
-            'system_metrics': []  # SB3算法没有系统指标
+            'system_metrics': []  # SB3 algorithm has no system metrics
         }
         
         return results
     
     def save_results(self, path_prefix):
-        """保存训练历史和结果"""
-        # 创建目录
+        """Save training history and results"""
+        # Create directory
         os.makedirs(os.path.dirname(path_prefix) if os.path.dirname(path_prefix) else ".", exist_ok=True)
         
-        # SB3算法没有训练历史，创建空的历史记录
+        # SB3 algorithm has no training history, create empty history record
         self.training_history = {
             'episode_rewards': [],
             'episode_lengths': [],
@@ -226,7 +225,7 @@ class SB3DDPGBaseline:
             'loss_values': []
         }
         
-        # 保存为JSON文件（如果需要的话）
+        # Save as JSON file (if needed)
         import json
         with open(f"{path_prefix}_history.json", 'w') as f:
             json.dump(self.training_history, f, indent=2)
@@ -234,7 +233,7 @@ class SB3DDPGBaseline:
         print(f"SB3 DDPG results saved to: {path_prefix}")
     
     def save(self, path):
-        """保存模型"""
+        """Save model"""
         if self.model is None:
             raise ValueError("Model not trained yet!")
         
@@ -242,7 +241,7 @@ class SB3DDPGBaseline:
         print(f"SB3 DDPG model saved to: {path}")
     
     def load(self, path):
-        """加载模型"""
+        """Load model"""
         if self.env is None:
             self.setup_env()
         
@@ -252,10 +251,10 @@ class SB3DDPGBaseline:
 
 
 def test_sb3_ddpg():
-    """测试SB3 DDPG"""
+    """Test SB3 DDPG"""
     print("Testing SB3 DDPG...")
     
-    # 测试不同噪声类型
+    # Test different noise types
     configs = [
         {'action_noise_type': 'normal', 'action_noise_sigma': 0.1},
         {'action_noise_type': 'ou', 'action_noise_sigma': 0.1}
@@ -264,17 +263,17 @@ def test_sb3_ddpg():
     for i, config in enumerate(configs):
         print(f"\n--- Testing config {i+1}: {config['action_noise_type']} noise ---")
         
-        # 创建基线
+        # Create baseline
         baseline = SB3DDPGBaseline(config)
         
-        # 训练
+        # Train
         baseline.train(total_timesteps=50000)
         
-        # 评估
+        # Evaluate
         results = baseline.evaluate(n_episodes=10)
         print(f"SB3 DDPG ({config['action_noise_type']}) Results: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
         
-        # 保存
+        # Save
         baseline.save(f"../../../Models/sb3_ddpg_{config['action_noise_type']}_test.zip")
 
 
