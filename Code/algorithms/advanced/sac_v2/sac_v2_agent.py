@@ -145,7 +145,7 @@ class SAC_v2_Agent:
             'alpha_loss': []
         }
         
-        print(f"🎭 SAC v2 Agent initialized on {self.device}")
+        print(f"SAC v2 Agent initialized on {self.device}")
         print(f"   State space: {state_space.shape}")
         print(f"   Action space: {action_space.shape}")
         print(f"   Automatic entropy tuning: {self.config['automatic_entropy_tuning']}")
@@ -369,7 +369,7 @@ class SAC_v2_Agent:
 
         self.training_step = checkpoint['training_step']
 
-        print(f"✅ SAC v2 model loaded from {filepath}")
+        print(f"SAC v2 model loaded from {filepath}")
 
     def get_stats(self) -> Dict:
         """Get training statistics"""
