@@ -147,12 +147,5 @@ def _check_dependencies():
 # Execute initialization check
 _check_dependencies()
 
-# Package information
-print(f"Vertical Stratified Queue Environment Package v{__version__} loaded successfully")
-print(f"Description: {__description__}")
-print("Available environment configurations:")
-print("  - default: Standard configuration")
-print("  - high_traffic: High traffic configuration")
-print("  - fair_priority: Fairness-focused configuration")
-print("  - stable_focus: Stability-focused configuration")
-print("Use create_environment() to quickly create environment")
+# Package information (avoid import-time prints in library use)
+# Use logging in executables/tests if runtime messages are needed.

@@ -115,21 +115,6 @@ class ComparisonRunner:
                 'tensorboard_log': "./tensorboard_logs/",
                 'verbose': 1,
                 'seed': 42
-            },
-            'SB3_DDPG': {
-                'learning_rate': 1e-4,
-                'buffer_size': 1000000,
-                'learning_starts': 100,
-                'batch_size': 256,
-                'tau': 0.005,
-                'gamma': 0.99,
-                'train_freq': 1,
-                'gradient_steps': 1,
-                'action_noise_type': 'normal',
-                'action_noise_sigma': 0.1,
-                'tensorboard_log': "./tensorboard_logs/",
-                'verbose': 1,
-                'seed': 42
             }
         }
         

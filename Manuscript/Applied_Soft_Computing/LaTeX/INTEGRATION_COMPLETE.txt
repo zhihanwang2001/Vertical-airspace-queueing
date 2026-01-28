@@ -1,0 +1,50 @@
+=================================================================
+ABLATION STUDY INTEGRATION - COMPLETE
+Date: 2026-01-27 22:14
+=================================================================
+
+STATUS: ✅ SUCCESSFUL
+
+FILES CREATED:
+1. sections/ablation_study_simple.tex (完整ablation study内容)
+2. tables/tab_ablation_simple.tex (结果表格)
+3. manuscript_backup_20260127.tex (备份)
+
+MANUSCRIPT MODIFICATIONS:
+1. Line 1074: 添加 \input{sections/ablation_study_simple}
+2. Line 66: 更新abstract提到ablation findings
+3. Line 189: 添加architectural validation到contributions
+4. Line 1167: 添加Finding 5到conclusion
+
+COMPILATION RESULTS:
+- Pages: 39
+- Size: 837KB
+- Errors: 0
+- Warnings: 仅格式警告（非关键）
+
+KEY NUMBERS IN PAPER:
+- HCA2C-Full: 228,945 ± 170 (CV 0.07%, 0% crash)
+- HCA2C-Wide: -366 ± 1 (100% crash)
+- A2C-Baseline: 85,650
+- Performance improvement: 167%
+- Parameters: HCA2C 821K, A2C 85K
+
+CORE MESSAGE:
+HCA2C的优势来自两方面：
+1. 更大的网络容量 (821K vs 85K)
+2. 架构设计 (capacity-aware clipping)
+
+Ablation证明：移除capacity-aware clipping → 完全失败
+因此架构设计是关键，不只是参数多。
+
+SERVER EXPERIMENTS:
+- Progress: 22/45 (49%)
+- ETA: 2026-01-30 3am
+- Decision: 不使用（训练步数不公平）
+
+NEXT STEPS:
+1. 检查PDF输出质量
+2. 审阅ablation study内容
+3. 准备提交
+
+=================================================================

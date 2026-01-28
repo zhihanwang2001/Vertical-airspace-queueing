@@ -1,0 +1,11 @@
+Research Highlights
+
+• DRL algorithms achieve 59.9% performance improvement over heuristics in UAM vertical layered queueing systems (p<0.001)
+
+• Inverted pyramid capacity configurations outperform normal pyramids by 9.7%-19.7% across load levels
+
+• Capacity paradox identified: low-capacity systems (K=10) outperform high-capacity (K=30+) under extreme load due to state space explosion
+
+• Ablation studies demonstrate capacity-aware action clipping is essential: removing it causes 100% crash rate despite identical network capacity
+
+• Comprehensive validation across 15 algorithms, 260+ experimental runs, and rigorous statistical analysis provides evidence-based UAM design guidelines

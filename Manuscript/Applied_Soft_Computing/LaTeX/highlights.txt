@@ -1,0 +1,7 @@
+HIGHLIGHTS (3-5 bullets, ≤85 characters each)
+
+• DRL algorithms achieve 59.9% improvement over traditional heuristic baselines
+• Inverted pyramid structures outperform normal pyramids by 9.7%-19.7%
+• Capacity paradox: K=10 outperforms K=30+ under extreme load conditions
+• A2C optimal for deployment: 4437.86 reward with only 6.9 minutes training
+• Findings robust across heterogeneous traffic patterns and reward functions

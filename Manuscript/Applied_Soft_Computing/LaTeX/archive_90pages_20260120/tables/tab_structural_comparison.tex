@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Structural Comparison: Inverted vs Normal Pyramid at 5× Load}
+\label{tab:structural-comparison}
+\begin{tabular}{llrrrc}
+\toprule
+\textbf{Algorithm} & \textbf{Structure} & \textbf{Mean Reward} & \textbf{Std Dev} & \textbf{Crash Rate} & \textbf{Improvement} \\
+\midrule
+\multirow{2}{*}{A2C} & Inverted [8,6,4,3,2] & 447,683 & 178 & 0.0\% & \multirow{2}{*}{+15.6\%} \\
+                     & Normal [2,3,4,6,8]   & 387,514 & 210 & 0.0\% & \\
+\midrule
+\multirow{2}{*}{PPO} & Inverted [8,6,4,3,2] & 445,892 & 192 & 0.0\% & \multirow{2}{*}{+14.8\%} \\
+                     & Normal [2,3,4,6,8]   & 388,321 & 198 & 0.0\% & \\
+\midrule
+\multicolumn{6}{l}{\textit{Statistical Analysis}} \\
+\multicolumn{2}{l}{Cohen's d (A2C)} & \multicolumn{4}{l}{d = 302.55 (extremely large)} \\
+\multicolumn{2}{l}{t-test (A2C)} & \multicolumn{4}{l}{$t(58) = 1167.2$, $p < 10^{-40}$} \\
+\multicolumn{2}{l}{95\% CI (A2C)} & \multicolumn{4}{l}{[60,066 - 60,272]} \\
+\bottomrule
+\end{tabular}
+\end{table}

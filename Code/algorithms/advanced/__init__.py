@@ -1,19 +1,19 @@
 """
 Advanced DRL Algorithms Package
-高级深度强化学习算法集合，用于CCF B区论文
+Advanced deep reinforcement learning algorithm collection for CCF-B journal paper
 
-包含最新的DRL算法实现：
-1. Rainbow DQN - 整合6项DQN改进的强化学习算法
-2. IMPALA - 分布式重要性加权Actor-Learner架构
-3. R2D2 - 循环经验回放分布式DQN
-4. SAC v2 - 软演员-评论家算法改进版
-5. TD7 - TD3算法的进一步改进
+Contains state-of-the-art DRL algorithm implementations:
+1. Rainbow DQN - Integrates 6 DQN improvements
+2. IMPALA - Distributed Importance Weighted Actor-Learner Architecture
+3. R2D2 - Recurrent Replay Distributed DQN
+4. SAC v2 - Improved Soft Actor-Critic algorithm
+5. TD7 - Further improvements on TD3 algorithm
 
-所有算法都：
-- 集成TensorBoard监控
-- 兼容现有基线框架
-- 支持垂直分层队列环境
-- 包含完整的训练和评估功能
+All algorithms feature:
+- Integrated TensorBoard monitoring
+- Compatible with existing baseline framework
+- Support for vertical layered queue environment
+- Complete training and evaluation functionality
 """
 
 # Rainbow DQN
@@ -53,7 +53,7 @@ __all__ = [
     "TD7_Agent", "TD7Baseline",
 ]
 
-# 算法注册表
+# Algorithm registry
 AVAILABLE_ALGORITHMS = {
     "rainbow_dqn": {
         "name": "Rainbow DQN",
@@ -107,17 +107,17 @@ AVAILABLE_ALGORITHMS = {
 
 
 def get_available_algorithms():
-    """获取可用算法列表"""
+    """Get list of available algorithms"""
     return AVAILABLE_ALGORITHMS
 
 
 def get_algorithm_info(algorithm_name: str):
-    """获取算法详细信息"""
+    """Get detailed algorithm information"""
     return AVAILABLE_ALGORITHMS.get(algorithm_name, None)
 
 
 def create_algorithm_baseline(algorithm_name: str, config=None):
-    """工厂函数：创建算法基线"""
+    """Factory function: Create algorithm baseline"""
     if algorithm_name == "rainbow_dqn":
         return RainbowDQNBaseline(config)
     elif algorithm_name == "impala":
@@ -136,7 +136,7 @@ def create_algorithm_baseline(algorithm_name: str, config=None):
 
 
 def print_algorithms_status():
-    """打印所有算法的实现状态"""
+    """Print implementation status of all algorithms"""
     print("🤖 Advanced DRL Algorithms Status:")
     print("=" * 60)
     

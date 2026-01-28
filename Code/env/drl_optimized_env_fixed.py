@@ -87,6 +87,11 @@ class DRLOptimizedQueueEnvFixed(gym.Env):
         
         self.reset()
         
+        # Initialize stability proxy state
+        self.prev_V = 0.0
+        self.steps_since_last_safe = 0
+        self.safe_load_threshold = 0.8
+        
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         """Reset environment state"""
         if seed is not None:
@@ -112,6 +117,9 @@ class DRLOptimizedQueueEnvFixed(gym.Env):
 
         # Stability monitoring
         self.stability_history = []  # Record recent system states for stability calculation
+        # Stability proxies
+        self.prev_V = float(np.sum(self.queue_lengths.astype(np.float32) ** 2))
+        self.steps_since_last_safe = 0
 
         obs = self._get_observation()
         info = self._get_info()
@@ -421,8 +429,11 @@ class DRLOptimizedQueueEnvFixed(gym.Env):
         """Get environment information"""
         current_arrivals = self.current_arrival_rate * self.arrival_weights
         load_rates = current_arrivals / np.maximum(self.current_service_rates, 1e-6)
+        
+        # Compute stability proxies and update internal counters
+        stability_proxies = self._compute_stability_proxies(load_rates)
 
-        return {
+        info = {
             'step_count': self.step_count,
             'total_served': self.total_served,
             'total_arrived': self.total_arrived,
@@ -436,6 +447,47 @@ class DRLOptimizedQueueEnvFixed(gym.Env):
             'stability_score': self._calculate_stability_bonus(),
             # New: reward component breakdown (for Pareto analysis)
             'reward_components': self._get_reward_components(action)
+        }
+        info.update(stability_proxies)
+        return info
+
+    def _compute_stability_proxies(self, load_rates: np.ndarray) -> Dict[str, float]:
+        """Compute stability/ergodicity proxy metrics for analysis.
+        Updates internal state to track Lyapunov drift and time since safe.
+        """
+        # Lyapunov function on queue lengths
+        V_current = float(np.sum(self.queue_lengths.astype(np.float32) ** 2))
+        V_prev = getattr(self, 'prev_V', 0.0)
+        lyapunov_drift = V_current - V_prev
+
+        # Occupancy L1 drift normalized by total capacity
+        denom = float(np.sum(self.capacities)) if np.sum(self.capacities) > 0 else 1.0
+        drift_l1 = float(np.sum(np.abs(self.queue_lengths - self.prev_queue_lengths)) / denom)
+
+        # Safe zone based on max load rate
+        max_load_rate = float(np.max(load_rates)) if load_rates.size > 0 else 0.0
+        safe_threshold = getattr(self, 'safe_load_threshold', 0.8)
+        is_safe = bool(max_load_rate <= safe_threshold)
+
+        steps_since_last_safe = getattr(self, 'steps_since_last_safe', 0)
+        if is_safe:
+            steps_since_last_safe = 0
+        else:
+            steps_since_last_safe += 1
+
+        # Persist state
+        self.prev_V = V_current
+        self.steps_since_last_safe = steps_since_last_safe
+
+        return {
+            'lyapunov': V_current,
+            'lyapunov_drift': lyapunov_drift,
+            'drift_l1': drift_l1,
+            'is_safe': is_safe,
+            'steps_since_last_safe': int(steps_since_last_safe),
+            'safe_load_threshold': float(safe_threshold),
+            'max_load_rate': max_load_rate,
+            'safe_gap': float(max(0.0, max_load_rate - safe_threshold)),
         }
 
     def render(self, mode: str = "human"):

@@ -88,7 +88,7 @@ class SB3PPOBaseline:
         
     def setup_env(self):
         """设置环境"""
-        base_env = DRLOptimizedQueueEnvFixed()
+        base_env = DRLOptimizedQueueEnvFixed(max_episode_steps=10000)
         wrapped_env = SB3DictWrapper(base_env)
         self.env = Monitor(wrapped_env, filename=None)
         
@@ -212,28 +212,28 @@ class SB3PPOBaseline:
         """评估模型"""
         if self.model is None:
             raise ValueError("Model not trained yet!")
-        
+
         # 创建评估环境
-        eval_env = SB3DictWrapper(DRLOptimizedQueueEnvFixed())
-        
+        eval_env = SB3DictWrapper(DRLOptimizedQueueEnvFixed(max_episode_steps=10000))
+
         episode_rewards = []
         episode_lengths = []
-        
+
         for episode in range(n_episodes):
             obs, _ = eval_env.reset()
             episode_reward = 0
             episode_length = 0
             done = False
-            
+
             while not done:
                 action, _ = self.model.predict(obs, deterministic=deterministic)
                 obs, reward, terminated, truncated, info = eval_env.step(action)
                 done = terminated or truncated
-                
+
                 episode_reward += reward
                 episode_length += 1
-                
-                if episode_length >= 200:  # 防止无限循环
+
+                if episode_length >= 10000:  # 防止无限循环
                     break
             
             episode_rewards.append(episode_reward)

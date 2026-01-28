@@ -1,6 +1,6 @@
 """
 TD7 Algorithm Implementation
-TD7算法实现，包含SALE表示学习、优先级回放和检查点机制
+Includes SALE representation learning, prioritized replay, and checkpoint mechanism
 """
 
 from .td7_agent import TD7_Agent

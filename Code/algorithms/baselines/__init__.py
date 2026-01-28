@@ -14,15 +14,26 @@ Baseline Algorithms for Vertical Stratified Queuing System
 """
 
 from .base_baseline import BaseBaseline
-from .sb3_td3_baseline import SB3TD3Baseline
-from .sb3_sac_baseline import SB3SACBaseline
-from .sb3_ppo_baseline import SB3PPOBaseline
-from .sb3_a2c_baseline import SB3A2CBaseline
-from .sb3_ddpg_baseline import SB3DDPGBaseline
-from .sb3_ablation_baseline import SB3AblationBaseline
 from .random_baseline import RandomBaseline
 from .heuristic_baseline import HeuristicBaseline
-from .comparison_runner import ComparisonRunner
+
+# Optional SB3-based baselines (import lazily to avoid hard dependency)
+try:
+    from .sb3_td3_baseline import SB3TD3Baseline
+    from .sb3_sac_baseline import SB3SACBaseline
+    from .sb3_ppo_baseline import SB3PPOBaseline
+    from .sb3_a2c_baseline import SB3A2CBaseline
+    from .sb3_ddpg_baseline import SB3DDPGBaseline
+    from .sb3_ablation_baseline import SB3AblationBaseline
+except Exception:
+    # SB3 not installed; these will be unavailable
+    SB3TD3Baseline = None
+    SB3SACBaseline = None
+    SB3PPOBaseline = None
+    SB3A2CBaseline = None
+    SB3DDPGBaseline = None
+    SB3AblationBaseline = None
+
 
 __all__ = [
     'BaseBaseline',
@@ -33,6 +44,5 @@ __all__ = [
     'SB3DDPGBaseline',
     'SB3AblationBaseline',
     'RandomBaseline',
-    'HeuristicBaseline',
-    'ComparisonRunner'
+    'HeuristicBaseline'
 ]
