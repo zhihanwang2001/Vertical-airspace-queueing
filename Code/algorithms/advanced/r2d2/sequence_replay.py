@@ -219,7 +219,7 @@ class R2D2SequenceReplayBuffer:
             batch_data['initial_hidden_states'].append(initial_hidden)
 
         # Convert to tensors
-        tensor_batch =
+        tensor_batch = {}
         for key, value in batch_data.items():
             if key in ['burn_in_hidden_states', 'initial_hidden_states']:
                 tensor_batch[key] = value  # Keep list format
