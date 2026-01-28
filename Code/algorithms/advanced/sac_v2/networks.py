@@ -224,7 +224,7 @@ class SAC_v2_Networks:
         self.target_entropy = -action_dim  # Heuristic target entropy
         self.log_alpha = torch.zeros(1, requires_grad=True, device=device)
 
-        print(f"🎭 SAC v2 Networks initialized")
+        print(f"SAC v2 Networks initialized")
         print(f"   State dim: {state_dim}, Action dim: {action_dim}")
         print(f"   Hidden dim: {hidden_dim}, Max action: {max_action}")
         print(f"   Target entropy: {self.target_entropy}")
