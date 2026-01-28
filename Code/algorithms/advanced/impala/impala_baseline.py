@@ -1,6 +1,6 @@
 """
 IMPALA Baseline for Vertical Stratified Queue System
-整合到现有基线算法框架中的IMPALA实现
+IMPALA implementation integrated into existing baseline algorithm framework
 """
 
 import sys
@@ -19,43 +19,43 @@ from .impala_agent import IMPALAAgent
 
 
 class IMPALABaseline:
-    """IMPALA基线算法，兼容现有框架"""
-    
+    """IMPALA baseline algorithm, compatible with existing framework"""
+
     def __init__(self, config: Dict[str, Any] = None):
         """
-        初始化IMPALA基线
-        
+        Initialize IMPALA baseline
+
         Args:
-            config: 配置参数字典
+            config: Configuration parameter dictionary
         """
-        # 优化配置 - 与impala_agent.py保持一致
+        # Optimized configuration - consistent with impala_agent.py
         default_config = {
-            # 网络配置
+            # Network configuration
             'hidden_dim': 512,
             'num_layers': 2,
 
-            # 学习参数 - 进一步降低学习率防止late-stage崩溃
-            'learning_rate': 3e-5,      # 🔧 优化v2: 5e-5 → 3e-5 (与agent一致)
+            # Learning parameters - further reduced learning rate to prevent late-stage collapse
+            'learning_rate': 3e-5,      # Optimization v2: 5e-5 → 3e-5 (consistent with agent)
             'gamma': 0.99,
             'entropy_coeff': 0.01,
             'value_loss_coeff': 0.5,
-            'gradient_clip': 20.0,      # 🔧 优化: 40.0 → 20.0 (与agent一致)
+            'gradient_clip': 20.0,      # Optimization: 40.0 → 20.0 (consistent with agent)
 
-            # V-trace参数 - 极度保守避免重要性采样爆炸
-            'rho_bar': 0.7,             # 🔧 优化v2: 0.9 → 0.7 (与agent一致)
-            'c_bar': 0.7,               # 🔧 优化v2: 0.9 → 0.7 (与agent一致)
+            # V-trace parameters - extremely conservative to avoid importance sampling explosion
+            'rho_bar': 0.7,             # Optimization v2: 0.9 → 0.7 (consistent with agent)
+            'c_bar': 0.7,               # Optimization v2: 0.9 → 0.7 (consistent with agent)
 
-            # 回放缓冲区 - 减小缓冲区降低策略陈旧性
-            'buffer_size': 30000,       # 🔧 优化v2: 50000 → 30000 (与agent一致)
-            'sequence_length': 10,      # 🔧 优化: 20 → 10 (与agent一致)
-            'batch_size': 32,           # 🔧 优化: 16 → 32 (与agent一致)
+            # Replay buffer - reduced buffer to decrease policy staleness
+            'buffer_size': 30000,       # Optimization v2: 50000 → 30000 (consistent with agent)
+            'sequence_length': 10,      # Optimization: 20 → 10 (consistent with agent)
+            'batch_size': 32,           # Optimization: 16 → 32 (consistent with agent)
 
-            # 训练参数 - 更频繁更新但延后启动
-            'learning_starts': 2000,    # 🔧 优化: 1000 → 2000 (与agent一致)
-            'train_freq': 2,            # 🔧 优化: 4 → 2 (与agent一致)
+            # Training parameters - more frequent updates but delayed start
+            'learning_starts': 2000,    # Optimization: 1000 → 2000 (consistent with agent)
+            'train_freq': 2,            # Optimization: 4 → 2 (consistent with agent)
             'update_freq': 100,
-            
-            # TensorBoard日志
+
+            # TensorBoard logging
             'tensorboard_log': "./tensorboard_logs/",
             'verbose': 1,
             'seed': 42
@@ -78,7 +78,7 @@ class IMPALABaseline:
         print("🎯 IMPALA Baseline initialized")
     
     def setup_env(self):
-        """设置环境"""
+        """Setup environment"""
         base_env = DRLOptimizedQueueEnvFixed()
         self.env = SB3DictWrapper(base_env)
         
@@ -89,7 +89,7 @@ class IMPALABaseline:
         return self.env
     
     def create_agent(self):
-        """创建IMPALA智能体"""
+        """Create IMPALA agent"""
         if self.env is None:
             self.setup_env()
         
@@ -104,93 +104,93 @@ class IMPALABaseline:
     
     def train(self, total_timesteps: int, eval_freq: int = 10000, save_freq: int = 50000):
         """
-        训练IMPALA模型
-        
+        Train IMPALA model
+
         Args:
-            total_timesteps: 总训练步数
-            eval_freq: 评估频率
-            save_freq: 保存频率
-            
+            total_timesteps: Total training steps
+            eval_freq: Evaluation frequency
+            save_freq: Save frequency
+
         Returns:
-            训练历史字典
+            Training history dictionary
         """
         if self.agent is None:
             self.create_agent()
-        
-        # 创建TensorBoard writer
+
+        # Create TensorBoard writer
         tb_log_name = f"IMPALA_{int(time.time())}"
         writer = SummaryWriter(
             log_dir=os.path.join(self.config['tensorboard_log'], tb_log_name)
         )
-        
+
         print(f"🚀 Starting IMPALA training for {total_timesteps:,} timesteps...")
         print(f"   TensorBoard log: {tb_log_name}")
-        
-        # 训练变量
+
+        # Training variables
         episode = 0
         timestep = 0
         episode_reward = 0.0
         episode_length = 0
-        
-        # 重置环境
+
+        # Reset environment
         state, _ = self.env.reset()
         
         start_time = time.time()
-        
+
         while timestep < total_timesteps:
-            # 选择动作
+            # Select action
             action = self.agent.act(state, training=True)
-            
-            # 执行动作
+
+            # Execute action
             try:
                 step_result = self.env.step(action)
-                if len(step_result) == 5:  # Gymnasium格式
+                if len(step_result) == 5:  # Gymnasium format
                     next_state, reward, terminated, truncated, info = step_result
                     done = terminated or truncated
-                else:  # Gym格式
+                else:  # Gym format
                     next_state, reward, done, info = step_result
             except Exception as e:
                 print(f"❌ Environment step error: {e}")
                 break
-            
-            # 存储经验
+
+            # Store experience
             self.agent.store_transition(state, action, reward, next_state, done)
-            
-            # 更新统计
+
+            # Update statistics
             episode_reward += reward
             episode_length += 1
             timestep += 1
-            
-            # 训练智能体
+
+            # Train agent
             if timestep >= self.config['learning_starts']:
                 train_info = self.agent.train()
-                
+
                 if train_info and timestep % 1000 == 0:
-                    # 记录训练信息
+                    # Log training information
                     writer.add_scalar('train/total_loss', train_info['total_loss'], timestep)
                     writer.add_scalar('train/pg_loss', train_info['pg_loss'], timestep)
                     writer.add_scalar('train/value_loss', train_info['value_loss'], timestep)
                     writer.add_scalar('train/entropy_loss', train_info['entropy_loss'], timestep)
                     writer.add_scalar('train/mean_advantage', train_info['mean_advantage'], timestep)
                     writer.add_scalar('train/buffer_size', train_info['buffer_size'], timestep)
-            
-            # 检查是否episode结束
+
+            # Check if episode ended
             if done:
-                # 记录episode信息
+                # Log episode information
                 self.training_history['episode_rewards'].append(episode_reward)
                 self.training_history['episode_lengths'].append(episode_length)
-                
-                # TensorBoard记录
+
+                # TensorBoard logging
                 writer.add_scalar('train/episode_reward', episode_reward, episode)
                 writer.add_scalar('train/episode_length', episode_length, episode)
-                
-                # 计算滑动平均
+
+                # Calculate moving average
                 if len(self.training_history['episode_rewards']) >= 100:
                     avg_reward = np.mean(self.training_history['episode_rewards'][-100:])
                     self.training_history['avg_rewards'].append(avg_reward)
                     writer.add_scalar('train/avg_reward_100', avg_reward, episode)
-                
-                # 打印进度
+
+                # Print progress
                 if self.config['verbose'] and episode % 100 == 0:
                     elapsed_time = time.time() - start_time
                     print(f"Episode {episode:5d} | "
@@ -198,41 +198,41 @@ class IMPALABaseline:
                           f"Reward: {episode_reward:8.2f} | "
                           f"Length: {episode_length:4d} | "
                           f"Time: {elapsed_time:.1f}s")
-                
-                # 重置episode
+
+                # Reset episode
                 episode += 1
                 episode_reward = 0.0
                 episode_length = 0
                 state, _ = self.env.reset()
             else:
                 state = next_state
-            
-            # 评估
+
+            # Evaluation
             if eval_freq > 0 and timestep % eval_freq == 0 and timestep > 0:
                 eval_results = self.evaluate(n_episodes=5, deterministic=True, verbose=False)
                 writer.add_scalar('eval/mean_reward', eval_results['mean_reward'], timestep)
                 writer.add_scalar('eval/std_reward', eval_results['std_reward'], timestep)
-                
+
                 print(f"📊 Evaluation at step {timestep}: "
                       f"Mean reward: {eval_results['mean_reward']:.2f} ± {eval_results['std_reward']:.2f}")
-            
-            # 保存模型
+
+            # Save model
             if save_freq > 0 and timestep % save_freq == 0 and timestep > 0:
                 save_path = f"../../../../Models/impala_step_{timestep}.pt"
                 os.makedirs(os.path.dirname(save_path), exist_ok=True)
                 self.agent.save(save_path)
                 print(f"💾 Model saved at step {timestep}: {save_path}")
-        
-        # 训练完成
+
+        # Training completed
         total_time = time.time() - start_time
         writer.close()
-        
+
         print(f"✅ IMPALA training completed!")
         print(f"   Total episodes: {episode}")
         print(f"   Total time: {total_time:.2f}s")
         print(f"   Average reward (last 100): {np.mean(self.training_history['episode_rewards'][-100:]):.2f}")
-        
-        # 保存最终模型
+
+        # Save final model
         final_save_path = "../../../../Models/impala_final.pt"
         os.makedirs(os.path.dirname(final_save_path), exist_ok=True)
         self.agent.save(final_save_path)
@@ -246,15 +246,15 @@ class IMPALABaseline:
     
     def evaluate(self, n_episodes: int = 10, deterministic: bool = True, verbose: bool = True):
         """
-        评估模型性能
-        
+        Evaluate model performance
+
         Args:
-            n_episodes: 评估episode数量
-            deterministic: 是否使用确定性策略
-            verbose: 是否打印详细信息
-            
+            n_episodes: Number of evaluation episodes
+            deterministic: Whether to use deterministic policy
+            verbose: Whether to print detailed information
+
         Returns:
-            评估结果字典
+            Evaluation results dictionary
         """
         if self.agent is None:
             raise ValueError("Agent not initialized. Please train first.")
@@ -285,8 +285,8 @@ class IMPALABaseline:
                 episode_reward += reward
                 episode_length += 1
                 state = next_state
-                
-                # 防止无限循环
+
+                # Prevent infinite loop
                 if episode_length >= 1000:
                     break
             
@@ -302,7 +302,7 @@ class IMPALABaseline:
             'mean_length': np.mean(episode_lengths),
             'episode_rewards': episode_rewards,
             'episode_lengths': episode_lengths,
-            'system_metrics': []  # IMPALA特定指标可以在这里添加
+            'system_metrics': []  # IMPALA-specific metrics can be added here
         }
         
         if verbose:
@@ -313,13 +313,13 @@ class IMPALABaseline:
         return results
     
     def save_results(self, path_prefix: str):
-        """保存训练结果"""
+        """Save training results"""
         os.makedirs(os.path.dirname(path_prefix) if os.path.dirname(path_prefix) else ".", exist_ok=True)
-        
-        # 保存训练历史
+
+        # Save training history
         import json
         with open(f"{path_prefix}_history.json", 'w') as f:
-            # 转换numpy类型为Python原生类型
+            # Convert numpy types to Python native types
             serializable_history = {}
             for key, value in self.training_history.items():
                 if isinstance(value, list):
@@ -332,15 +332,15 @@ class IMPALABaseline:
         print(f"💾 IMPALA results saved to: {path_prefix}")
     
     def save(self, path: str):
-        """保存模型"""
+        """Save model"""
         if self.agent is None:
             raise ValueError("Agent not trained yet!")
-        
+
         self.agent.save(path)
         print(f"💾 IMPALA model saved to: {path}")
-    
+
     def load(self, path: str):
-        """加载模型"""
+        """Load model"""
         if self.env is None:
             self.setup_env()
         
@@ -354,23 +354,23 @@ class IMPALABaseline:
 
 
 def test_impala():
-    """测试IMPALA"""
+    """Test IMPALA"""
     print("🧪 Testing IMPALA...")
-    
-    # 创建基线
+
+    # Create baseline
     baseline = IMPALABaseline()
-    
-    # 快速训练测试
+
+    # Quick training test
     results = baseline.train(total_timesteps=5000)
     print(f"Training results: {results}")
-    
-    # 评估测试
+
+    # Evaluation test
     eval_results = baseline.evaluate(n_episodes=3)
     print(f"Evaluation results: {eval_results}")
-    
-    # 保存测试
+
+    # Save test
     baseline.save("../../../../Models/impala_test.pt")
-    
+
     print("✅ IMPALA test completed!")
 
 
