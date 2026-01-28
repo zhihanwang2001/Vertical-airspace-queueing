@@ -447,7 +447,7 @@ class TD7Baseline:
         return self.agent.act(state, training=training)
     
     def get_stats(self) -> Dict[str, Any]:
-        """获取统计信息"""
+        """Get statistics"""
         stats = {
             'algorithm': self.algorithm_name,
             'total_timesteps': self.total_timesteps,
@@ -466,7 +466,7 @@ class TD7Baseline:
         return stats
     
     def cleanup(self):
-        """清理资源"""
+        """Cleanup resources"""
         if self.env:
             self.env.close()
         if self.eval_env:
