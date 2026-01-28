@@ -1,5 +1,4 @@
 """
-SB3 A2C算法基线
 SB3 A2C Baseline Algorithm
 """
 
@@ -19,32 +18,32 @@ from .space_utils import SB3DictWrapper
 
 
 class SB3A2CBaseline:
-    """SB3 A2C基线算法"""
+    """SB3 A2C Baseline Algorithm"""
     
     def __init__(self, config=None):
-        # 🔧 优化配置v2 - 添加延迟余弦退火学习率调度解决训练不稳定问题
+        # Configuration optimization v2 - Add delayed cosine annealing learning rate schedule to solve training instability
         default_config = {
-            # 学习参数优化
-            'initial_lr': 7e-4,             # 🔧 初始学习率（前300k步保持）
-            'min_lr': 1e-5,                 # 🔧 最终学习率（500k步降至）
-            'warmup_steps': 300000,         # 🔧 前300k步保持固定lr充分探索
-            'total_steps': 500000,          # 🔧 总训练步数
-            'n_steps': 32,                  # 🔧 优化: 5 → 32 (增加rollout长度改进优势估计)
-            'gamma': 0.99,                  # ✅ 保持不变
-            'gae_lambda': 0.95,             # 🔧 优化: 1.0 → 0.95 (bias-variance权衡)
+            # Learning parameter optimization
+            'initial_lr': 7e-4,             # Initial learning rate (maintained for first 300k steps)
+            'min_lr': 1e-5,                 # Final learning rate (decreased to at 500k steps)
+            'warmup_steps': 300000,         # First 300k steps maintain fixed lr for sufficient exploration
+            'total_steps': 500000,          # Total training steps
+            'n_steps': 32,                  # Optimization: 5 → 32 (increase rollout length to improve advantage estimation)
+            'gamma': 0.99,                  # Keep unchanged
+            'gae_lambda': 0.95,             # Optimization: 1.0 → 0.95 (bias-variance tradeoff)
 
-            # 探索与价值函数
-            'ent_coef': 0.01,               # 🔧 优化: 0.0 → 0.01 (添加熵正则化促进探索)
-            'vf_coef': 0.5,                 # ✅ 保持不变
-            'max_grad_norm': 0.5,           # ✅ 保持不变
+            # Exploration and value function
+            'ent_coef': 0.01,               # Optimization: 0.0 → 0.01 (add entropy regularization to promote exploration)
+            'vf_coef': 0.5,                 # Keep unchanged
+            'max_grad_norm': 0.5,           # Keep unchanged
 
-            # 优化器配置
-            'rms_prop_eps': 1e-5,           # ✅ 保持不变
-            'use_rms_prop': True,           # ✅ 保持不变
-            'use_sde': False,               # ✅ 保持不变
-            'normalize_advantage': True,    # 🔧 优化: False → True (归一化优势减少方差)
+            # Optimizer configuration
+            'rms_prop_eps': 1e-5,           # Keep unchanged
+            'use_rms_prop': True,           # Keep unchanged
+            'use_sde': False,               # Keep unchanged
+            'normalize_advantage': True,    # Optimization: False → True (normalize advantage to reduce variance)
 
-            # 其他配置
+            # Other configurations
             'tensorboard_log': "./tensorboard_logs/",
             'verbose': 1,
             'seed': 42
@@ -58,62 +57,62 @@ class SB3A2CBaseline:
         self.env = None
         
     def setup_env(self):
-        """设置环境"""
+        """Setup environment"""
         base_env = DRLOptimizedQueueEnvFixed(max_episode_steps=10000)
         wrapped_env = SB3DictWrapper(base_env)
         self.env = Monitor(wrapped_env, filename=None)
         
-        # 创建向量化环境
+        # Create vectorized environment
         self.vec_env = DummyVecEnv([lambda: self.env])
         
         return self.env
     
     def create_model(self):
-        """创建A2C模型"""
+        """Create A2C model"""
         if self.env is None:
             self.setup_env()
 
-        # 🔧 创建延迟余弦退火学习率调度函数（前300k步保持固定lr，之后余弦下降）
+        # Create delayed cosine annealing learning rate schedule (maintain fixed lr for first 300k steps, then cosine decay)
         def delayed_cosine_annealing_schedule(progress_remaining):
             """
-            延迟余弦退火学习率调度
-            前300k步: 保持固定学习率7e-4 (充分探索)
-            300k步后: 余弦退火下降到1e-5 (稳定收敛)
+            Delayed cosine annealing learning rate schedule
+            First 300k steps: Maintain fixed learning rate 7e-4 (sufficient exploration)
+            After 300k steps: Cosine annealing decay to 1e-5 (stable convergence)
 
-            progress_remaining: 1.0 -> 0.0 (从开始到结束)
+            progress_remaining: 1.0 -> 0.0 (from start to end)
             """
             initial_lr = self.config.get('initial_lr', 7e-4)
             min_lr = self.config.get('min_lr', 1e-5)
-            warmup_steps = self.config.get('warmup_steps', 300000)  # 前300k步保持固定lr
-            total_steps = self.config.get('total_steps', 500000)     # 总训练步数
+            warmup_steps = self.config.get('warmup_steps', 300000)  # First 300k steps maintain fixed lr
+            total_steps = self.config.get('total_steps', 500000)     # Total training steps
 
-            # 计算当前步数
+            # Calculate current step
             current_step = int((1.0 - progress_remaining) * total_steps)
 
-            # 前300k步: 保持固定学习率
+            # First 300k steps: Maintain fixed learning rate
             if current_step < warmup_steps:
                 return initial_lr
 
-            # 300k步后: 余弦退火 (将剩余200k步映射到0→1)
+            # After 300k steps: Cosine annealing (map remaining 200k steps to 0→1)
             annealing_progress = (current_step - warmup_steps) / (total_steps - warmup_steps)
             cosine_factor = 0.5 * (1 + math.cos(math.pi * annealing_progress))
             current_lr = min_lr + (initial_lr - min_lr) * cosine_factor
 
             return current_lr
 
-        # 🔧 优化: 增加网络容量提高表达能力
+        # Optimization: Increase network capacity to improve expressiveness
         policy_kwargs = dict(
             net_arch=dict(
-                pi=[512, 512, 256],  # 🔧 Policy网络: 增加深度和宽度
-                vf=[512, 512, 256]   # 🔧 Value网络: 独立的大容量网络
+                pi=[512, 512, 256],  # Policy network: Increase depth and width
+                vf=[512, 512, 256]   # Value network: Independent large capacity network
             )
         )
 
-        # 创建A2C模型
+        # Create A2C model
         self.model = A2C(
             "MlpPolicy",
             self.vec_env,
-            learning_rate=delayed_cosine_annealing_schedule,  # 🔧 v2: 使用延迟余弦退火调度
+            learning_rate=delayed_cosine_annealing_schedule,  # v2: Use delayed cosine annealing schedule
             n_steps=self.config['n_steps'],
             gamma=self.config['gamma'],
             gae_lambda=self.config['gae_lambda'],
@@ -124,7 +123,7 @@ class SB3A2CBaseline:
             use_rms_prop=self.config['use_rms_prop'],
             use_sde=self.config['use_sde'],
             normalize_advantage=self.config['normalize_advantage'],
-            policy_kwargs=policy_kwargs,           # 🔧 新增: 网络架构配置
+            policy_kwargs=policy_kwargs,           # New: Network architecture configuration
             tensorboard_log=self.config['tensorboard_log'],
             verbose=self.config['verbose'],
             seed=self.config['seed'],
@@ -135,22 +134,22 @@ class SB3A2CBaseline:
         return self.model
     
     def train(self, total_timesteps, eval_freq=10000, save_freq=50000):
-        """训练模型"""
+        """Train model"""
         if self.model is None:
             self.create_model()
         
-        # 创建必要的目录
+        # Create necessary directories
         os.makedirs('./logs/', exist_ok=True)
         os.makedirs('../../../Models/sb3_a2c_best/', exist_ok=True)
         os.makedirs('../../../Models/sb3_a2c_checkpoints/', exist_ok=True)
         
-        # 创建评估环境
+        # Create evaluation environment
         eval_env = DummyVecEnv([lambda: Monitor(
             SB3DictWrapper(DRLOptimizedQueueEnvFixed(max_episode_steps=10000)),
             filename=None
         )])
         
-        # 创建回调
+        # Create callbacks
         eval_callback = EvalCallback(
             eval_env,
             best_model_save_path='../../../Models/sb3_a2c_best/',
@@ -168,31 +167,31 @@ class SB3A2CBaseline:
             name_prefix='sb3_a2c'
         )
         
-        # 开始训练
+        # Start training
         print(f"Starting SB3 A2C training for {total_timesteps:,} timesteps...")
         
         self.model.learn(
             total_timesteps=total_timesteps,
-            callback=None,  # 移除有问题的callbacks
+            callback=None,  # Remove problematic callbacks
             log_interval=10,
             tb_log_name="SB3_A2C"
         )
         
         print("SB3 A2C training completed!")
         
-        # 返回训练结果字典以兼容比较框架
+        # Return training results dictionary to be compatible with comparison framework
         return {
-            'episodes': 0,  # SB3没有直接的episode计数
+            'episodes': 0,  # SB3 doesn't have direct episode counting
             'total_timesteps': total_timesteps,
-            'final_reward': 0  # 将在评估中获得
+            'final_reward': 0  # Will be obtained in evaluation
         }
     
     def evaluate(self, n_episodes=10, deterministic=True, verbose=True):
-        """评估模型"""
+        """Evaluate model"""
         if self.model is None:
             raise ValueError("Model not trained yet!")
 
-        # 创建评估环境
+        # Create evaluation environment
         eval_env = SB3DictWrapper(DRLOptimizedQueueEnvFixed(max_episode_steps=10000))
 
         episode_rewards = []
@@ -212,7 +211,7 @@ class SB3A2CBaseline:
                 episode_reward += reward
                 episode_length += 1
 
-                if episode_length >= 10000:  # 防止无限循环
+                if episode_length >= 10000:  # Prevent infinite loop
                     break
             
             episode_rewards.append(episode_reward)
@@ -227,17 +226,17 @@ class SB3A2CBaseline:
             'mean_length': np.mean(episode_lengths),
             'episode_rewards': episode_rewards,
             'episode_lengths': episode_lengths,
-            'system_metrics': []  # SB3算法没有系统指标
+            'system_metrics': []  # SB3 algorithm has no system metrics
         }
         
         return results
     
     def save_results(self, path_prefix):
-        """保存训练历史和结果"""
-        # 创建目录
+        """Save training history and results"""
+        # Create directory
         os.makedirs(os.path.dirname(path_prefix) if os.path.dirname(path_prefix) else ".", exist_ok=True)
         
-        # SB3算法没有训练历史，创建空的历史记录
+        # SB3 algorithm has no training history, create empty history record
         self.training_history = {
             'episode_rewards': [],
             'episode_lengths': [],
@@ -245,7 +244,7 @@ class SB3A2CBaseline:
             'loss_values': []
         }
         
-        # 保存为JSON文件（如果需要的话）
+        # Save as JSON file (if needed)
         import json
         with open(f"{path_prefix}_history.json", 'w') as f:
             json.dump(self.training_history, f, indent=2)
@@ -253,17 +252,17 @@ class SB3A2CBaseline:
         print(f"SB3 A2C results saved to: {path_prefix}")
     
     def save(self, path):
-        """保存模型"""
+        """Save model"""
         if self.model is None:
             raise ValueError("Model not trained yet!")
 
         try:
-            # 尝试使用 exclude 参数来避免 pickle 错误
-            # 排除环境对象，只保存模型参数
+            # Try using exclude parameter to avoid pickle errors
+            # Exclude environment objects, only save model parameters
             self.model.save(path, exclude=['env', 'logger', 'ep_info_buffer', 'ep_success_buffer'])
             print(f"SB3 A2C model saved to: {path}")
         except Exception as e:
-            # 如果仍然失败，保存为PyTorch state dict
+            # If still fails, save as PyTorch state dict
             print(f"Warning: Standard save failed ({e}), using state_dict fallback...")
             import torch
             state_dict = {
@@ -275,29 +274,29 @@ class SB3A2CBaseline:
             print(f"SB3 A2C model saved as state_dict to: {path}.pth")
     
     def load(self, path):
-        """加载模型"""
+        """Load model"""
         import os
         import torch
 
         if self.env is None:
             self.setup_env()
 
-        # 检查是否是.pth文件（fallback格式）
+        # Check if it's a .pth file (fallback format)
         if path.endswith('.pth') or (not path.endswith('.zip') and os.path.exists(path + '.pth')):
             pth_path = path if path.endswith('.pth') else path + '.pth'
             print(f"Loading from state_dict format: {pth_path}")
 
-            # 加载state dict
+            # Load state dict
             state_dict = torch.load(pth_path, weights_only=False)
 
-            # 创建新模型
+            # Create new model
             self.create_model()
 
-            # 加载参数
+            # Load parameters
             self.model.policy.load_state_dict(state_dict['policy_state_dict'])
             print(f"✅ SB3 A2C model loaded from state_dict: {pth_path}")
         else:
-            # 标准SB3格式
+            # Standard SB3 format
             self.model = A2C.load(path, env=self.vec_env)
             print(f"SB3 A2C model loaded from: {path}")
 
@@ -305,20 +304,20 @@ class SB3A2CBaseline:
 
 
 def test_sb3_a2c():
-    """测试SB3 A2C"""
+    """Test SB3 A2C"""
     print("Testing SB3 A2C...")
     
-    # 创建基线
+    # Create baseline
     baseline = SB3A2CBaseline()
     
-    # 训练
+    # Train
     baseline.train(total_timesteps=50000)
     
-    # 评估
+    # Evaluate
     results = baseline.evaluate(n_episodes=10)
     print(f"SB3 A2C Results: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
     
-    # 保存
+    # Save
     baseline.save("../../../Models/sb3_a2c_test.zip")
 
 
