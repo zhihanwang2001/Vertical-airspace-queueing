@@ -189,7 +189,7 @@ class TD7_Agent:
         # Checkpoint management
         self.checkpoints = []
         
-        print(f"🎯 TD7 Agent initialized on {self.device}")
+        print(f"TD7 Agent initialized on {self.device}")
         print(f"   State space: {state_space.shape}")
         print(f"   Action space: {action_space.shape}")
         print(f"   Embedding dim: {self.config['embedding_dim']}")
@@ -432,12 +432,12 @@ class TD7_Agent:
         if len(self.checkpoints) > self.config['max_checkpoints']:
             self.checkpoints.pop(0)
 
-        print(f"💾 Checkpoint saved at step {self.training_step} (total: {len(self.checkpoints)})")
+        print(f"Checkpoint saved at step {self.training_step} (total: {len(self.checkpoints)})")
 
     def load_best_checkpoint(self):
         """Load best checkpoint"""
         if not self.checkpoints:
-            print("⚠️ No checkpoints available")
+            print("Warning: No checkpoints available")
             return
 
         # Simple strategy: load the latest checkpoint
@@ -447,7 +447,7 @@ class TD7_Agent:
         self.networks.actor.load_state_dict(best_checkpoint['actor'])
         self.networks.critic.load_state_dict(best_checkpoint['critic'])
 
-        print(f"✅ Loaded checkpoint from step {best_checkpoint['training_step']}")
+        print(f"Loaded checkpoint from step {best_checkpoint['training_step']}")
 
     def save(self, filepath: str):
         """Save model"""
@@ -488,7 +488,7 @@ class TD7_Agent:
         if 'checkpoints' in checkpoint:
             self.checkpoints = checkpoint['checkpoints']
 
-        print(f"✅ TD7 model loaded from {filepath}")
+        print(f"TD7 model loaded from {filepath}")
 
     def get_stats(self) -> Dict:
         """Get training statistics"""
