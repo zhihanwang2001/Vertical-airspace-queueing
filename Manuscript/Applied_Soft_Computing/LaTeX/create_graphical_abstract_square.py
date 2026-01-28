@@ -90,7 +90,7 @@ def create_square_graphical_abstract():
     ax.text(2.5, 1.5, 'Training: 6.9 min', ha='center', fontsize=5)
     ax.text(2.5, 1.2, 'Crash Rate: 0%', ha='center', fontsize=5)
     ax.text(2.5, 0.9, 'Stability: 99.8%', ha='center', fontsize=5)
-    ax.text(2.5, 0.6, 'Cohen\'s d: 6.31', ha='center', fontsize=5)
+    ax.text(2.5, 0.6, 'Cohen's d: 6.31', ha='center', fontsize=5)
 
     # Statistical validation (bottom right)
     stats_box = FancyBboxPatch((5.0, 0.3), 4.7, 2.2,
