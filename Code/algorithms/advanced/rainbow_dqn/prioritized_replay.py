@@ -1,6 +1,6 @@
 """
 Prioritized Experience Replay for Rainbow DQN
-实现基于TD-error的优先级经验回放
+Implements TD-error based prioritized experience replay
 """
 
 import numpy as np
@@ -15,7 +15,7 @@ Experience = namedtuple('Experience', ['state', 'action', 'reward', 'next_state'
 
 
 class SumTree:
-    """Sum Tree数据结构用于高效的优先级采样"""
+    """Sum Tree data structure for efficient priority sampling"""
     
     def __init__(self, capacity: int):
         self.capacity = capacity
@@ -25,7 +25,7 @@ class SumTree:
         self.size = 0
     
     def add(self, priority: float, data):
-        """添加新经验"""
+        """Add new experience"""
         tree_index = self.data_pointer + self.capacity - 1
         
         self.data[self.data_pointer] = data
@@ -39,17 +39,17 @@ class SumTree:
             self.size += 1
     
     def update(self, tree_index: int, priority: float):
-        """更新优先级"""
+        """Update priority"""
         change = priority - self.tree[tree_index]
         self.tree[tree_index] = priority
         
-        # 向上传播变化
+        # Propagate change upward
         while tree_index != 0:
             tree_index = (tree_index - 1) // 2
             self.tree[tree_index] += change
     
     def get_leaf(self, value: float) -> Tuple[int, float, object]:
-        """根据累积概率获取叶节点"""
+        """Get leaf node based on cumulative probability"""
         parent_index = 0
         
         while True:
@@ -71,12 +71,12 @@ class SumTree:
     
     @property
     def total_priority(self) -> float:
-        """总优先级"""
+        """Total priority"""
         return self.tree[0]
 
 
 class PrioritizedReplayBuffer:
-    """优先级经验回放缓冲区"""
+    """Prioritized experience replay buffer"""
     
     def __init__(self, 
                  capacity: int, 
@@ -86,11 +86,11 @@ class PrioritizedReplayBuffer:
                  epsilon: float = 1e-6):
         """
         Args:
-            capacity: 缓冲区容量
-            alpha: 优先级指数 (0=均匀采样, 1=完全优先级采样)
-            beta: 重要性采样指数 (0=无校正, 1=完全校正)
-            beta_increment: beta的增长率
-            epsilon: 最小优先级，防止经验永远不被采样
+            capacity: Buffer capacity
+            alpha: Priority exponent (0=uniform sampling, 1=full prioritization)
+            beta: Importance sampling exponent (0=no correction, 1=full correction)
+            beta_increment: Beta growth rate
+            epsilon: Minimum priority to prevent experiences from never being sampled
         """
         self.capacity = capacity
         self.alpha = alpha
@@ -102,24 +102,24 @@ class PrioritizedReplayBuffer:
         self.max_priority = 1.0
         
     def add(self, state, action, reward, next_state, done):
-        """添加经验"""
+        """Add experience"""
         experience = Experience(state, action, reward, next_state, done)
         
-        # 新经验使用最大优先级
+        # New experiences use maximum priority
         priority = self.max_priority ** self.alpha
         self.tree.add(priority, experience)
     
     def sample(self, batch_size: int) -> Tuple[List[Experience], np.ndarray, List[int]]:
-        """采样一批经验"""
+        """Sample a batch of experiences"""
         batch = []
         indices = []
         priorities = []
         
-        # 计算采样区间
+        # Calculate sampling segments
         priority_segment = self.tree.total_priority / batch_size
         
         for i in range(batch_size):
-            # 在每个区间内随机采样
+            # Random sample within each segment
             left = priority_segment * i
             right = priority_segment * (i + 1)
             value = random.uniform(left, right)
@@ -130,23 +130,23 @@ class PrioritizedReplayBuffer:
             indices.append(index)
             priorities.append(priority)
         
-        # 计算重要性权重
+        # Calculate importance weights
         sampling_probabilities = np.array(priorities) / self.tree.total_priority
         weights = np.power(self.tree.size * sampling_probabilities, -self.beta)
-        weights = weights / weights.max()  # 归一化
+        weights = weights / weights.max()  # Normalize
         
         return batch, weights, indices
     
     def update_priorities(self, indices: List[int], priorities: np.ndarray):
-        """更新经验的优先级"""
+        """Update experience priorities"""
         for index, priority in zip(indices, priorities):
-            # 确保优先级非负且加上epsilon
+            # Ensure priority is non-negative and add epsilon
             priority = abs(priority) + self.epsilon
             self.tree.update(index, priority ** self.alpha)
             self.max_priority = max(self.max_priority, priority)
     
     def update_beta(self):
-        """更新beta值"""
+        """Update beta value"""
         self.beta = min(1.0, self.beta + self.beta_increment)
     
     def __len__(self) -> int:
@@ -154,12 +154,12 @@ class PrioritizedReplayBuffer:
     
     @property
     def is_ready(self) -> bool:
-        """是否有足够的经验开始训练"""
-        return len(self) > 1000  # 至少1000个经验
+        """Whether there are enough experiences to start training"""
+        return len(self) > 1000  # At least 1000 experiences
 
 
 class UniformReplayBuffer:
-    """标准均匀经验回放（用于对比）"""
+    """Standard uniform experience replay (for comparison)"""
     
     def __init__(self, capacity: int):
         self.capacity = capacity
@@ -167,7 +167,7 @@ class UniformReplayBuffer:
         self.position = 0
     
     def add(self, state, action, reward, next_state, done):
-        """添加经验"""
+        """Add experience"""
         experience = Experience(state, action, reward, next_state, done)
         
         if len(self.buffer) < self.capacity:
@@ -178,18 +178,18 @@ class UniformReplayBuffer:
         self.position = (self.position + 1) % self.capacity
     
     def sample(self, batch_size: int) -> Tuple[List[Experience], np.ndarray, List[int]]:
-        """均匀采样"""
+        """Uniform sampling"""
         batch = random.sample(self.buffer, batch_size)
-        weights = np.ones(batch_size)  # 均匀权重
-        indices = list(range(batch_size))  # 虚拟索引
+        weights = np.ones(batch_size)  # Uniform weights
+        indices = list(range(batch_size))  # Dummy indices
         return batch, weights, indices
     
     def update_priorities(self, indices: List[int], priorities: np.ndarray):
-        """空实现，保持接口一致"""
+        """Empty implementation to maintain interface consistency"""
         pass
     
     def update_beta(self):
-        """空实现"""
+        """Empty implementation"""
         pass
     
     def __len__(self) -> int:
@@ -201,7 +201,7 @@ class UniformReplayBuffer:
 
 
 def create_replay_buffer(buffer_type: str = "prioritized", **kwargs):
-    """工厂函数：创建经验回放缓冲区"""
+    """Factory function: create experience replay buffer"""
     if buffer_type == "prioritized":
         return PrioritizedReplayBuffer(**kwargs)
     elif buffer_type == "uniform":
@@ -211,7 +211,7 @@ def create_replay_buffer(buffer_type: str = "prioritized", **kwargs):
 
 
 def batch_to_tensors(batch: List[Experience], device: torch.device):
-    """将batch转换为tensor"""
+    """Convert batch to tensors"""
     states = torch.FloatTensor([e.state for e in batch]).to(device)
     actions = torch.LongTensor([e.action for e in batch]).to(device)
     rewards = torch.FloatTensor([e.reward for e in batch]).to(device)
