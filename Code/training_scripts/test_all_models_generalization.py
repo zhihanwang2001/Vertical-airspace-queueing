@@ -1,19 +1,19 @@
 """
-Top 3模型跨区域泛化性测试脚本
+Top 3 Models Cross-Region Generalization Test Script
 Top 3 Models Cross-Region Generalization Test Script
 
-🎯 核心目标：验证Top 3模型（A2C, PPO, TD7）在不同异质性区域的泛化能力
-⚠️  重要：这不是mock测试，使用真实的环境运行和模型推理！
+Core Objective: Verify the generalization ability of Top 3 models (A2C, PPO, TD7) across different heterogeneous regions
+Important: This is not a mock test, uses real environment execution and model inference!
 
-测试逻辑：
-1. 加载已训练的3个模型
+Test Logic:
+1. Load 3 trained models
    - A2C: ./models/a2c/a2c_model_500000.pth (4392.86 ± 145.42)
    - PPO: ./models/ppo/ppo_model_500000.pth (4419.98 ± 135.71)
    - TD7: ./models/td7/td7_model_500000.pt  (4351.84 from RP1)
-2. 在5个不同的heterogeneous region中测试
-3. 每个region运行10个episode获取真实性能数据
-4. 记录详细的性能指标和环境配置
-5. 对比3个模型的泛化能力
+2. Test in 5 different heterogeneous regions
+3. Run 10 episodes per region to obtain real performance data
+4. Record detailed performance metrics and environment configurations
+5. Compare generalization ability of the 3 models
 """
 
 import sys
@@ -27,16 +27,16 @@ from pathlib import Path
 from typing import Dict, List
 import time
 
-# 导入基线算法
+# Import baseline algorithms
 from algorithms.baselines.sb3_a2c_baseline import SB3A2CBaseline
 from algorithms.baselines.sb3_ppo_baseline import SB3PPOBaseline
 from algorithms.advanced.td7.td7_baseline import TD7Baseline
 
-# 导入环境和配置
+# Import environment and configuration
 from env.configurable_env_wrapper import ConfigurableEnvWrapper
 from algorithms.baselines.space_utils import SB3DictWrapper
 
-# 导入异质性配置生成器
+# Import heterogeneous configuration generator
 import importlib.util
 spec = importlib.util.spec_from_file_location(
     "heterogeneous_configs",
@@ -51,62 +51,62 @@ HeterogeneousRegionConfigs = heterogeneous_configs.HeterogeneousRegionConfigs
 def test_model_in_region(model, model_type: str, config, region_name: str,
                          n_episodes: int = 10, verbose: bool = True):
     """
-    在指定区域测试模型
+    Test model in specified region
 
     Args:
-        model: 已加载模型的baseline实例
-        model_type: 模型类型 ('A2C', 'PPO', 'TD7')
-        config: VerticalQueueConfig配置
-        region_name: 区域名称
-        n_episodes: 测试episode数量
-        verbose: 是否打印详细信息
+        model: Loaded model baseline instance
+        model_type: Model type ('A2C', 'PPO', 'TD7')
+        config: VerticalQueueConfig configuration
+        region_name: Region name
+        n_episodes: Number of test episodes
+        verbose: Whether to print detailed information
 
     Returns:
-        dict: 测试结果
+        dict: Test results
     """
     if verbose:
         print(f"\n{'='*80}")
-        print(f"测试: {model_type} @ {region_name}")
+        print(f"Testing: {model_type} @ {region_name}")
         print(f"{'='*80}")
 
-    # 创建该区域的环境
+    # Create environment for this region
     base_env = ConfigurableEnvWrapper(config)
     eval_env = SB3DictWrapper(base_env)
 
-    # 记录结果
+    # Record results
     episode_rewards = []
     episode_lengths = []
     episode_details = []
 
-    # 运行n_episodes个episode
+    # Run n_episodes episodes
     for episode in range(n_episodes):
         obs, info = eval_env.reset()
         episode_reward = 0
         episode_length = 0
         done = False
 
-        # 运行一个完整的episode
+        # Run a complete episode
         while not done:
-            # 根据模型类型选择预测方法
+            # Select prediction method based on model type
             if model_type == 'TD7':
                 action = model.agent.act(obs, training=False)
             else:  # A2C or PPO
                 action, _ = model.model.predict(obs, deterministic=True)
 
-            # 执行动作
+            # Execute action
             obs, reward, terminated, truncated, info = eval_env.step(action)
             done = terminated or truncated
 
             episode_reward += reward
             episode_length += 1
 
-            # 防止无限循环
+            # Prevent infinite loop
             if episode_length >= 1000:
                 if verbose:
-                    print(f"  ⚠️  Episode {episode+1} 达到最大步数限制 (1000)")
+                    print(f"  Warning: Episode {episode+1} reached maximum step limit (1000)")
                 break
 
-        # 记录结果
+        # Record results
         episode_rewards.append(episode_reward)
         episode_lengths.append(episode_length)
         episode_details.append({
@@ -118,7 +118,7 @@ def test_model_in_region(model, model_type: str, config, region_name: str,
         if verbose:
             print(f"  Episode {episode+1}/{n_episodes}: Reward = {episode_reward:.2f}, Length = {episode_length}")
 
-    # 计算统计结果
+    # Calculate statistics
     mean_reward = np.mean(episode_rewards)
     std_reward = np.std(episode_rewards)
     mean_length = np.mean(episode_lengths)
@@ -137,26 +137,26 @@ def test_model_in_region(model, model_type: str, config, region_name: str,
     }
 
     if verbose:
-        print(f"\n📊 {model_type} @ {region_name} 测试结果:")
-        print(f"   平均奖励: {mean_reward:.2f} ± {std_reward:.2f}")
-        print(f"   平均长度: {mean_length:.1f}")
+        print(f"\n{model_type} @ {region_name} Test Results:")
+        print(f"   Mean reward: {mean_reward:.2f} +/- {std_reward:.2f}")
+        print(f"   Mean length: {mean_length:.1f}")
 
-    # 清理环境
+    # Clean up environment
     eval_env.close()
 
     return results
 
 
 def main():
-    """主函数：测试所有3个模型在所有异质性区域的泛化性能"""
+    """Main function: Test all 3 models' generalization performance across all heterogeneous regions"""
 
     print("\n" + "="*80)
-    print("Top 3 模型跨区域泛化性测试")
+    print("Top 3 Models Cross-Region Generalization Test")
     print("Cross-Region Generalization Test for Top 3 Models (A2C, PPO, TD7)")
     print("="*80 + "\n")
 
-    # ========== 第1步：加载训练好的3个模型 ==========
-    print("第1步：加载训练好的3个模型")
+    # ========== Step 1: Load 3 trained models ==========
+    print("Step 1: Load 3 trained models")
     print("-"*80)
 
     models = {}
@@ -166,58 +166,58 @@ def main():
         'TD7': '../../Models/td7/td7_model_500000.pt'
     }
 
-    # 加载A2C
-    print("\n1.1 加载A2C模型...")
+    # Load A2C
+    print("\n1.1 Loading A2C model...")
     if not os.path.exists(model_paths['A2C'] + '.pth'):
-        print(f"❌ 错误：找不到A2C模型文件 {model_paths['A2C']}.pth")
+        print(f"Error: Cannot find A2C model file {model_paths['A2C']}.pth")
         return
 
     a2c = SB3A2CBaseline()
     a2c.load(model_paths['A2C'])
     models['A2C'] = a2c
-    print("✅ A2C模型加载成功！")
+    print("A2C model loaded successfully!")
 
-    # 加载PPO
-    print("\n1.2 加载PPO模型...")
+    # Load PPO
+    print("\n1.2 Loading PPO model...")
     if not os.path.exists(model_paths['PPO'] + '.pth'):
-        print(f"❌ 错误：找不到PPO模型文件 {model_paths['PPO']}.pth")
+        print(f"Error: Cannot find PPO model file {model_paths['PPO']}.pth")
         return
 
     ppo = SB3PPOBaseline()
     ppo.load(model_paths['PPO'])
     models['PPO'] = ppo
-    print("✅ PPO模型加载成功！")
+    print("PPO model loaded successfully!")
 
-    # 加载TD7
-    print("\n1.3 加载TD7模型...")
+    # Load TD7
+    print("\n1.3 Loading TD7 model...")
     if not os.path.exists(model_paths['TD7']):
-        print(f"❌ 错误：找不到TD7模型文件 {model_paths['TD7']}")
+        print(f"Error: Cannot find TD7 model file {model_paths['TD7']}")
         return
 
-    print(f"📂 模型文件大小: {os.path.getsize(model_paths['TD7']) / (1024*1024):.1f} MB")
+    print(f"Model file size: {os.path.getsize(model_paths['TD7']) / (1024*1024):.1f} MB")
     td7 = TD7Baseline()
     td7.load(model_paths['TD7'])
     models['TD7'] = td7
-    print("✅ TD7模型加载成功！")
+    print("TD7 model loaded successfully!")
 
-    print("\n✅ 所有3个模型加载完成！")
+    print("\nAll 3 models loaded successfully!")
 
-    # ========== 第2步：创建异质性区域配置 ==========
-    print("\n第2步：创建异质性区域配置")
+    # ========== Step 2: Create heterogeneous region configurations ==========
+    print("\nStep 2: Create heterogeneous region configurations")
     print("-"*80)
 
     config_generator = HeterogeneousRegionConfigs()
     all_configs = config_generator.get_all_configs()
 
-    print(f"✅ 已创建 {len(all_configs)} 个区域配置:")
+    print(f"Created {len(all_configs)} region configurations:")
     for region_name in all_configs.keys():
         print(f"   - {region_name}")
 
-    # ========== 第3步：在每个区域运行测试 ==========
-    print("\n第3步：在每个区域运行泛化测试")
+    # ========== Step 3: Run tests in each region ==========
+    print("\nStep 3: Run generalization tests in each region")
     print("-"*80)
-    print("⚠️  这是真实测试，不是mock数据！")
-    print(f"   总测试数: {len(models)} 模型 × {len(all_configs)} 区域 × 10 episodes = {len(models) * len(all_configs) * 10} episodes")
+    print("Warning: This is a real test, not mock data!")
+    print(f"   Total tests: {len(models)} models × {len(all_configs)} regions × 10 episodes = {len(models) * len(all_configs) * 10} episodes")
 
     all_results = {
         'A2C': {},
@@ -228,10 +228,10 @@ def main():
     n_episodes_per_region = 10
     start_time = time.time()
 
-    # 对每个模型和每个区域运行测试
+    # Run tests for each model and each region
     for model_name in ['A2C', 'PPO', 'TD7']:
         print(f"\n{'='*80}")
-        print(f"开始测试 {model_name} 模型")
+        print(f"Starting test for {model_name} model")
         print(f"{'='*80}")
 
         model = models[model_name]
@@ -249,23 +249,23 @@ def main():
 
     total_time = time.time() - start_time
 
-    # ========== 第4步：汇总结果 ==========
+    # ========== Step 4: Summarize results ==========
     print("\n" + "="*80)
-    print("测试完成！汇总结果")
+    print("Testing completed! Summary of results")
     print("="*80 + "\n")
 
-    # 打印各模型在各区域的性能对比
-    print(f"{'区域':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
+    # Print performance comparison across models and regions
+    print(f"{'Region':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
     print("-"*90)
 
-    baseline_rewards = {}  # 记录各模型在baseline region的性能
+    baseline_rewards = {}  # Record each model's performance in baseline region
 
     for region_name in all_configs.keys():
         a2c_reward = all_results['A2C'][region_name]['mean_reward']
         ppo_reward = all_results['PPO'][region_name]['mean_reward']
         td7_reward = all_results['TD7'][region_name]['mean_reward']
 
-        # 记录baseline性能
+        # Record baseline performance
         if 'Standard' in region_name:
             baseline_rewards['A2C'] = a2c_reward
             baseline_rewards['PPO'] = ppo_reward
@@ -273,12 +273,12 @@ def main():
 
         print(f"{region_name:<30} {a2c_reward:<20.2f} {ppo_reward:<20.2f} {td7_reward:<20.2f}")
 
-    # 打印性能下降百分比
+    # Print performance degradation percentage
     print("\n" + "="*80)
-    print("性能下降百分比 (相对于Region A Baseline)")
+    print("Performance Degradation Percentage (relative to Region A Baseline)")
     print("="*80 + "\n")
 
-    print(f"{'区域':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
+    print(f"{'Region':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
     print("-"*90)
 
     for region_name in all_configs.keys():
@@ -295,18 +295,18 @@ def main():
             print(f"{region_name:<30} {a2c_diff:+.1f}%{' ':<15} {ppo_diff:+.1f}%{' ':<15} {td7_diff:+.1f}%")
 
     print("\n" + "-"*80)
-    print(f"总测试时间: {total_time:.1f}秒 ({total_time/60:.1f}分钟)")
-    print(f"总episode数: {len(models) * len(all_configs) * n_episodes_per_region}")
+    print(f"Total test time: {total_time:.1f}s ({total_time/60:.1f} minutes)")
+    print(f"Total episodes: {len(models) * len(all_configs) * n_episodes_per_region}")
 
-    # ========== 第5步：保存结果 ==========
-    print("\n第5步：保存测试结果")
+    # ========== Step 5: Save results ==========
+    print("\nStep 5: Save test results")
     print("-"*80)
 
-    # 创建保存目录
+    # Create save directory
     save_dir = Path("../../Results/generalization")
     save_dir.mkdir(exist_ok=True)
 
-    # 保存详细结果
+    # Save detailed results
     results_file = save_dir / "all_models_generalization_results.json"
 
     full_results = {
@@ -329,9 +329,9 @@ def main():
     with open(results_file, 'w', encoding='utf-8') as f:
         json.dump(full_results, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ 详细结果已保存到: {results_file}")
+    print(f"Detailed results saved to: {results_file}")
 
-    # 保存汇总表格（CSV格式）
+    # Save summary table (CSV format)
     summary_file = save_dir / "all_models_generalization_summary.csv"
     import csv
 
@@ -345,7 +345,7 @@ def main():
             ppo_res = all_results['PPO'][region_name]
             td7_res = all_results['TD7'][region_name]
 
-            # 找出最佳模型
+            # Find best model
             best_reward = max(a2c_res['mean_reward'], ppo_res['mean_reward'], td7_res['mean_reward'])
             if a2c_res['mean_reward'] == best_reward:
                 best_model = 'A2C'
@@ -365,18 +365,18 @@ def main():
                 best_model
             ])
 
-    print(f"✅ 汇总表格已保存到: {summary_file}")
+    print(f"Summary table saved to: {summary_file}")
 
-    # 保存各模型的泛化性评分
+    # Save generalization scores for each model
     generalization_file = save_dir / "generalization_ranking.txt"
 
     with open(generalization_file, 'w', encoding='utf-8') as f:
         f.write("="*80 + "\n")
-        f.write("跨区域泛化性能排名\n")
+        f.write("Cross-Region Generalization Performance Ranking\n")
         f.write("Cross-Region Generalization Performance Ranking\n")
         f.write("="*80 + "\n\n")
 
-        # 计算平均性能下降
+        # Calculate average performance degradation
         avg_drop = {}
         for model_name in ['A2C', 'PPO', 'TD7']:
             drops = []
@@ -388,16 +388,16 @@ def main():
                     drops.append(drop_pct)
             avg_drop[model_name] = np.mean(drops)
 
-        # 排序（下降越小越好）
+        # Sort (smaller drop is better)
         ranking = sorted(avg_drop.items(), key=lambda x: x[1], reverse=True)
 
-        f.write("平均性能下降 (越小越好，表示泛化能力越强):\n")
+        f.write("Average performance degradation (smaller is better, indicates stronger generalization):\n")
         f.write("-"*80 + "\n")
         for rank, (model_name, drop) in enumerate(ranking, 1):
             f.write(f"{rank}. {model_name}: {drop:+.2f}%\n")
 
         f.write("\n" + "="*80 + "\n")
-        f.write("各区域最佳模型:\n")
+        f.write("Best model per region:\n")
         f.write("-"*80 + "\n")
 
         for region_name in all_configs.keys():
@@ -409,27 +409,27 @@ def main():
             best = max(rewards.items(), key=lambda x: x[1])
             f.write(f"{region_name}: {best[0]} ({best[1]:.2f})\n")
 
-    print(f"✅ 泛化性排名已保存到: {generalization_file}")
+    print(f"Generalization ranking saved to: {generalization_file}")
 
     print("\n" + "="*80)
-    print("✅ 所有模型泛化性测试全部完成！")
+    print("All model generalization tests completed!")
     print("="*80 + "\n")
 
-    print("📌 关键发现:")
-    print(f"   Baseline性能 (Region A):")
+    print("Key findings:")
+    print(f"   Baseline performance (Region A):")
     print(f"     - A2C: {baseline_rewards['A2C']:.2f}")
     print(f"     - PPO: {baseline_rewards['PPO']:.2f}")
     print(f"     - TD7: {baseline_rewards['TD7']:.2f}")
 
-    print(f"\n   平均性能下降:")
+    print(f"\n   Average performance degradation:")
     for rank, (model_name, drop) in enumerate(ranking, 1):
-        print(f"     {rank}. {model_name}: {drop:+.2f}% {'(泛化能力最强)' if rank == 1 else ''}")
+        print(f"     {rank}. {model_name}: {drop:+.2f}% {'(strongest generalization)' if rank == 1 else ''}")
 
-    print("\n💡 下一步：")
-    print("   1. 查看详细结果: cat generalization_results/all_models_generalization_results.json")
-    print("   2. 查看汇总表格: cat generalization_results/all_models_generalization_summary.csv")
-    print("   3. 查看泛化排名: cat generalization_results/generalization_ranking.txt")
-    print("   4. 绘制可视化图表")
+    print("\nNext steps:")
+    print("   1. View detailed results: cat generalization_results/all_models_generalization_results.json")
+    print("   2. View summary table: cat generalization_results/all_models_generalization_summary.csv")
+    print("   3. View generalization ranking: cat generalization_results/generalization_ranking.txt")
+    print("   4. Create visualization charts")
 
 
 if __name__ == "__main__":
