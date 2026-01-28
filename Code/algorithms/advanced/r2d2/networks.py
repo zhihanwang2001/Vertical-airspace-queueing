@@ -1,6 +1,6 @@
 """
 R2D2 Neural Networks
-R2D2算法的循环神经网络架构，包括LSTM/GRU网络
+Recurrent neural network architecture for R2D2 algorithm, including LSTM/GRU networks
 """
 
 import torch
@@ -11,8 +11,8 @@ from typing import Tuple, Dict, Any, Optional
 
 
 class R2D2Network(nn.Module):
-    """R2D2循环Q网络"""
-    
+    """R2D2 recurrent Q-network"""
+
     def __init__(self, 
                  state_dim: int,
                  action_dim: int,
@@ -30,16 +30,16 @@ class R2D2Network(nn.Module):
         self.num_layers = num_layers
         self.recurrent_type = recurrent_type
         self.dueling = dueling
-        
-        # 特征提取层
+
+        # Feature extraction layers
         self.feature_layers = nn.Sequential(
             nn.Linear(state_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU()
         )
-        
-        # 循环层
+
+        # Recurrent layer
         if recurrent_type.upper() == 'LSTM':
             self.recurrent = nn.LSTM(
                 input_size=hidden_dim,
@@ -56,77 +56,77 @@ class R2D2Network(nn.Module):
             )
         else:
             raise ValueError(f"Unsupported recurrent type: {recurrent_type}")
-        
-        # Q值输出层
+
+        # Q-value output layer
         if dueling:
-            # Dueling架构
+            # Dueling architecture
             self.value_head = nn.Linear(recurrent_dim, 1)
             self.advantage_head = nn.Linear(recurrent_dim, action_dim)
         else:
-            # 普通DQN架构
+            # Standard DQN architecture
             self.q_head = nn.Linear(recurrent_dim, action_dim)
-        
-        # 初始化权重
+
+        # Initialize weights
         self._init_weights()
     
     def _init_weights(self):
-        """初始化网络权重"""
+        """Initialize network weights"""
         for module in self.modules():
             if isinstance(module, nn.Linear):
                 nn.init.orthogonal_(module.weight, gain=np.sqrt(2))
                 nn.init.constant_(module.bias, 0.0)
     
-    def forward(self, 
+    def forward(self,
                 states: torch.Tensor,
                 hidden_state: Optional[Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         """
-        前向传播
-        
+        Forward pass
+
         Args:
-            states: 状态序列 [batch_size, seq_len, state_dim]
-            hidden_state: 隐藏状态 (h, c) for LSTM or h for GRU
-            
+            states: State sequence [batch_size, seq_len, state_dim]
+            hidden_state: Hidden state (h, c) for LSTM or h for GRU
+
         Returns:
-            q_values: Q值 [batch_size, seq_len, action_dim]
-            new_hidden_state: 新的隐藏状态
+            q_values: Q-values [batch_size, seq_len, action_dim]
+            new_hidden_state: New hidden state
         """
-        # 处理不同的输入形状
+        # Handle different input shapes
         if len(states.shape) == 2:
-            # 单时间步输入: [batch_size, state_dim] -> [batch_size, 1, state_dim]
+            # Single timestep input: [batch_size, state_dim] -> [batch_size, 1, state_dim]
             states = states.unsqueeze(1)
             batch_size, seq_len, _ = states.shape
         elif len(states.shape) == 3:
-            # 序列输入: [batch_size, seq_len, state_dim]
+            # Sequence input: [batch_size, seq_len, state_dim]
             batch_size, seq_len, _ = states.shape
         else:
             raise ValueError(f"Unsupported states shape: {states.shape}. Expected 2D or 3D tensor.")
-        
-        # 特征提取
-        # 将序列维度展平处理
+
+        # Feature extraction
+        # Flatten sequence dimension for processing
         states_flat = states.view(-1, self.state_dim)
         features_flat = self.feature_layers(states_flat)
         features = features_flat.view(batch_size, seq_len, -1)
-        
-        # 循环层处理
+
+        # Recurrent layer processing
         if hidden_state is None:
             recurrent_out, new_hidden_state = self.recurrent(features)
         else:
             recurrent_out, new_hidden_state = self.recurrent(features, hidden_state)
-        
-        # Q值计算
+
+        # Q-value calculation
         if self.dueling:
             # Dueling DQN
-            # 将序列维度展平
+            # Flatten sequence dimension
             recurrent_flat = recurrent_out.contiguous().view(-1, self.recurrent_dim)
-            
+
             values = self.value_head(recurrent_flat)  # [batch_size * seq_len, 1]
             advantages = self.advantage_head(recurrent_flat)  # [batch_size * seq_len, action_dim]
-            
+
             # Dueling aggregation
             q_values_flat = values + advantages - advantages.mean(dim=1, keepdim=True)
             q_values = q_values_flat.view(batch_size, seq_len, self.action_dim)
         else:
-            # 普通DQN
+            # Standard DQN
             recurrent_flat = recurrent_out.contiguous().view(-1, self.recurrent_dim)
             q_values_flat = self.q_head(recurrent_flat)
             q_values = q_values_flat.view(batch_size, seq_len, self.action_dim)
@@ -134,7 +134,7 @@ class R2D2Network(nn.Module):
         return q_values, new_hidden_state
     
     def init_hidden_state(self, batch_size: int, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor]:
-        """初始化隐藏状态"""
+        """Initialize hidden state"""
         if self.recurrent_type.upper() == 'LSTM':
             h = torch.zeros(self.num_layers, batch_size, self.recurrent_dim, device=device)
             c = torch.zeros(self.num_layers, batch_size, self.recurrent_dim, device=device)
@@ -143,16 +143,16 @@ class R2D2Network(nn.Module):
             h = torch.zeros(self.num_layers, batch_size, self.recurrent_dim, device=device)
             return (h,)
     
-    def get_q_values(self, 
+    def get_q_values(self,
                      states: torch.Tensor,
                      hidden_state: Optional[Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
-        """获取Q值（用于推理）"""
+        """Get Q-values (for inference)"""
         with torch.no_grad():
             return self.forward(states, hidden_state)
 
 
 class R2D2ConvNetwork(nn.Module):
-    """R2D2卷积+循环网络（用于图像输入）"""
+    """R2D2 convolutional + recurrent network (for image input)"""
     
     def __init__(self,
                  input_channels: int,
@@ -166,8 +166,8 @@ class R2D2ConvNetwork(nn.Module):
         self.recurrent_dim = recurrent_dim
         self.num_layers = num_layers
         self.recurrent_type = recurrent_type
-        
-        # 卷积特征提取
+
+        # Convolutional feature extraction
         self.conv_layers = nn.Sequential(
             nn.Conv2d(input_channels, 32, 8, stride=4),
             nn.ReLU(),
@@ -176,51 +176,51 @@ class R2D2ConvNetwork(nn.Module):
             nn.Conv2d(64, 64, 3, stride=1),
             nn.ReLU()
         )
-        
-        # 计算卷积输出大小（假设84x84输入）
+
+        # Calculate convolutional output size (assuming 84x84 input)
         conv_output_size = self._get_conv_output_size(input_channels, 84, 84)
-        
-        # 全连接层
+
+        # Fully connected layer
         self.fc = nn.Linear(conv_output_size, 512)
-        
-        # 循环层
+
+        # Recurrent layer
         if recurrent_type.upper() == 'LSTM':
             self.recurrent = nn.LSTM(512, recurrent_dim, num_layers, batch_first=True)
         else:
             self.recurrent = nn.GRU(512, recurrent_dim, num_layers, batch_first=True)
-        
-        # Q值头
+
+        # Q-value head
         self.q_head = nn.Linear(recurrent_dim, action_dim)
     
     def _get_conv_output_size(self, channels, height, width):
-        """计算卷积层输出尺寸"""
+        """Calculate convolutional layer output size"""
         with torch.no_grad():
             dummy_input = torch.zeros(1, channels, height, width)
             dummy_output = self.conv_layers(dummy_input)
             return int(np.prod(dummy_output.shape[1:]))
     
-    def forward(self, 
+    def forward(self,
                 images: torch.Tensor,
                 hidden_state: Optional[Tuple[torch.Tensor, torch.Tensor]] = None):
-        """前向传播"""
+        """Forward pass"""
         batch_size, seq_len = images.shape[:2]
-        
-        # 重塑输入用于卷积处理
+
+        # Reshape input for convolutional processing
         images_flat = images.view(-1, *images.shape[2:])
         conv_features = self.conv_layers(images_flat)
         conv_features = conv_features.view(conv_features.size(0), -1)
         fc_features = F.relu(self.fc(conv_features))
-        
-        # 重塑回序列格式
+
+        # Reshape back to sequence format
         features = fc_features.view(batch_size, seq_len, -1)
-        
-        # 循环处理
+
+        # Recurrent processing
         if hidden_state is None:
             recurrent_out, new_hidden_state = self.recurrent(features)
         else:
             recurrent_out, new_hidden_state = self.recurrent(features, hidden_state)
-        
-        # Q值计算
+
+        # Q-value calculation
         recurrent_flat = recurrent_out.contiguous().view(-1, self.recurrent_dim)
         q_values_flat = self.q_head(recurrent_flat)
         q_values = q_values_flat.view(batch_size, seq_len, self.action_dim)
@@ -230,15 +230,15 @@ class R2D2ConvNetwork(nn.Module):
 
 def create_r2d2_network(state_space, action_space, network_config: Dict[str, Any] = None):
     """
-    工厂函数：创建R2D2网络
-    
+    Factory function: create R2D2 network
+
     Args:
-        state_space: 状态空间
-        action_space: 动作空间  
-        network_config: 网络配置
-        
+        state_space: State space
+        action_space: Action space
+        network_config: Network configuration
+
     Returns:
-        R2D2网络实例
+        R2D2 network instance
     """
     default_config = {
         'hidden_dim': 512,
@@ -250,27 +250,27 @@ def create_r2d2_network(state_space, action_space, network_config: Dict[str, Any
     
     if network_config:
         default_config.update(network_config)
-    
-    # 确定动作维度 - R2D2只支持离散动作
+
+    # Determine action dimension - R2D2 only supports discrete actions
     if not hasattr(action_space, 'n'):
-        # 如果是连续动作空间，进行离散化
+        # If continuous action space, discretize it
         action_bins = network_config.get('action_bins', 5) if network_config else 5
         action_dim = action_bins ** action_space.shape[0]
         print(f"Warning: R2D2 discretizing continuous action space to {action_dim} actions")
     else:
         action_dim = action_space.n
-    
-    # 根据状态空间类型选择网络
-    if len(state_space.shape) == 1:  # 向量状态
+
+    # Select network based on state space type
+    if len(state_space.shape) == 1:  # Vector state
         state_dim = state_space.shape[0]
-        # 过滤掉不适用于R2D2Network的参数
+        # Filter out parameters not applicable to R2D2Network
         network_kwargs = {k: v for k, v in default_config.items() if k != 'action_bins'}
         return R2D2Network(
             state_dim=state_dim,
             action_dim=action_dim,
             **network_kwargs
         )
-    elif len(state_space.shape) == 3:  # 图像状态
+    elif len(state_space.shape) == 3:  # Image state
         input_channels = state_space.shape[0]
         return R2D2ConvNetwork(
             input_channels=input_channels,
