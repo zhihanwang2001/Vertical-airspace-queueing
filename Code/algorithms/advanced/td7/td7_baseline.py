@@ -105,7 +105,7 @@ class TD7Baseline:
         self.training_logs = []
         self.eval_rewards = []
 
-        print(f"🎯 TD7 Baseline initialized")
+        print(f"TD7 Baseline initialized")
         print(f"   Config: {len(default_config)} parameters")
         print(f"   Log dir: {self.config['log_dir']}")
 
@@ -114,7 +114,7 @@ class TD7Baseline:
         base_env = DRLOptimizedQueueEnvFixed()
         self.env = SB3DictWrapper(base_env)
 
-        print(f"✅ Environment setup completed")
+        print(f"Environment setup completed")
         print(f"   Observation space: {self.env.observation_space}")
         print(f"   Action space: {self.env.action_space}")
 
@@ -131,7 +131,7 @@ class TD7Baseline:
             config=self.config
         )
 
-        print("✅ TD7 Agent created successfully")
+        print("TD7 Agent created successfully")
         return self.agent
 
     def train(self, total_timesteps: int, eval_freq: int = 10000, save_freq: int = 50000):
@@ -155,7 +155,7 @@ class TD7Baseline:
             log_dir=os.path.join(self.config['tensorboard_log'], tb_log_name)
         )
 
-        print(f"🚀 Starting TD7 training for {total_timesteps:,} timesteps...")
+        print(f"Starting TD7 training for {total_timesteps:,} timesteps...")
         print(f"   TensorBoard log: {tb_log_name}")
 
         # Training variables
@@ -238,7 +238,7 @@ class TD7Baseline:
                     'mean_reward': eval_reward
                 })
                 writer.add_scalar('eval/mean_reward', eval_reward, timestep)
-                print(f"📊 Evaluation at step {timestep:,}: {eval_reward:.2f}")
+                print(f"Evaluation at step {timestep:,}: {eval_reward:.2f}")
 
             # Save model
             if timestep % save_freq == 0:
@@ -267,7 +267,7 @@ class TD7Baseline:
         if self.agent:
             results.update(self.agent.get_stats())
 
-        print(f"🎉 TD7 training completed!")
+        print(f"TD7 training completed!")
         print(f"   Final evaluation reward: {final_eval_reward:.2f}")
         print(f"   Training time: {training_time:.1f}s")
         print(f"   Episodes completed: {len(self.episode_rewards)}")
@@ -310,7 +310,7 @@ class TD7Baseline:
                     'Value': point['Value']
                 })
 
-        print(f"✅ Training curve exported to: {csv_path}")
+        print(f"Training curve exported to: {csv_path}")
         return csv_path
 
     def _evaluate(self, num_episodes: int = 10) -> float:
@@ -387,7 +387,7 @@ class TD7Baseline:
         }
 
         if verbose:
-            print(f"📊 TD7 Evaluation Results:")
+            print(f"TD7 Evaluation Results:")
             print(f"   Mean reward: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
             print(f"   Mean length: {results['mean_length']:.1f}")
 
@@ -404,7 +404,7 @@ class TD7Baseline:
 
         model_path = save_dir / f"td7_model_{timestep}.pt"
         self.agent.save(str(model_path))
-        print(f"💾 Model saved: {model_path}")
+        print(f"Model saved: {model_path}")
 
     def load_model(self, model_path: str):
         """Load model"""
@@ -412,7 +412,7 @@ class TD7Baseline:
             self.create_agent()
 
         self.agent.load(model_path)
-        print(f"✅ TD7 model loaded from {model_path}")
+        print(f"TD7 model loaded from {model_path}")
 
     def save(self, path: str):
         """Save model"""
@@ -424,7 +424,7 @@ class TD7Baseline:
         save_dir.mkdir(parents=True, exist_ok=True)
 
         self.agent.save(path)
-        print(f"💾 TD7 model saved to: {path}")
+        print(f"TD7 model saved to: {path}")
 
     def load(self, path: str):
         """Load model"""
@@ -435,7 +435,7 @@ class TD7Baseline:
             self.create_agent()
 
         self.agent.load(path)
-        print(f"📂 TD7 model loaded from: {path}")
+        print(f"TD7 model loaded from: {path}")
 
         return self.agent
 
@@ -471,4 +471,4 @@ class TD7Baseline:
             self.env.close()
         if self.eval_env:
             self.eval_env.close()
-        print("🧹 TD7 baseline cleanup completed")
+        print("TD7 baseline cleanup completed")
