@@ -140,7 +140,7 @@ class R2D2Agent:
         self.current_hidden_state = None
         self.reset_hidden_state()
         
-        print(f"🔄 R2D2 Agent initialized on {self.device}")
+        print(f"R2D2 Agent initialized on {self.device}")
         print(f"   State space: {state_space.shape}")
         if self.action_type == 'discrete':
             print(f"   Action space: {self.num_actions} (discrete)")
@@ -188,7 +188,7 @@ class R2D2Agent:
                 grid = np.linspace(self.action_low[i], self.action_high[i], self.action_bins)
             self.action_grids.append(grid)
             
-        print(f"🎯 R2D2 Action discretization: {self.action_bins}^{self.action_dim} = {self.num_actions} actions")
+        print(f"R2D2 Action discretization: {self.action_bins}^{self.action_dim} = {self.num_actions} actions")
         print(f"   First dimension grid: {self.action_grids[0]}")
     
     def _discrete_to_continuous_action(self, discrete_action: int) -> np.ndarray:
@@ -198,7 +198,7 @@ class R2D2Agent:
 
         continuous_action = np.zeros(self.action_dim)
         remaining = discrete_action
-
+        
         for i in range(self.action_dim):
             idx = remaining % self.action_bins
             continuous_action[i] = self.action_grids[i][idx]
@@ -360,7 +360,7 @@ class R2D2Agent:
         
         for i in range(batch_size):
             seq_len_i = min(sequence_lengths[i].item(), seq_len)
-            if seq_len_i > 1:  # 至少需要2个时间步来计算TD误差
+            if seq_len_i > 1:  # Need at least 2 timesteps to compute TD error
                 loss += F.mse_loss(
                     current_q_values[i, :seq_len_i-1],
                     target_q_values[i, 1:seq_len_i]
@@ -423,7 +423,7 @@ class R2D2Agent:
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.training_step = checkpoint['training_step']
 
-        print(f"✅ R2D2 model loaded from {filepath}")
+        print(f"R2D2 model loaded from {filepath}")
 
     def get_stats(self) -> Dict:
         """Get training statistics"""
