@@ -75,14 +75,14 @@ class IMPALABaseline:
             'training_steps': []
         }
         
-        print("🎯 IMPALA Baseline initialized")
+        print("IMPALA Baseline initialized")
     
     def setup_env(self):
         """Setup environment"""
         base_env = DRLOptimizedQueueEnvFixed()
         self.env = SB3DictWrapper(base_env)
         
-        print(f"✅ Environment setup completed")
+        print(f"Environment setup completed")
         print(f"   Observation space: {self.env.observation_space}")
         print(f"   Action space: {self.env.action_space}")
         
@@ -99,7 +99,7 @@ class IMPALABaseline:
             config=self.config
         )
         
-        print("✅ IMPALA Agent created successfully")
+        print("IMPALA Agent created successfully")
         return self.agent
     
     def train(self, total_timesteps: int, eval_freq: int = 10000, save_freq: int = 50000):
@@ -123,7 +123,7 @@ class IMPALABaseline:
             log_dir=os.path.join(self.config['tensorboard_log'], tb_log_name)
         )
 
-        print(f"🚀 Starting IMPALA training for {total_timesteps:,} timesteps...")
+        print(f"Starting IMPALA training for {total_timesteps:,} timesteps...")
         print(f"   TensorBoard log: {tb_log_name}")
 
         # Training variables
@@ -150,7 +150,7 @@ class IMPALABaseline:
                 else:  # Gym format
                     next_state, reward, done, info = step_result
             except Exception as e:
-                print(f"❌ Environment step error: {e}")
+                print(f"Environment step error: {e}")
                 break
 
             # Store experience
@@ -213,7 +213,7 @@ class IMPALABaseline:
                 writer.add_scalar('eval/mean_reward', eval_results['mean_reward'], timestep)
                 writer.add_scalar('eval/std_reward', eval_results['std_reward'], timestep)
 
-                print(f"📊 Evaluation at step {timestep}: "
+                print(f"Evaluation at step {timestep}: "
                       f"Mean reward: {eval_results['mean_reward']:.2f} ± {eval_results['std_reward']:.2f}")
 
             # Save model
@@ -221,13 +221,13 @@ class IMPALABaseline:
                 save_path = f"../../../../Models/impala_step_{timestep}.pt"
                 os.makedirs(os.path.dirname(save_path), exist_ok=True)
                 self.agent.save(save_path)
-                print(f"💾 Model saved at step {timestep}: {save_path}")
+                print(f"Model saved at step {timestep}: {save_path}")
 
         # Training completed
         total_time = time.time() - start_time
         writer.close()
 
-        print(f"✅ IMPALA training completed!")
+        print(f"IMPALA training completed!")
         print(f"   Total episodes: {episode}")
         print(f"   Total time: {total_time:.2f}s")
         print(f"   Average reward (last 100): {np.mean(self.training_history['episode_rewards'][-100:]):.2f}")
@@ -279,7 +279,7 @@ class IMPALABaseline:
                     else:
                         next_state, reward, done, info = step_result
                 except Exception as e:
-                    print(f"❌ Evaluation error: {e}")
+                    print(f"Evaluation error: {e}")
                     break
                 
                 episode_reward += reward
@@ -306,7 +306,7 @@ class IMPALABaseline:
         }
         
         if verbose:
-            print(f"📈 IMPALA Evaluation Results:")
+            print(f"IMPALA Evaluation Results:")
             print(f"   Mean reward: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
             print(f"   Mean length: {results['mean_length']:.1f}")
         
@@ -329,7 +329,7 @@ class IMPALABaseline:
             
             json.dump(serializable_history, f, indent=2)
         
-        print(f"💾 IMPALA results saved to: {path_prefix}")
+        print(f"IMPALA results saved to: {path_prefix}")
     
     def save(self, path: str):
         """Save model"""
@@ -337,7 +337,7 @@ class IMPALABaseline:
             raise ValueError("Agent not trained yet!")
 
         self.agent.save(path)
-        print(f"💾 IMPALA model saved to: {path}")
+        print(f"IMPALA model saved to: {path}")
 
     def load(self, path: str):
         """Load model"""
@@ -348,14 +348,14 @@ class IMPALABaseline:
             self.create_agent()
         
         self.agent.load(path)
-        print(f"📂 IMPALA model loaded from: {path}")
+        print(f"IMPALA model loaded from: {path}")
         
         return self.agent
 
 
 def test_impala():
     """Test IMPALA"""
-    print("🧪 Testing IMPALA...")
+    print("Testing IMPALA...")
 
     # Create baseline
     baseline = IMPALABaseline()
@@ -371,7 +371,7 @@ def test_impala():
     # Save test
     baseline.save("../../../../Models/impala_test.pt")
 
-    print("✅ IMPALA test completed!")
+    print("IMPALA test completed!")
 
 
 if __name__ == "__main__":
