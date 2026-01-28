@@ -1,18 +1,18 @@
 """
-最终消融实验：CCF-B期刊版本 - TD7算法
+Final Ablation Study: CCF-B Journal Version - TD7 Algorithm
 Final Ablation Study: CCF-B Journal Version - TD7 Algorithm
 
-关键参数：
-1. 算法：TD7（自研advanced算法）
-2. 评估轮次：50 episodes（更可靠的统计）
-3. 高负载：10x arrival rate（系统接近饱和）
-4. 固定流量模式：[0.3, 0.25, 0.2, 0.15, 0.1]（真实UAM）
-5. 5种容量结构：倒金字塔、均匀、高容量、正金字塔、低容量
+Key Parameters:
+1. Algorithm: TD7 (self-developed advanced algorithm)
+2. Evaluation rounds: 50 episodes (more reliable statistics)
+3. High load: 10x arrival rate (system near saturation)
+4. Fixed traffic pattern: [0.3, 0.25, 0.2, 0.15, 0.1] (real UAM)
+5. 5 capacity structures: inverted pyramid, uniform, high capacity, normal pyramid, low capacity
 
-目标：
-- 验证倒金字塔[8,6,4,3,2]在高负载下的优势
-- 对比TD7与A2C/PPO的性能
-- 提供solid的统计evidence支持CCF-B论文
+Goals:
+- Verify advantage of inverted pyramid [8,6,4,3,2] under high load
+- Compare TD7 performance with A2C/PPO
+- Provide solid statistical evidence for CCF-B paper
 """
 
 import sys
@@ -27,43 +27,43 @@ import json
 import time
 from datetime import datetime
 
-# 导入TD7组件
+# Import TD7 components
 from algorithms.advanced.td7.td7_agent import TD7_Agent
 from algorithms.baselines.space_utils import SB3DictWrapper
 
-# 导入环境
+# Import environment
 from env.config import VerticalQueueConfig
 from env.configurable_env_wrapper import ConfigurableEnvWrapper
 
 
 def create_config(config_type='capacity_4x5', high_load_multiplier=10.0):
     """
-    创建高负载配置
+    Create high load configuration
 
-    high_load_multiplier: 负载倍数（相对v3）
+    high_load_multiplier: Load multiplier (relative to v3)
     """
     config = VerticalQueueConfig()
 
-    # 设置容量
+    # Set capacity
     if config_type == 'capacity_4x5':
-        config.layer_capacities = [4, 4, 4, 4, 4]  # 总20
+        config.layer_capacities = [4, 4, 4, 4, 4]  # Total 20
     elif config_type == 'capacity_6x5':
-        config.layer_capacities = [6, 6, 6, 6, 6]  # 总30
+        config.layer_capacities = [6, 6, 6, 6, 6]  # Total 30
     else:
         raise ValueError(f"Unknown config type: {config_type}")
 
-    # 固定真实UAM流量模式
+    # Fixed real UAM traffic pattern
     config.arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]
 
-    # 关键：大幅提高到达率
+    # Key: Significantly increase arrival rate
     total_capacity = sum(config.layer_capacities)
     avg_service_rate = np.mean(config.layer_service_rates)
 
-    # 基础到达率 × 高负载倍数
+    # Base arrival rate × high load multiplier
     base_rate_v3 = 0.75 * total_capacity * avg_service_rate / 5
     config.base_arrival_rate = base_rate_v3 * high_load_multiplier
 
-    # 计算每层的理论负载
+    # Calculate theoretical load per layer
     layer_loads = []
     for i, (w, c) in enumerate(zip(config.arrival_weights, config.layer_capacities)):
         layer_arrival = config.base_arrival_rate * w
@@ -72,44 +72,44 @@ def create_config(config_type='capacity_4x5', high_load_multiplier=10.0):
         layer_loads.append(layer_load)
 
     print(f"\n{'='*80}")
-    print(f"配置: {config_type}")
-    print(f"容量: {config.layer_capacities} (总计: {total_capacity})")
-    print(f"到达权重: {config.arrival_weights} (固定真实UAM模式)")
-    print(f"总到达率: {config.base_arrival_rate:.2f} (v3的{high_load_multiplier:.1f}倍)")
-    print(f"\n各层理论负载 (ρ = λ/(μ·c)):")
+    print(f"Configuration: {config_type}")
+    print(f"Capacity: {config.layer_capacities} (Total: {total_capacity})")
+    print(f"Arrival weights: {config.arrival_weights} (Fixed real UAM pattern)")
+    print(f"Total arrival rate: {config.base_arrival_rate:.2f} ({high_load_multiplier:.1f}x of v3)")
+    print(f"\nTheoretical load per layer (ρ = λ/(μ·c)):")
     for i, load in enumerate(layer_loads):
         mu = config.layer_service_rates[i]
-        status = "🔴过载!" if load >= 1.0 else "🟡临界" if load > 0.8 else "🟢正常"
-        print(f"  Layer {i} (容量{config.layer_capacities[i]}, μ={mu:.1f}): {load*100:.1f}% {status}")
-    print(f"平均负载: {np.mean(layer_loads)*100:.1f}%")
-    print(f"最高负载: {np.max(layer_loads)*100:.1f}% (Layer {np.argmax(layer_loads)})")
+        status = "OVERLOAD!" if load >= 1.0 else "CRITICAL" if load > 0.8 else "NORMAL"
+        print(f"  Layer {i} (capacity {config.layer_capacities[i]}, μ={mu:.1f}): {load*100:.1f}% {status}")
+    print(f"Average load: {np.mean(layer_loads)*100:.1f}%")
+    print(f"Maximum load: {np.max(layer_loads)*100:.1f}% (Layer {np.argmax(layer_loads)})")
 
-    # 预测崩溃
+    # Predict crash
     if any(load >= 1.0 for load in layer_loads):
-        print(f"⚠️  预警：预计系统崩溃（存在ρ>=1.0的层）")
+        print(f"Warning: System crash expected (layers with ρ>=1.0 exist)")
     else:
-        print(f"✅ 预计系统稳定（所有层ρ<1.0）")
+        print(f"System stability expected (all layers ρ<1.0)")
     print(f"{'='*80}\n")
 
     return config
 
 
 def create_wrapped_env(config):
-    """创建包装后的环境"""
+    """Create wrapped environment"""
     base_env = ConfigurableEnvWrapper(config=config)
-    # TD7需要SB3DictWrapper来处理observation
+    # TD7 needs SB3DictWrapper to handle observation
     wrapped_env = SB3DictWrapper(base_env)
     return wrapped_env
 
 
 def train_and_evaluate(config_type='capacity_4x5',
                        timesteps=100000, eval_episodes=50, high_load_multiplier=10.0):
-    """训练和评估TD7"""
+    """Train and evaluate TD7"""
 
     print(f"\n{'='*80}")
-    print(f"实验: TD7 + {config_type}")
-    print(f"高负载倍数: {high_load_multiplier}x")
-    print(f"评估轮次: {eval_episodes}")
+    print(f"Experiment: TD7 + {config_type}")
+    print(f"High load multiplier: {high_load_multiplier}x")
+    print(f"Evaluation episodes: {eval_episodes}")
     print(f"{'='*80}\n")
 
     config = create_config(config_type, high_load_multiplier)
@@ -120,7 +120,7 @@ def train_and_evaluate(config_type='capacity_4x5',
 
     start_time = time.time()
 
-    # 创建TD7 agent（使用TD7推荐的配置）
+    # Create TD7 agent (using TD7 recommended configuration)
     td7_config = {
         'embedding_dim': 256,
         'hidden_dim': 256,
@@ -156,38 +156,38 @@ def train_and_evaluate(config_type='capacity_4x5',
         config=td7_config
     )
 
-    print(f"\n开始训练TD7...")
+    print(f"\nStarting TD7 training...")
 
-    # 训练循环
+    # Training loop
     state, info = env.reset()
     episode_reward = 0
     episode_length = 0
     episode_count = 0
 
     for step in range(1, timesteps + 1):
-        # 选择动作
+        # Select action
         if step < td7_config['learning_starts']:
             action = env.action_space.sample()
         else:
             action = agent.act(state, training=True)
 
-        # 执行动作
+        # Execute action
         next_state, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
 
         episode_reward += reward
         episode_length += 1
 
-        # 存储经验
+        # Store experience
         agent.store_transition(state, action, reward, next_state, done)
 
         state = next_state
 
-        # 训练
+        # Train
         if step >= td7_config['learning_starts']:
             agent.train()
 
-        # Episode结束
+        # Episode end
         if done:
             episode_count += 1
             if episode_count % 10 == 0:
@@ -197,22 +197,22 @@ def train_and_evaluate(config_type='capacity_4x5',
             episode_reward = 0
             episode_length = 0
 
-        # 进度显示
+        # Progress display
         if step % 10000 == 0:
             print(f"  Training progress: {step}/{timesteps} ({step/timesteps*100:.1f}%)")
 
     training_time = time.time() - start_time
 
-    # 保存模型
+    # Save model
     model_path = save_dir / 'TD7_model.pt'
     agent.save(str(model_path))
 
-    # 评估
-    print(f"\n评估 ({eval_episodes} 回合)...")
+    # Evaluation
+    print(f"\nEvaluation ({eval_episodes} episodes)...")
     eval_rewards = []
     eval_lengths = []
-    eval_terminated_count = 0  # 真实崩溃
-    eval_truncated_count = 0   # 正常截断
+    eval_terminated_count = 0  # Real crashes
+    eval_truncated_count = 0   # Normal truncation
     eval_waiting_times = []
     eval_utilizations = []
 
@@ -227,7 +227,7 @@ def train_and_evaluate(config_type='capacity_4x5',
         episode_truncated = False
 
         while not done:
-            action = agent.act(obs, training=False)  # 确定性策略
+            action = agent.act(obs, training=False)  # Deterministic policy
             obs, reward, term, trunc, info = env.step(action)
             done = term or trunc
             ep_reward += reward
@@ -247,10 +247,10 @@ def train_and_evaluate(config_type='capacity_4x5',
 
         if episode_terminated:
             eval_terminated_count += 1
-            crash_marker = " 🔴[CRASHED - 系统崩溃!]"
+            crash_marker = " [CRASHED - System crash!]"
         elif episode_truncated:
             eval_truncated_count += 1
-            crash_marker = " ✅[完成]"
+            crash_marker = " [COMPLETED]"
         else:
             crash_marker = ""
 
@@ -260,7 +260,7 @@ def train_and_evaluate(config_type='capacity_4x5',
             eval_utilizations.append(np.mean(ep_utils))
 
         if (ep + 1) % 10 == 0:
-            print(f"  Episode {ep+1}: {ep_reward:.2f} (长度{ep_len}){crash_marker}")
+            print(f"  Episode {ep+1}: {ep_reward:.2f} (length {ep_len}){crash_marker}")
 
     mean_reward = np.mean(eval_rewards)
     std_reward = np.std(eval_rewards)
@@ -271,15 +271,15 @@ def train_and_evaluate(config_type='capacity_4x5',
     mean_length = np.mean(eval_lengths)
 
     print(f"\n{'='*80}")
-    print(f"评估结果:")
-    print(f"  平均奖励: {mean_reward:.2f} ± {std_reward:.2f}")
-    print(f"  最佳奖励: {np.max(eval_rewards):.2f}")
-    print(f"  🔴 崩溃率: {terminated_rate*100:.1f}% ({eval_terminated_count}/{eval_episodes})")
-    print(f"  ✅ 完成率: {truncated_rate*100:.1f}% ({eval_truncated_count}/{eval_episodes})")
-    print(f"  平均回合长度: {mean_length:.1f}")
-    print(f"  平均等待: {mean_waiting:.2f} 时间步")
-    print(f"  平均利用率: {mean_util*100:.1f}%")
-    print(f"  训练时间: {training_time/60:.2f}分钟")
+    print(f"Evaluation Results:")
+    print(f"  Mean reward: {mean_reward:.2f} +/- {std_reward:.2f}")
+    print(f"  Best reward: {np.max(eval_rewards):.2f}")
+    print(f"  Crash rate: {terminated_rate*100:.1f}% ({eval_terminated_count}/{eval_episodes})")
+    print(f"  Completion rate: {truncated_rate*100:.1f}% ({eval_truncated_count}/{eval_episodes})")
+    print(f"  Mean episode length: {mean_length:.1f}")
+    print(f"  Mean waiting time: {mean_waiting:.2f} timesteps")
+    print(f"  Mean utilization: {mean_util*100:.1f}%")
+    print(f"  Training time: {training_time/60:.2f} minutes")
     print(f"{'='*80}")
 
     results = {
@@ -322,15 +322,15 @@ if __name__ == '__main__':
     parser.add_argument('--timesteps', type=int, default=100000)
     parser.add_argument('--eval-episodes', type=int, default=50)
     parser.add_argument('--high-load-multiplier', type=float, default=10.0,
-                       help='高负载倍数（相对v3）')
+                       help='High load multiplier (relative to v3)')
     args = parser.parse_args()
 
     try:
         result = train_and_evaluate(args.config,
                                    args.timesteps, args.eval_episodes, args.high_load_multiplier)
-        print(f"\n✅ 完成: {result['mean_reward']:.2f} ± {result['std_reward']:.2f}")
-        print(f"🔴 崩溃率: {result['crash_rate']*100:.1f}%")
+        print(f"\nCompleted: {result['mean_reward']:.2f} +/- {result['std_reward']:.2f}")
+        print(f"Crash rate: {result['crash_rate']*100:.1f}%")
     except Exception as e:
-        print(f"\n❌ 失败: {e}")
+        print(f"\nFailed: {e}")
         import traceback
         traceback.print_exc()
