@@ -12,17 +12,18 @@ from datetime import datetime
 def quick_check():
     """Quick progress check"""
 
-    print("\n" + "="*60)
-    print(f"⏰ {datetime.now().strftime('%H:%M:%S')} - Quick Status Check")
+    print("
+" + "="*60)
+    print(f"Time: {datetime.now().strftime('%H:%M:%S')} - Quick Status Check")
     print("="*60)
 
     # Check process
     try:
         result = subprocess.run(["ps", "aux"], capture_output=True, text=True)
         if "run_ablation_studies.py" in result.stdout:
-            print("✓ Experiment running")
+            print("Experiment running")
         else:
-            print("✗ Experiment not running!")
+            print("Experiment not running!")
             return
     except:
         pass
@@ -39,17 +40,18 @@ def quick_check():
                 if os.path.exists(result_file):
                     completed += 1
 
-    print(f"📊 Progress: {completed}/12 runs completed ({completed/12*100:.0f}%)")
+    print(f"Progress: {completed}/12 runs completed ({completed/12*100:.0f}%)")
 
     # Estimate remaining time
     if completed > 0:
         remaining = 12 - completed
         est_hours = remaining * 2.5
-        print(f"⏱️  Estimated remaining: ~{est_hours:.1f} hours")
+        print(f"Estimated remaining: ~{est_hours:.1f} hours")
     else:
-        print(f"⏱️  First run in progress (takes ~2.5 hours)")
+        print(f"First run in progress (takes ~2.5 hours)")
 
-    print("="*60 + "\n")
+    print("="*60 + "
+")
 
 if __name__ == '__main__':
     quick_check()
