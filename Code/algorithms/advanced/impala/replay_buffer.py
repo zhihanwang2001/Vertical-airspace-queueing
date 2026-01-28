@@ -1,6 +1,6 @@
 """
 IMPALA Replay Buffer
-IMPALA算法的经验回放缓冲区，支持序列存储和批量采样
+Experience replay buffer for IMPALA algorithm, supporting sequence storage and batch sampling
 """
 
 import numpy as np
@@ -11,8 +11,8 @@ import random
 
 
 class Episode:
-    """单个Episode的存储"""
-    
+    """Storage for a single episode"""
+
     def __init__(self):
         self.states = []
         self.actions = []
@@ -23,7 +23,7 @@ class Episode:
         self.next_states = []
     
     def add_step(self, state, action, reward, next_state, done, log_prob, value):
-        """添加一个时间步的数据"""
+        """Add data for one timestep"""
         self.states.append(state)
         self.actions.append(action)
         self.rewards.append(reward)
@@ -33,7 +33,7 @@ class Episode:
         self.values.append(value)
     
     def to_tensors(self, device: torch.device):
-        """转换为张量格式"""
+        """Convert to tensor format"""
         return {
             'states': torch.FloatTensor(np.array(self.states)).to(device),
             'actions': torch.FloatTensor(np.array(self.actions)).to(device),
@@ -49,19 +49,19 @@ class Episode:
 
 
 class IMPALAReplayBuffer:
-    """IMPALA经验回放缓冲区"""
-    
+    """IMPALA experience replay buffer"""
+
     def __init__(self, 
                  capacity: int = 10000,
                  sequence_length: int = 20,
                  device: torch.device = torch.device('cpu')):
         """
-        初始化回放缓冲区
-        
+        Initialize replay buffer
+
         Args:
-            capacity: 最大episode数量
-            sequence_length: 序列长度（用于截断长episode）
-            device: 计算设备
+            capacity: Maximum number of episodes
+            sequence_length: Sequence length (for truncating long episodes)
+            device: Computing device
         """
         self.capacity = capacity
         self.sequence_length = sequence_length
@@ -71,10 +71,10 @@ class IMPALAReplayBuffer:
         self.current_episode = Episode()
         
     def add_step(self, state, action, reward, next_state, done, log_prob, value):
-        """添加一个时间步"""
+        """Add one timestep"""
         self.current_episode.add_step(state, action, reward, next_state, done, log_prob, value)
-        
-        # 如果episode结束，保存并开始新episode
+
+        # If episode ends, save and start new episode
         if done:
             if len(self.current_episode) > 0:
                 self.episodes.append(self.current_episode)
@@ -82,21 +82,21 @@ class IMPALAReplayBuffer:
     
     def sample_sequences(self, batch_size: int) -> Dict[str, torch.Tensor]:
         """
-        采样序列批次
-        
+        Sample sequence batches
+
         Args:
-            batch_size: 批次大小
-            
+            batch_size: Batch size
+
         Returns:
-            包含序列数据的字典
+            Dictionary containing sequence data
         """
         if len(self.episodes) < batch_size:
             return None
         
-        # 随机选择episodes
+        # Randomly select episodes
         selected_episodes = random.sample(list(self.episodes), batch_size)
-        
-        # 将episodes转换为固定长度的序列
+
+        # Convert episodes to fixed-length sequences
         batch_sequences = []
         
         for episode in selected_episodes:
@@ -104,21 +104,21 @@ class IMPALAReplayBuffer:
             episode_length = len(episode)
             
             if episode_length >= self.sequence_length:
-                # Episode足够长，随机选择一个起始位置
+                # Episode is long enough, randomly select a starting position
                 start_idx = random.randint(0, episode_length - self.sequence_length)
                 sequence = {
                     key: value[start_idx:start_idx + self.sequence_length]
                     for key, value in episode_data.items()
                 }
             else:
-                # Episode不够长，进行padding
+                # Episode is not long enough, perform padding
                 sequence = {}
                 for key, value in episode_data.items():
                     if key in ['dones', 'rewards']:
-                        # 对于dones和rewards，用0填充
+                        # For dones and rewards, pad with 0
                         padding = torch.zeros(self.sequence_length - episode_length).to(self.device)
                     else:
-                        # 对于其他张量，用最后一个值填充
+                        # For other tensors, pad with last value
                         last_value = value[-1] if len(value) > 0 else torch.zeros_like(value[0])
                         padding = last_value.unsqueeze(0).repeat(self.sequence_length - episode_length, *([1] * (len(last_value.shape))))
                     
@@ -126,12 +126,12 @@ class IMPALAReplayBuffer:
             
             batch_sequences.append(sequence)
         
-        # 将所有序列堆叠成批次 [batch_size, sequence_length, ...]
+        # Stack all sequences into batch [batch_size, sequence_length, ...]
         batch = {}
         for key in batch_sequences[0].keys():
             batch[key] = torch.stack([seq[key] for seq in batch_sequences], dim=0)
-        
-        # 重新排列维度为 [sequence_length, batch_size, ...]
+
+        # Rearrange dimensions to [sequence_length, batch_size, ...]
         for key, value in batch.items():
             batch[key] = value.transpose(0, 1)
         
@@ -139,13 +139,13 @@ class IMPALAReplayBuffer:
     
     def get_recent_trajectories(self, num_episodes: int = None) -> List[Dict[str, torch.Tensor]]:
         """
-        获取最近的轨迹
-        
+        Get recent trajectories
+
         Args:
-            num_episodes: 获取的episode数量，None表示获取所有
-            
+            num_episodes: Number of episodes to get, None means get all
+
         Returns:
-            轨迹列表
+            List of trajectories
         """
         if num_episodes is None:
             episodes_to_return = list(self.episodes)
@@ -160,7 +160,7 @@ class IMPALAReplayBuffer:
         return trajectories
     
     def clear(self):
-        """清空缓冲区"""
+        """Clear buffer"""
         self.episodes.clear()
         self.current_episode = Episode()
     
@@ -169,49 +169,49 @@ class IMPALAReplayBuffer:
     
     @property
     def size(self):
-        """缓冲区中的总步数"""
+        """Total steps in buffer"""
         return sum(len(episode) for episode in self.episodes)
-    
+
     @property
     def is_ready(self):
-        """是否有足够的数据进行采样"""
-        return len(self.episodes) > 10  # 至少需要10个episode
+        """Whether there is enough data for sampling"""
+        return len(self.episodes) > 10  # At least 10 episodes needed
 
 
-def collate_sequences(sequences: List[Dict[str, torch.Tensor]], 
+def collate_sequences(sequences: List[Dict[str, torch.Tensor]],
                      max_length: int = None) -> Dict[str, torch.Tensor]:
     """
-    将不等长的序列打包成批次
-    
+    Pack sequences of unequal length into batches
+
     Args:
-        sequences: 序列列表
-        max_length: 最大序列长度
-        
+        sequences: List of sequences
+        max_length: Maximum sequence length
+
     Returns:
-        批次字典
+        Batch dictionary
     """
     if not sequences:
         return {}
     
-    # 确定最大长度
+    # Determine maximum length
     if max_length is None:
         max_length = max(seq['states'].shape[0] for seq in sequences)
-    
+
     batch_size = len(sequences)
     padded_batch = {}
-    
-    # 初始化批次张量
+
+    # Initialize batch tensors
     for key in sequences[0].keys():
         example_tensor = sequences[0][key]
         if len(example_tensor.shape) == 1:
-            # 一维张量（如rewards, dones）
+            # 1D tensors (like rewards, dones)
             padded_batch[key] = torch.zeros(max_length, batch_size, device=example_tensor.device)
         else:
-            # 多维张量（如states, actions）
+            # Multi-dimensional tensors (like states, actions)
             shape = (max_length, batch_size) + example_tensor.shape[1:]
             padded_batch[key] = torch.zeros(shape, device=example_tensor.device)
     
-    # 填充数据
+    # Fill data
     for i, seq in enumerate(sequences):
         seq_len = min(seq['states'].shape[0], max_length)
         for key, tensor in seq.items():
