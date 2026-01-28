@@ -1,6 +1,6 @@
 """
 Random Baseline
-随机基线算法 - 用作对比基准
+Random baseline algorithm - used as comparison benchmark
 """
 
 import numpy as np
@@ -12,7 +12,7 @@ from .base_baseline import BaseBaseline
 
 
 class RandomBaseline(BaseBaseline):
-    """随机基线算法实现"""
+    """Random baseline algorithm implementation"""
     
     def __init__(self, 
                  env,
@@ -20,7 +20,7 @@ class RandomBaseline(BaseBaseline):
                  config: Optional[Dict] = None):
         
         default_config = {
-            'seed': None,  # 随机种子
+            'seed': None,  # Random seed
             'action_bounds': {
                 'service_intensities': (0.1, 2.0),
                 'arrival_multiplier': (0.5, 5.0),
@@ -33,7 +33,7 @@ class RandomBaseline(BaseBaseline):
         
         super().__init__(env, algorithm_name, default_config)
         
-        # 设置随机种子
+        # Set random seed
         if self.config['seed'] is not None:
             random.seed(self.config['seed'])
             np.random.seed(self.config['seed'])
@@ -41,37 +41,37 @@ class RandomBaseline(BaseBaseline):
         print(f"Random Baseline initialized")
     
     def predict(self, observation, deterministic: bool = True) -> Tuple[np.ndarray, Optional[Dict]]:
-        """随机预测动作"""
-        # 忽略deterministic参数，总是随机选择
+        """Randomly predict action"""
+        # Ignore deterministic parameter, always random
         
-        # 根据环境的action_space生成随机动作
+        # Generate random action based on environment's action_space
         if hasattr(self.env.action_space, 'sample'):
             action = self.env.action_space.sample()
         else:
-            # 手动生成随机动作
+            # Manually generate random action
             action = self._generate_random_action()
         
         return action, None
     
     def _generate_random_action(self) -> Dict:
-        """生成随机动作"""
+        """Generate random action"""
         bounds = self.config['action_bounds']
         
         action = {}
         
-        # service_intensities: 5维连续动作
+        # service_intensities: 5-dimensional continuous action
         service_min, service_max = bounds['service_intensities']
         action['service_intensities'] = np.random.uniform(
             service_min, service_max, size=5
         )
         
-        # arrival_multiplier: 1维连续动作
+        # arrival_multiplier: 1-dimensional continuous action
         arrival_min, arrival_max = bounds['arrival_multiplier']
         action['arrival_multiplier'] = np.random.uniform(
             arrival_min, arrival_max
         )
         
-        # emergency_transfers: 5维二进制动作
+        # emergency_transfers: 5-dimensional binary action
         action['emergency_transfers'] = np.random.randint(
             0, 2, size=5
         )
@@ -79,10 +79,10 @@ class RandomBaseline(BaseBaseline):
         return action
     
     def train(self, total_timesteps: int, **kwargs) -> Dict:
-        """训练过程（实际上只是随机运行）"""
+        """Training process (actually just random execution)"""
         print(f"Running Random Baseline for {total_timesteps} timesteps...")
         
-        # 重置训练记录
+        # Reset training records
         self.training_history = {
             'episode_rewards': [],
             'episode_lengths': [],
@@ -99,10 +99,10 @@ class RandomBaseline(BaseBaseline):
         episode_count = 0
         
         for timestep in range(total_timesteps):
-            # 随机选择动作
+            # Randomly select action
             action, _ = self.predict(state, deterministic=False)
             
-            # 执行动作
+            # Execute action
             next_state, reward, terminated, truncated, info = self.env.step(action)
             done = terminated or truncated
             
@@ -111,11 +111,11 @@ class RandomBaseline(BaseBaseline):
             episode_length += 1
             
             if done:
-                # 记录episode信息
+                # Record episode information
                 self.training_history['episode_rewards'].append(episode_reward)
                 self.training_history['episode_lengths'].append(episode_length)
                 
-                # 计算平均奖励
+                # Calculate average reward
                 if len(self.training_history['episode_rewards']) >= 100:
                     avg_reward = np.mean(self.training_history['episode_rewards'][-100:])
                     self.training_history['avg_rewards'].append(avg_reward)
@@ -123,7 +123,7 @@ class RandomBaseline(BaseBaseline):
                 if episode_count % 100 == 0:
                     print(f"Episode {episode_count}, Timestep {timestep}, Reward: {episode_reward:.2f}")
                 
-                # 重置环境
+                # Reset environment
                 state, _ = self.env.reset()
                 episode_reward = 0
                 episode_length = 0
@@ -146,7 +146,7 @@ class RandomBaseline(BaseBaseline):
         }
     
     def save(self, path: str) -> None:
-        """保存模型（随机基线没有参数需要保存）"""
+        """Save model (random baseline has no parameters to save)"""
         import json
         
         save_data = {
@@ -163,7 +163,7 @@ class RandomBaseline(BaseBaseline):
         print(f"Random Baseline saved to: {path}")
     
     def load(self, path: str) -> None:
-        """加载模型"""
+        """Load model"""
         import json
         
         with open(path, 'r') as f:
@@ -183,7 +183,7 @@ class RandomBaseline(BaseBaseline):
         print(f"Random Baseline loaded from: {path}")
     
     def get_info(self) -> Dict:
-        """获取算法信息"""
+        """Get algorithm information"""
         info = super().get_info()
         info.update({
             'description': 'Random policy baseline for comparison',
