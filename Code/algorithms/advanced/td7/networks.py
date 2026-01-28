@@ -233,7 +233,7 @@ class TD7_Networks:
         # Initialize target networks
         self.soft_update_target_networks(tau=1.0)
 
-        print(f"🎯 TD7 Networks initialized")
+        print(f"TD7 Networks initialized")
         print(f"   State dim: {state_dim}, Action dim: {action_dim}")
         print(f"   Embedding dim: {embedding_dim}, Hidden dim: {hidden_dim}")
         print(f"   Max action: {max_action}")
