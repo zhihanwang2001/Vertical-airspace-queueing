@@ -26,7 +26,8 @@ df_rl = df[df['family'] == 'RL'].copy()
 print("Generating comprehensive figures...")
 
 # Figure 1: Capacity Paradox - Reward vs Load
-print("\n1. Creating reward vs load comparison...")
+print("
+1. Creating reward vs load comparison...")
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
 loads = sorted(df_rl['load_multiplier'].unique())
@@ -58,7 +59,7 @@ ax1.fill_between(loads,
                   np.array(k30_rewards) + np.array(k30_std),
                   alpha=0.2, color='#C62828')
 
-ax1.axvline(x=5, color='gray', linestyle='--', linewidth=1.5, alpha=0.7, label='Transition ~5×')
+ax1.axvline(x=5, color='gray', linestyle='--', linewidth=1.5, alpha=0.7, label='Transition ~5x')
 ax1.set_xlabel('Load Multiplier', fontweight='bold')
 ax1.set_ylabel('Mean Reward', fontweight='bold')
 ax1.set_title('Capacity Paradox: Reward vs Load', fontweight='bold', fontsize=14)
@@ -93,8 +94,9 @@ ax2.set_ylim(-5, 105)
 plt.tight_layout()
 fig_path = output_dir / 'capacity_paradox_comprehensive.png'
 plt.savefig(fig_path, dpi=300, bbox_inches='tight')
-print(f"   ✅ Saved: {fig_path}")
+print(f"   Saved: {fig_path}")
 plt.close()
 
-print("\n✅ All figures generated successfully!")
-print(f"📁 Output directory: {output_dir}")
+print("
+All figures generated successfully!")
+print(f"Output directory: {output_dir}")
