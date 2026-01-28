@@ -1,5 +1,4 @@
 """
-SB3 SAC算法基线
 SB3 SAC Baseline Algorithm
 """
 
@@ -18,7 +17,7 @@ from .space_utils import SB3DictWrapper
 
 
 class SB3SACBaseline:
-    """SB3 SAC基线算法"""
+    """SB3 SAC Baseline Algorithm"""
     
     def __init__(self, config=None):
         default_config = {
@@ -46,22 +45,22 @@ class SB3SACBaseline:
         self.env = None
         
     def setup_env(self):
-        """设置环境"""
+        """Setup environment"""
         base_env = DRLOptimizedQueueEnvFixed()
         wrapped_env = SB3DictWrapper(base_env)
         self.env = Monitor(wrapped_env, filename=None)
         
-        # 创建向量化环境
+        # Create vectorized environment
         self.vec_env = DummyVecEnv([lambda: self.env])
         
         return self.env
     
     def create_model(self):
-        """创建SAC模型"""
+        """Create SAC model"""
         if self.env is None:
             self.setup_env()
         
-        # 创建SAC模型
+        # Create SAC model
         self.model = SAC(
             "MlpPolicy",
             self.vec_env,
@@ -86,22 +85,22 @@ class SB3SACBaseline:
         return self.model
     
     def train(self, total_timesteps, eval_freq=10000, save_freq=50000):
-        """训练模型"""
+        """Train model"""
         if self.model is None:
             self.create_model()
         
-        # 创建必要的目录
+        # Create necessary directories
         os.makedirs('./logs/', exist_ok=True)
         os.makedirs('../../../Models/sb3_sac_best/', exist_ok=True)
         os.makedirs('../../../Models/sb3_sac_checkpoints/', exist_ok=True)
         
-        # 创建评估环境
+        # Create evaluation environment
         eval_env = DummyVecEnv([lambda: Monitor(
             SB3DictWrapper(DRLOptimizedQueueEnvFixed()), 
             filename=None
         )])
         
-        # 创建回调
+        # Create callbacks
         eval_callback = EvalCallback(
             eval_env,
             best_model_save_path='../../../Models/sb3_sac_best/',
@@ -119,31 +118,31 @@ class SB3SACBaseline:
             name_prefix='sb3_sac'
         )
         
-        # 开始训练
+        # Start training
         print(f"Starting SB3 SAC training for {total_timesteps:,} timesteps...")
         
         self.model.learn(
             total_timesteps=total_timesteps,
-            callback=None,  # 移除有问题的callbacks
+            callback=None,  # Remove problematic callbacks
             log_interval=10,
             tb_log_name="SB3_SAC"
         )
         
         print("SB3 SAC training completed!")
         
-        # 返回训练结果字典以兼容比较框架
+        # Return training results dictionary to be compatible with comparison framework
         return {
-            'episodes': 0,  # SB3没有直接的episode计数
+            'episodes': 0,  # SB3 doesn't have direct episode counting
             'total_timesteps': total_timesteps,
-            'final_reward': 0  # 将在评估中获得
+            'final_reward': 0  # Will be obtained in evaluation
         }
     
     def evaluate(self, n_episodes=10, deterministic=True, verbose=True):
-        """评估模型"""
+        """Evaluate model"""
         if self.model is None:
             raise ValueError("Model not trained yet!")
         
-        # 创建评估环境
+        # Create evaluation environment
         eval_env = SB3DictWrapper(DRLOptimizedQueueEnvFixed())
         
         episode_rewards = []
@@ -163,7 +162,7 @@ class SB3SACBaseline:
                 episode_reward += reward
                 episode_length += 1
                 
-                if episode_length >= 200:  # 防止无限循环
+                if episode_length >= 200:  # Prevent infinite loop
                     break
             
             episode_rewards.append(episode_reward)
@@ -178,17 +177,17 @@ class SB3SACBaseline:
             'mean_length': np.mean(episode_lengths),
             'episode_rewards': episode_rewards,
             'episode_lengths': episode_lengths,
-            'system_metrics': []  # SB3算法没有系统指标
+            'system_metrics': []  # SB3 algorithm has no system metrics
         }
         
         return results
     
     def save_results(self, path_prefix):
-        """保存训练历史和结果"""
-        # 创建目录
+        """Save training history and results"""
+        # Create directory
         os.makedirs(os.path.dirname(path_prefix) if os.path.dirname(path_prefix) else ".", exist_ok=True)
         
-        # SB3算法没有训练历史，创建空的历史记录
+        # SB3 algorithm has no training history, create empty history record
         self.training_history = {
             'episode_rewards': [],
             'episode_lengths': [],
@@ -196,7 +195,7 @@ class SB3SACBaseline:
             'loss_values': []
         }
         
-        # 保存为JSON文件（如果需要的话）
+        # Save as JSON file (if needed)
         import json
         with open(f"{path_prefix}_history.json", 'w') as f:
             json.dump(self.training_history, f, indent=2)
@@ -204,7 +203,7 @@ class SB3SACBaseline:
         print(f"SB3 SAC results saved to: {path_prefix}")
     
     def save(self, path):
-        """保存模型"""
+        """Save model"""
         if self.model is None:
             raise ValueError("Model not trained yet!")
         
@@ -212,7 +211,7 @@ class SB3SACBaseline:
         print(f"SB3 SAC model saved to: {path}")
     
     def load(self, path):
-        """加载模型"""
+        """Load model"""
         if self.env is None:
             self.setup_env()
         
@@ -222,20 +221,20 @@ class SB3SACBaseline:
 
 
 def test_sb3_sac():
-    """测试SB3 SAC"""
+    """Test SB3 SAC"""
     print("Testing SB3 SAC...")
     
-    # 创建基线
+    # Create baseline
     baseline = SB3SACBaseline()
     
-    # 训练
+    # Train
     baseline.train(total_timesteps=50000)
     
-    # 评估
+    # Evaluate
     results = baseline.evaluate(n_episodes=10)
     print(f"SB3 SAC Results: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
     
-    # 保存
+    # Save
     baseline.save("../../../Models/sb3_sac_test.zip")
 
 
