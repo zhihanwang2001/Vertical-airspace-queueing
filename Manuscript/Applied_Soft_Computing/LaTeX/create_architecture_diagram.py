@@ -111,7 +111,7 @@ def create_architecture_diagram():
                                 linewidth=1.5)
     ax.add_patch(buffer_box)
     ax.text(9.25, 3.0, 'Replay Buffer', ha='center', fontweight='bold', fontsize=10)
-    ax.text(9.25, 2.6, '(s, a, r, s\')', ha='center', fontsize=8, style='italic')
+    ax.text(9.25, 2.6, '(s, a, r, s')', ha='center', fontsize=8, style='italic')
 
     # ===== Middle: Information Flow =====
 
