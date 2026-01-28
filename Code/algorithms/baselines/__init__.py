@@ -1,16 +1,16 @@
 """
 Baseline Algorithms for Vertical Stratified Queuing System
-基于垂直分层队列系统的基线算法
+Baseline algorithms for vertical stratified queue system
 
-包含SB3算法实现和基准对比：
+Contains SB3 algorithm implementations and baseline comparisons:
 - SB3_TD3 (Stable-Baselines3 TD3)
 - SB3_SAC (Stable-Baselines3 SAC)
 - SB3_PPO (Stable-Baselines3 PPO with Cosine LR)
 - SB3_A2C (Stable-Baselines3 A2C)
 - SB3_DDPG (Stable-Baselines3 DDPG)
-- SB3_Ablation (消融实验基线)
-- Random Agent (随机基线)
-- Heuristic Agent (启发式基线)
+- SB3_Ablation (Ablation study baseline)
+- Random Agent (Random baseline)
+- Heuristic Agent (Heuristic baseline)
 """
 
 from .base_baseline import BaseBaseline
