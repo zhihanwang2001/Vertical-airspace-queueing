@@ -1,6 +1,6 @@
 """
 Comparison Runner
-用于比较不同基线算法性能的实验框架
+Experimental framework for comparing performance of different baseline algorithms
 """
 
 import numpy as np
@@ -25,26 +25,26 @@ from .traditional_baselines_fixed import FCFSBaseline, SJFBaseline, PriorityBase
 
 
 class ComparisonRunner:
-    """基线算法比较运行器"""
+    """Baseline algorithm comparison runner"""
     
     def __init__(self, env, save_dir: str = "./comparison_results"):
         """
         Args:
-            env: 环境实例
-            save_dir: 结果保存目录
+            env: Environment instance
+            save_dir: Results save directory
         """
         self.env = env
         self.save_dir = save_dir
         os.makedirs(save_dir, exist_ok=True)
         
-        # SB3算法配置
+        # SB3 algorithm configurations
         self.algorithm_configs = {
             'SB3_TD3': {
                 'learning_rate': 1e-4,
-                'min_lr': 1e-6,  # 新增：最小学习率
-                'use_cosine_schedule': True,  # 新增：启用余弦学习率调度
+                'min_lr': 1e-6,  # New: minimum learning rate
+                'use_cosine_schedule': True,  # New: enable cosine learning rate schedule
                 'buffer_size': 1000000,
-                'learning_starts': 1000,  # 增加初始学习步数
+                'learning_starts': 1000,  # Increase initial learning steps
                 'batch_size': 256,
                 'tau': 0.005,
                 'gamma': 0.99,
@@ -54,7 +54,7 @@ class ComparisonRunner:
                 'target_policy_noise': 0.2,
                 'target_noise_clip': 0.5,
                 'tensorboard_log': "./tensorboard_logs/",
-                'verbose': 1,  # 恢复输出以便TensorBoard记录
+                'verbose': 1,  # Restore output for TensorBoard logging
                 'seed': 42
             },
             'SB3_DDPG': {
@@ -75,7 +75,7 @@ class ComparisonRunner:
             'SB3_SAC': {
                 'learning_rate': 3e-4,
                 'buffer_size': 1000000,
-                'learning_starts': 1000,  # 增加初始学习步数
+                'learning_starts': 1000,  # Increase initial learning steps
                 'batch_size': 256,
                 'tau': 0.005,
                 'gamma': 0.99,
@@ -85,13 +85,13 @@ class ComparisonRunner:
                 'target_update_interval': 1,
                 'target_entropy': 'auto',
                 'tensorboard_log': "./tensorboard_logs/",
-                'verbose': 1,  # 恢复输出以便TensorBoard记录
+                'verbose': 1,  # Restore output for TensorBoard logging
                 'seed': 42
             },
             'SB3_PPO': {
                 'learning_rate': 3e-4,
-                'min_lr': 1e-6,  # 余弦退火的最小学习率
-                'n_steps': 1024,  # 减少steps，更频繁记录
+                'min_lr': 1e-6,  # Minimum learning rate for cosine annealing
+                'n_steps': 1024,  # Reduce steps for more frequent logging
                 'batch_size': 64,
                 'n_epochs': 10,
                 'gamma': 0.99,
@@ -101,7 +101,7 @@ class ComparisonRunner:
                 'vf_coef': 0.5,
                 'max_grad_norm': 0.5,
                 'tensorboard_log': "./tensorboard_logs/",
-                'verbose': 1,  # 恢复输出以便TensorBoard记录
+                'verbose': 1,  # Restore output for TensorBoard logging
                 'seed': 42
             },
             'SB3_A2C': {
@@ -118,7 +118,7 @@ class ComparisonRunner:
             }
         }
         
-        # 实验参数
+        # Experiment parameters
         self.comparison_results = {}
         
         print(f"Comparison Runner initialized")
@@ -130,50 +130,50 @@ class ComparisonRunner:
                            n_eval_episodes: int = 10,
                            save_models: bool = True,
                            eval_freq: int = 10000) -> Dict:
-        """运行单个算法"""
+        """Run single algorithm"""
         print(f"\n{'='*50}")
         print(f"Running {algorithm_name}")
         print(f"{'='*50}")
         
         start_time = time.time()
         
-        # 创建算法实例
+        # Create algorithm instance
         algorithm = self._create_algorithm(algorithm_name)
         
-        # 训练
+        # Train
         if hasattr(algorithm, 'train') and algorithm_name.startswith('SB3_'):
-            # SB3算法支持eval_freq参数
+            # SB3 algorithms support eval_freq parameter
             train_results = algorithm.train(total_timesteps, eval_freq=eval_freq)
         else:
-            # 自实现算法
+            # Self-implemented algorithms
             train_results = algorithm.train(total_timesteps)
         
-        # 评估
+        # Evaluate
         print(f"Evaluating {algorithm_name}...")
         eval_results = algorithm.evaluate(n_episodes=n_eval_episodes, verbose=True)
         
-        # 保存模型
+        # Save model
         if save_models:
             if algorithm_name.startswith('SB3_'):
-                # SB3模型使用专用的模型目录结构，并使用baseline的save方法（带fallback）
+                # SB3 models use dedicated model directory structure and baseline's save method (with fallback)
                 algo_lower = algorithm_name.lower().replace('sb3_', '')  # sb3_a2c -> a2c
                 model_dir = os.path.join('../../../Models', algo_lower)
                 os.makedirs(model_dir, exist_ok=True)
                 model_path = os.path.join(model_dir, f"{algo_lower}_model_500000")
                 print(f"Saving {algorithm_name} model to: {model_path}")
-                # 使用baseline的save方法，它有fallback机制
+                # Use baseline's save method, which has fallback mechanism
                 algorithm.save(model_path)
             else:
-                # 非SB3模型
+                # Non-SB3 models
                 model_path = os.path.join(self.save_dir, f"{algorithm_name}_model")
                 algorithm.save(model_path)
         
-        # 保存结果
+        # Save results
         algorithm.save_results(os.path.join(self.save_dir, algorithm_name))
         
         total_time = time.time() - start_time
         
-        # 整理结果
+        # Organize results
         results = {
             'algorithm': algorithm_name,
             'train_results': train_results,
@@ -194,11 +194,11 @@ class ComparisonRunner:
                       n_eval_episodes: int = 10,
                       n_runs: int = 1,
                       eval_freq: int = 10000) -> Dict:
-        """运行比较实验"""
+        """Run comparison experiment"""
         if algorithms is None:
             algorithms = ['SB3_TD3', 'SB3_A2C', 'SB3_SAC', 'SB3_PPO', 'SB3_DDPG']
         
-        print(f"\\nStarting comparison experiment")
+        print(f"\nStarting comparison experiment")
         print(f"Algorithms: {algorithms}")
         print(f"Total timesteps per run: {total_timesteps}")
         print(f"Number of runs: {n_runs}")
@@ -207,20 +207,20 @@ class ComparisonRunner:
         all_results = {}
         
         for algorithm in algorithms:
-            print(f"\\nRunning {algorithm}...")
+            print(f"\nRunning {algorithm}...")
             
             algorithm_results = []
             for run in range(n_runs):
                 if n_runs > 1:
                     print(f"  Run {run + 1}/{n_runs}")
                 
-                # 重置环境种子（如果支持）
+                # Reset environment seed (if supported)
                 if hasattr(self.env, 'seed'):
                     self.env.seed(42 + run)
                 
                 result = self.run_single_algorithm(
                     algorithm, total_timesteps, n_eval_episodes, 
-                    save_models=(run == 0),  # 只保存第一次运行的模型
+                    save_models=(run == 0),  # Only save model from first run
                     eval_freq=eval_freq
                 )
                 algorithm_results.append(result)
@@ -229,16 +229,16 @@ class ComparisonRunner:
         
         self.comparison_results = all_results
         
-        # 生成比较报告
+        # Generate comparison report
         self._generate_comparison_report()
         
-        # 绘制比较图表
+        # Plot comparison results
         self._plot_comparison_results()
         
         return all_results
     
     def _create_algorithm(self, algorithm_name: str):
-        """创建算法实例"""
+        """Create algorithm instance"""
         config = self.algorithm_configs.get(algorithm_name, {})
         
         if algorithm_name == 'SB3_TD3':
@@ -265,14 +265,14 @@ class ComparisonRunner:
             raise ValueError(f"Unknown algorithm: {algorithm_name}")
     
     def _generate_comparison_report(self):
-        """生成比较报告"""
+        """Generate comparison report"""
         report_path = os.path.join(self.save_dir, "comparison_report.txt")
         
         with open(report_path, 'w', encoding='utf-8') as f:
-            f.write("基线算法比较报告\\n")
-            f.write("="*50 + "\\n\\n")
+            f.write("Baseline Algorithm Comparison Report\n")
+            f.write("="*50 + "\n\n")
             
-            # 汇总统计
+            # Summary statistics
             summary_data = []
             for algorithm, results_list in self.comparison_results.items():
                 rewards = [r['eval_results']['mean_reward'] for r in results_list]
@@ -287,56 +287,56 @@ class ComparisonRunner:
                     'Training Time': f"{np.mean(times):.2f}s ± {np.std(times):.2f}s"
                 })
             
-            # 按平均奖励排序
+            # Sort by average reward
             summary_data.sort(key=lambda x: float(x['Mean Reward'].split()[0]), reverse=True)
             
-            f.write("算法性能排名:\\n")
-            f.write("-" * 80 + "\\n")
-            f.write(f"{'Rank':<4} {'Algorithm':<12} {'Mean Reward':<15} {'Best':<10} {'Std':<10} {'Time':<15}\\n")
-            f.write("-" * 80 + "\\n")
+            f.write("Algorithm Performance Ranking:\n")
+            f.write("-" * 80 + "\n")
+            f.write(f"{'Rank':<4} {'Algorithm':<12} {'Mean Reward':<15} {'Best':<10} {'Std':<10} {'Time':<15}\n")
+            f.write("-" * 80 + "\n")
             
             for i, data in enumerate(summary_data):
                 f.write(f"{i+1:<4} {data['Algorithm']:<12} {data['Mean Reward']:<15} "
-                       f"{data['Best Reward']:<10} {data['Reward Std']:<10} {data['Training Time']:<15}\\n")
+                       f"{data['Best Reward']:<10} {data['Reward Std']:<10} {data['Training Time']:<15}\n")
             
-            f.write("\\n\\n详细结果:\\n")
-            f.write("="*50 + "\\n")
+            f.write("\n\nDetailed Results:\n")
+            f.write("="*50 + "\n")
             
             for algorithm, results_list in self.comparison_results.items():
-                f.write(f"\\n{algorithm}:\\n")
-                f.write("-" * 30 + "\\n")
+                f.write(f"\n{algorithm}:\n")
+                f.write("-" * 30 + "\n")
                 
                 for i, result in enumerate(results_list):
                     eval_res = result['eval_results']
                     f.write(f"  Run {i+1}: {eval_res['mean_reward']:.2f} ± {eval_res['std_reward']:.2f} "
-                           f"(训练时间: {result['training_time']:.2f}s)\\n")
+                           f"(Training time: {result['training_time']:.2f}s)\n")
                     
-                    # 系统指标
+                    # System metrics
                     if eval_res['system_metrics']:
                         avg_throughput = np.mean([m.get('throughput', 0) for m in eval_res['system_metrics']])
                         avg_stability = np.mean([m.get('stability_score', 0) for m in eval_res['system_metrics']])
-                        f.write(f"    吞吐量: {avg_throughput:.2f}, 稳定性: {avg_stability:.2f}\\n")
+                        f.write(f"    Throughput: {avg_throughput:.2f}, Stability: {avg_stability:.2f}\n")
         
         print(f"Comparison report saved to: {report_path}")
     
     def _plot_comparison_results(self):
-        """绘制比较结果图表"""
+        """Plot comparison results"""
         plt.style.use('seaborn-v0_8' if 'seaborn-v0_8' in plt.style.available else 'default')
         
-        # 1. 训练曲线比较
+        # 1. Training curves comparison
         self._plot_training_curves()
         
-        # 2. 性能箱型图
+        # 2. Performance boxplot
         self._plot_performance_boxplot()
         
-        # 3. 训练时间比较
+        # 3. Training time comparison
         self._plot_training_time_comparison()
         
-        # 4. 详细性能雷达图
+        # 4. Detailed performance radar chart
         self._plot_radar_chart()
     
     def _plot_training_curves(self):
-        """绘制训练曲线"""
+        """Plot training curves"""
         fig, axes = plt.subplots(2, 2, figsize=(15, 12))
         fig.suptitle('Training Curves Comparison', fontsize=16)
         
@@ -345,7 +345,7 @@ class ComparisonRunner:
         for idx, (algorithm, results_list) in enumerate(self.comparison_results.items()):
             color = colors[idx]
             
-            # 取第一次运行的结果用于绘图
+            # Use first run results for plotting
             result = results_list[0]
             history = result['training_history']
             
@@ -361,7 +361,7 @@ class ComparisonRunner:
             if history['episode_lengths']:
                 axes[1, 0].plot(history['episode_lengths'], label=algorithm, color=color, alpha=0.7)
             
-            # Loss Values (如果有)
+            # Loss Values (if available)
             if history.get('loss_values'):
                 axes[1, 1].plot(history['loss_values'], label=algorithm, color=color, alpha=0.7)
         
@@ -394,10 +394,10 @@ class ComparisonRunner:
         plt.close()
     
     def _plot_performance_boxplot(self):
-        """绘制性能箱型图"""
+        """Plot performance boxplot"""
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
         
-        # 准备数据
+        # Prepare data
         algorithms = []
         rewards = []
         training_times = []
@@ -414,13 +414,13 @@ class ComparisonRunner:
             'Training_Time': training_times
         })
         
-        # 奖励箱型图
+        # Reward boxplot
         sns.boxplot(data=df, x='Algorithm', y='Reward', ax=ax1)
         ax1.set_title('Evaluation Rewards Distribution')
         ax1.set_ylabel('Mean Reward')
         ax1.tick_params(axis='x', rotation=45)
         
-        # 训练时间箱型图
+        # Training time boxplot
         sns.boxplot(data=df, x='Algorithm', y='Training_Time', ax=ax2)
         ax2.set_title('Training Time Distribution')
         ax2.set_ylabel('Training Time (seconds)')
@@ -431,7 +431,7 @@ class ComparisonRunner:
         plt.close()
     
     def _plot_training_time_comparison(self):
-        """绘制训练时间比较"""
+        """Plot training time comparison"""
         algorithms = list(self.comparison_results.keys())
         mean_times = []
         std_times = []
@@ -444,7 +444,7 @@ class ComparisonRunner:
         fig, ax = plt.subplots(figsize=(10, 6))
         bars = ax.bar(algorithms, mean_times, yerr=std_times, capsize=5)
         
-        # 添加数值标签
+        # Add value labels
         for i, (mean_time, std_time) in enumerate(zip(mean_times, std_times)):
             ax.text(i, mean_time + std_time + max(mean_times) * 0.01, 
                    f'{mean_time:.1f}s', ha='center', va='bottom')
@@ -457,26 +457,26 @@ class ComparisonRunner:
         plt.close()
     
     def _plot_radar_chart(self):
-        """绘制性能雷达图"""
-        # 计算各算法的标准化性能指标
+        """Plot performance radar chart"""
+        # Calculate standardized performance metrics for each algorithm
         metrics = ['Reward', 'Stability', 'Efficiency', 'Throughput']
         algorithms = list(self.comparison_results.keys())
         
-        # 准备数据矩阵
+        # Prepare data matrix
         data_matrix = []
         
         for algorithm in algorithms:
             results = self.comparison_results[algorithm]
             
-            # 计算指标
+            # Calculate metrics
             rewards = [r['eval_results']['mean_reward'] for r in results]
             mean_reward = np.mean(rewards)
             
-            # 简化指标计算
-            stability = 1.0 / (1.0 + np.std(rewards))  # 稳定性
-            efficiency = 1.0 / np.mean([r['training_time'] for r in results]) * 1000  # 效率
+            # Simplified metric calculation
+            stability = 1.0 / (1.0 + np.std(rewards))  # Stability
+            efficiency = 1.0 / np.mean([r['training_time'] for r in results]) * 1000  # Efficiency
             
-            # 吞吐量（如果有系统指标）
+            # Throughput (if system metrics available)
             throughputs = []
             for result in results:
                 if result['eval_results']['system_metrics']:
@@ -485,15 +485,15 @@ class ComparisonRunner:
             
             data_matrix.append([mean_reward, stability, efficiency, throughput])
         
-        # 标准化到0-1范围
+        # Normalize to 0-1 range
         data_matrix = np.array(data_matrix)
         for i in range(data_matrix.shape[1]):
             col = data_matrix[:, i]
             data_matrix[:, i] = (col - col.min()) / (col.max() - col.min() + 1e-6)
         
-        # 绘制雷达图
+        # Plot radar chart
         angles = np.linspace(0, 2 * np.pi, len(metrics), endpoint=False).tolist()
-        angles += angles[:1]  # 闭合图形
+        angles += angles[:1]  # Close the plot
         
         fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(projection='polar'))
         
@@ -501,7 +501,7 @@ class ComparisonRunner:
         
         for i, algorithm in enumerate(algorithms):
             values = data_matrix[i].tolist()
-            values += values[:1]  # 闭合图形
+            values += values[:1]  # Close the plot
             
             ax.plot(angles, values, 'o-', linewidth=2, label=algorithm, color=colors[i])
             ax.fill(angles, values, alpha=0.25, color=colors[i])
@@ -517,10 +517,10 @@ class ComparisonRunner:
         plt.close()
     
     def save_comparison_data(self, filename: str = "comparison_data.json"):
-        """保存比较数据"""
+        """Save comparison data"""
         save_path = os.path.join(self.save_dir, filename)
         
-        # 转换为可序列化格式
+        # Convert to serializable format
         serializable_results = {}
         for algorithm, results_list in self.comparison_results.items():
             serializable_results[algorithm] = []
@@ -536,7 +536,7 @@ class ComparisonRunner:
                 serializable_results[algorithm].append(serializable_result)
 
         try:
-            # 尝试删除旧文件（如果存在且只读）
+            # Try to delete old file (if exists and read-only)
             if os.path.exists(save_path):
                 os.chmod(save_path, 0o644)
 
@@ -546,7 +546,7 @@ class ComparisonRunner:
             print(f"Comparison data saved to: {save_path}")
         except PermissionError as e:
             print(f"⚠️  Warning: Could not save comparison data to {save_path}: {e}")
-            # 尝试保存到备份位置
+            # Try to save to backup location
             backup_path = save_path.replace('.json', '_backup.json')
             try:
                 with open(backup_path, 'w') as f:
@@ -557,7 +557,7 @@ class ComparisonRunner:
                 print(f"   Training and evaluation results are still saved individually.")
     
     def load_and_analyze_results(self, filename: str = "comparison_data.json"):
-        """加载并分析已保存的结果"""
+        """Load and analyze saved results"""
         load_path = os.path.join(self.save_dir, filename)
         
         with open(load_path, 'r') as f:
