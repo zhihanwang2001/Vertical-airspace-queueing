@@ -108,7 +108,7 @@ def create_graphical_abstract():
     metrics_left = [
         'n = 30 per group',
         'p < 10⁻⁶⁸',
-        'Cohen\'s d = 6.31'
+        'Cohen's d = 6.31'
     ]
 
     for i, metric in enumerate(metrics_left):
@@ -135,10 +135,10 @@ if __name__ == '__main__':
     plt.savefig(OUTPUT_FILE, dpi=DPI, bbox_inches='tight',
                 facecolor='white', edgecolor='none', pad_inches=0)
 
-    print(f"✅ Graphical abstract saved to {OUTPUT_FILE}")
-    print(f"📐 Required: 590×590 pixels (5×5 cm at 300 DPI)")
-    print(f"📊 Figure size: {SIZE_INCHES:.4f} × {SIZE_INCHES:.4f} inches")
-    print(f"🎯 DPI: {DPI}")
+    print(f"Graphical abstract saved to {OUTPUT_FILE}")
+    print(f"Required: 590×590 pixels (5×5 cm at 300 DPI)")
+    print(f"Figure size: {SIZE_INCHES:.4f} × {SIZE_INCHES:.4f} inches")
+    print(f"DPI: {DPI}")
 
     plt.close()
 
@@ -146,6 +146,6 @@ if __name__ == '__main__':
     import os
     if os.path.exists(OUTPUT_FILE):
         size = os.path.getsize(OUTPUT_FILE)
-        print(f"✅ File created: {size/1024:.1f} KB")
+        print(f"File created: {size/1024:.1f} KB")
     else:
-        print("❌ File creation failed")
+        print("File creation failed")
