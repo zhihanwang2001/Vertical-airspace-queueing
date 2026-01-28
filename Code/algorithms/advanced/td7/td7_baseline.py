@@ -1,6 +1,6 @@
 """
 TD7 Baseline Implementation
-TD7算法的基线包装器，集成现有框架和TensorBoard监控
+Baseline wrapper for TD7 algorithm, integrating existing framework and TensorBoard monitoring
 """
 
 import sys
@@ -20,175 +20,175 @@ from .td7_agent import TD7_Agent
 
 
 class TD7Baseline:
-    """TD7算法基线实现"""
-    
+    """TD7 algorithm baseline implementation"""
+
     def __init__(self, config: Dict = None):
         """
-        初始化TD7基线
-        
+        Initialize TD7 baseline
+
         Args:
-            config: 配置参数
+            config: Configuration parameters
         """
-        
-        # 默认配置
+
+        # Default configuration
         default_config = {
-            # 环境配置
+            # Environment configuration
             'env_id': 'VerticalQueue-v0',
             'max_episode_steps': 1000,
             'render': False,
-            
-            # TD7特定参数  
+
+            # TD7-specific parameters
             'embedding_dim': 256,
             'hidden_dim': 256,
             'max_action': 1.0,
-            
-            # 学习参数
+
+            # Learning parameters
             'actor_lr': 3e-4,
-            'critic_lr': 3e-4, 
+            'critic_lr': 3e-4,
             'encoder_lr': 3e-4,
             'gamma': 0.99,
             'tau': 0.005,
-            
-            # TD3特定参数
+
+            # TD3-specific parameters
             'policy_delay': 2,
             'target_noise': 0.2,
             'noise_clip': 0.5,
             'exploration_noise': 0.1,
-            
-            # 优先级回放
+
+            # Prioritized replay
             'buffer_size': 1000000,
             'batch_size': 256,
             'alpha': 0.6,
             'beta': 0.4,
             'beta_increment': 0.001,
-            
-            # SALE参数
+
+            # SALE parameters
             'embedding_loss_weight': 1.0,
             'embedding_update_freq': 1,
-            
-            # 检查点机制
+
+            # Checkpoint mechanism
             'use_checkpoints': True,
             'checkpoint_freq': 10000,
             'max_checkpoints': 5,
-            
-            # 训练参数
+
+            # Training parameters
             'learning_starts': 25000,
             'train_freq': 1,
             'eval_freq': 5000,
             'save_freq': 20000,
-            
-            # 日志和保存
+
+            # Logging and saving
             'log_dir': './logs/td7',
             'save_dir': '../../../../Models/td7',
             'tensorboard_log': './logs/td7',
             'experiment_name': 'TD7_experiment',
-            
-            # 其他
+
+            # Other
             'seed': 42,
             'device': 'auto',
             'verbose': True
         }
-        
+
         if config:
             default_config.update(config)
-        
+
         self.config = default_config
         self.algorithm_name = "TD7"
         self.agent = None
         self.env = None
         self.eval_env = None
-        
-        # 统计信息
+
+        # Statistics
         self.total_timesteps = 0
         self.episode_rewards = []
         self.episode_lengths = []
         self.training_logs = []
         self.eval_rewards = []
-        
+
         print(f"🎯 TD7 Baseline initialized")
         print(f"   Config: {len(default_config)} parameters")
         print(f"   Log dir: {self.config['log_dir']}")
-    
+
     def setup_env(self):
-        """设置环境"""
+        """Setup environment"""
         base_env = DRLOptimizedQueueEnvFixed()
         self.env = SB3DictWrapper(base_env)
-        
+
         print(f"✅ Environment setup completed")
         print(f"   Observation space: {self.env.observation_space}")
         print(f"   Action space: {self.env.action_space}")
-        
+
         return self.env
-    
+
     def create_agent(self):
-        """创建TD7智能体"""
+        """Create TD7 agent"""
         if self.env is None:
             self.setup_env()
-        
+
         self.agent = TD7_Agent(
             state_space=self.env.observation_space,
             action_space=self.env.action_space,
             config=self.config
         )
-        
+
         print("✅ TD7 Agent created successfully")
         return self.agent
-    
+
     def train(self, total_timesteps: int, eval_freq: int = 10000, save_freq: int = 50000):
         """
-        训练TD7模型
-        
+        Train TD7 model
+
         Args:
-            total_timesteps: 总训练步数
-            eval_freq: 评估频率
-            save_freq: 保存频率
-            
+            total_timesteps: Total training steps
+            eval_freq: Evaluation frequency
+            save_freq: Save frequency
+
         Returns:
-            训练历史字典
+            Training history dictionary
         """
         if self.agent is None:
             self.create_agent()
-        
-        # 创建TensorBoard writer
+
+        # Create TensorBoard writer
         tb_log_name = f"TD7_{int(time.time())}"
         writer = SummaryWriter(
             log_dir=os.path.join(self.config['tensorboard_log'], tb_log_name)
         )
-        
+
         print(f"🚀 Starting TD7 training for {total_timesteps:,} timesteps...")
         print(f"   TensorBoard log: {tb_log_name}")
-        
-        # 训练变量
+
+        # Training variables
         state, info = self.env.reset()
         episode_reward = 0
         episode_length = 0
         episode_count = 0
-        
+
         start_time = time.time()
-        
+
         for timestep in range(1, total_timesteps + 1):
             self.total_timesteps = timestep
             train_info = None
-            
-            # 选择动作
+
+            # Select action
             if timestep < self.config['learning_starts']:
                 action = self.env.action_space.sample()
             else:
                 action = self.agent.act(state, training=True)
-            
-            # 执行动作
+
+            # Execute action
             next_state, reward, terminated, truncated, info = self.env.step(action)
             done = terminated or truncated
-            
+
             episode_reward += reward
             episode_length += 1
-            
-            # 存储经验
+
+            # Store experience
             self.agent.store_transition(state, action, reward, next_state, done)
-            
+
             state = next_state
-            
-            # 训练
+
+            # Train
             if timestep >= self.config['learning_starts']:
                 train_info = self.agent.train()
                 if train_info and timestep % 1000 == 0:
@@ -197,14 +197,14 @@ class TD7Baseline:
                         **train_info,
                         'episode_reward': episode_reward if done else None
                     })
-            
-            # 回合结束
+
+            # Episode end
             if done:
                 self.episode_rewards.append(episode_reward)
                 self.episode_lengths.append(episode_length)
                 episode_count += 1
 
-                # 🔧 优化: 记录每个episode的奖励到TensorBoard (用于绘制训练曲线)
+                # Log each episode reward to TensorBoard (for training curves)
                 writer.add_scalar('episode/reward', episode_reward, timestep)
                 writer.add_scalar('episode/length', episode_length, timestep)
                 if len(self.episode_rewards) >= 10:
@@ -219,18 +219,18 @@ class TD7Baseline:
                     print(f"Episode {episode_count}, Step {timestep:,}, "
                           f"Reward: {episode_reward:.2f}, Avg: {avg_reward:.2f}")
 
-                # 重置环境
+                # Reset environment
                 state, info = self.env.reset()
                 episode_reward = 0
                 episode_length = 0
-            
-            # 记录到TensorBoard  
+
+            # Log to TensorBoard
             if train_info and timestep % 100 == 0:
                 for key, value in train_info.items():
                     if isinstance(value, (int, float)):
                         writer.add_scalar(f'train/{key}', value, timestep)
-            
-            # 评估
+
+            # Evaluation
             if timestep % eval_freq == 0:
                 eval_reward = self._evaluate(num_episodes=5)
                 self.eval_rewards.append({
@@ -239,20 +239,20 @@ class TD7Baseline:
                 })
                 writer.add_scalar('eval/mean_reward', eval_reward, timestep)
                 print(f"📊 Evaluation at step {timestep:,}: {eval_reward:.2f}")
-            
-            # 保存模型
+
+            # Save model
             if timestep % save_freq == 0:
                 self._save_model(timestep)
-        
+
         training_time = time.time() - start_time
 
-        # 最终评估
+        # Final evaluation
         final_eval_reward = self._evaluate(num_episodes=10)
 
-        # 🔧 优化: 导出训练曲线到CSV文件 (用于论文绘图)
+        # Export training curve to CSV file (for paper plots)
         self._export_training_curve_to_csv(tb_log_name)
 
-        # 关闭writer
+        # Close writer
         writer.close()
 
         results = {
@@ -275,21 +275,21 @@ class TD7Baseline:
         return results
 
     def _export_training_curve_to_csv(self, tb_log_name: str):
-        """导出训练曲线到CSV文件"""
+        """Export training curve to CSV file"""
         import csv
 
         csv_dir = Path("result_excel")
         csv_dir.mkdir(exist_ok=True)
         csv_path = csv_dir / "TD7.csv"
 
-        # 计算移动平均奖励 (每1000步)
+        # Calculate moving average reward (every 1000 steps)
         data_points = []
-        window_size = 10  # 10个episode的移动平均
+        window_size = 10  # Moving average of 10 episodes
 
         for i in range(len(self.episode_rewards)):
             if i >= window_size - 1:
                 avg_reward = np.mean(self.episode_rewards[i - window_size + 1:i + 1])
-                # 估算对应的timestep (假设平均episode长度)
+                # Estimate corresponding timestep (assuming average episode length)
                 avg_length = np.mean(self.episode_lengths[:i+1])
                 timestep = int((i + 1) * avg_length)
 
@@ -298,7 +298,7 @@ class TD7Baseline:
                     'Value': avg_reward
                 })
 
-        # 写入CSV
+        # Write to CSV
         with open(csv_path, 'w', newline='') as f:
             writer = csv.DictWriter(f, fieldnames=['Wall time', 'Step', 'Value'])
             writer.writeheader()
@@ -312,135 +312,135 @@ class TD7Baseline:
 
         print(f"✅ Training curve exported to: {csv_path}")
         return csv_path
-    
+
     def _evaluate(self, num_episodes: int = 10) -> float:
-        """评估智能体性能"""
+        """Evaluate agent performance"""
         if self.agent is None:
             return 0.0
-        
-        # 使用训练环境进行评估
+
+        # Use training environment for evaluation
         episode_rewards = []
-        
+
         for _ in range(num_episodes):
             state, info = self.env.reset()
             episode_reward = 0
             done = False
-            
+
             while not done:
                 action = self.agent.act(state, training=False)
                 state, reward, terminated, truncated, info = self.env.step(action)
                 episode_reward += reward
                 done = terminated or truncated
-            
+
             episode_rewards.append(episode_reward)
-        
+
         return np.mean(episode_rewards)
-    
+
     def evaluate(self, n_episodes: int = 10, deterministic: bool = True, verbose: bool = True):
         """
-        评估模型性能
-        
+        Evaluate model performance
+
         Args:
-            n_episodes: 评估episode数量
-            deterministic: 是否使用确定性策略
-            verbose: 是否打印详细信息
-            
+            n_episodes: Number of evaluation episodes
+            deterministic: Whether to use deterministic policy
+            verbose: Whether to print detailed information
+
         Returns:
-            评估结果字典
+            Evaluation results dictionary
         """
         if self.agent is None:
             raise ValueError("Agent not initialized. Please train first.")
-        
+
         episode_rewards = []
         episode_lengths = []
-        
+
         for episode in range(n_episodes):
             state, info = self.env.reset()
             episode_reward = 0
             episode_length = 0
             done = False
-            
+
             while not done:
                 action = self.agent.act(state, training=False)
                 state, reward, terminated, truncated, info = self.env.step(action)
                 episode_reward += reward
                 episode_length += 1
                 done = terminated or truncated
-                
-                # 防止无限循环
+
+                # Prevent infinite loop
                 if episode_length >= 1000:
                     break
-            
+
             episode_rewards.append(episode_reward)
             episode_lengths.append(episode_length)
-            
+
             if verbose:
                 print(f"  Episode {episode+1}/{n_episodes}: Reward = {episode_reward:.2f}, Length = {episode_length}")
-        
+
         results = {
             'mean_reward': np.mean(episode_rewards),
             'std_reward': np.std(episode_rewards),
             'mean_length': np.mean(episode_lengths),
             'episode_rewards': episode_rewards,
             'episode_lengths': episode_lengths,
-            'system_metrics': []  # TD7特定指标可以在这里添加
+            'system_metrics': []  # TD7-specific metrics can be added here
         }
-        
+
         if verbose:
             print(f"📊 TD7 Evaluation Results:")
             print(f"   Mean reward: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
             print(f"   Mean length: {results['mean_length']:.1f}")
-        
+
         return results
-    
+
     def _save_model(self, timestep: int):
-        """保存模型"""
+        """Save model"""
         if self.agent is None:
             return
-        
-        # 创建保存目录
+
+        # Create save directory
         save_dir = Path(self.config['save_dir'])
         save_dir.mkdir(parents=True, exist_ok=True)
-        
+
         model_path = save_dir / f"td7_model_{timestep}.pt"
         self.agent.save(str(model_path))
         print(f"💾 Model saved: {model_path}")
-    
+
     def load_model(self, model_path: str):
-        """加载模型"""
+        """Load model"""
         if self.agent is None:
             self.create_agent()
-        
+
         self.agent.load(model_path)
         print(f"✅ TD7 model loaded from {model_path}")
-    
+
     def save(self, path: str):
-        """保存模型"""
+        """Save model"""
         if self.agent is None:
             raise ValueError("Agent not trained yet!")
-        
-        # 创建保存目录
+
+        # Create save directory
         save_dir = Path(path).parent
         save_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.agent.save(path)
         print(f"💾 TD7 model saved to: {path}")
-    
+
     def load(self, path: str):
-        """加载模型"""
+        """Load model"""
         if self.env is None:
             self.setup_env()
-        
+
         if self.agent is None:
             self.create_agent()
-        
+
         self.agent.load(path)
         print(f"📂 TD7 model loaded from: {path}")
-        
+
         return self.agent
-    
+
     def predict(self, state: np.ndarray, training: bool = False) -> np.ndarray:
-        """预测动作"""
+        """Predict action"""
         if self.agent is None:
             raise ValueError("Agent not initialized. Call setup() first.")
         
