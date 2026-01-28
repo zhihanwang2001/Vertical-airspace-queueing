@@ -1,0 +1,46 @@
+\subsection{Ablation Study: Capacity-Aware Action Clipping}
+\label{subsec:ablation}
+
+To validate the contribution of HCA2C's architectural design beyond network capacity, we conducted ablation studies focusing on the capacity-aware action clipping mechanism---a key component that constrains actions to feasible capacity regions.
+
+\subsubsection{Experimental Setup}
+
+We compared three variants under 3× baseline load with three random seeds (42, 43, 44):
+
+\begin{itemize}
+    \item \textbf{HCA2C-Full}: Complete architecture with capacity-aware clipping [0.5,1.5]×[1.0,3.0] (821K parameters)
+    \item \textbf{HCA2C-Wide}: Same hierarchical architecture but moderately wider action space [0.4,1.6]×[0.8,3.5] without capacity constraints (821K parameters)
+    \item \textbf{A2C-Baseline}: Standard A2C from main experiments (85K parameters)
+\end{itemize}
+
+All variants were trained for 500,000 timesteps using identical hyperparameters except for action space bounds.
+
+\subsubsection{Results}
+
+Table~\ref{tab:ablation} presents the ablation study results. The findings reveal a critical dependency on capacity-aware action clipping:
+
+\input{tables/tab_ablation_simple}
+
+\textbf{Key Finding 1: Capacity-Aware Clipping is Essential.} HCA2C-Wide, despite having identical network capacity (821K parameters) and hierarchical structure as HCA2C-Full, achieves only 78,973 reward---66\% worse than HCA2C-Full (228,945) and 8\% worse than A2C-Baseline (85,650). This demonstrates that capacity-aware action clipping is not merely a performance optimization but a critical architectural component that enables effective learning.
+
+\textbf{Key Finding 2: Architecture Beyond Capacity.} Comparing HCA2C-Full (228,945) with A2C-Baseline (85,650), we observe a 167\% performance improvement. While increased network capacity (821K vs 85K) contributes to this gain, the significant degradation of HCA2C-Wide (78,973) proves that capacity alone is insufficient. The hierarchical decomposition combined with capacity-aware constraints is necessary for achieving superior performance.
+
+\subsubsection{Analysis}
+
+The performance degradation of HCA2C-Wide reveals why capacity-aware clipping is critical:
+
+\textbf{1. Suboptimal Action Exploration.} Without tight capacity constraints, the policy explores a wider action space [0.4,1.6]×[0.8,3.5] that includes suboptimal operating regions. While the system remains stable (0\% crash rate), the policy converges to inferior solutions that achieve only 34\% of HCA2C-Full's performance.
+
+\textbf{2. Inefficient Learning Dynamics.} The moderately wider action space allows the policy to explore actions near capacity boundaries that lead to suboptimal queue dynamics. Without capacity-aware guidance, the policy requires significantly more exploration to identify high-performing regions, resulting in convergence to local optima.
+
+\textbf{3. Domain Knowledge Encoding.} Capacity-aware clipping encodes critical domain knowledge: optimal arrival rates should operate within conservative margins of layer capacities. This architectural inductive bias guides exploration toward high-performing solutions, dramatically improving sample efficiency and final performance.
+
+\subsubsection{Implications}
+
+These findings have important implications for deep RL in capacity-constrained systems:
+
+\textbf{For UAM Systems.} The 66\% performance degradation of HCA2C-Wide demonstrates that naive application of large networks without domain-specific constraints is insufficient for achieving optimal performance in safety-critical applications. Architectural design that encodes operational constraints is essential for both stability and performance.
+
+\textbf{For Deep RL Research.} Our results highlight the value of architectural inductive biases over pure capacity scaling. While larger networks provide greater representational power (HCA2C-Wide has 821K parameters vs A2C's 85K), domain-aligned constraints are necessary to guide learning toward high-performing solutions in constrained optimization problems. HCA2C-Wide's inferior performance (78,973) compared to smaller A2C-Baseline (85,650) demonstrates that capacity alone does not guarantee superior results.
+
+\textbf{For Practical Deployment.} The significant performance gap between HCA2C-Full and HCA2C-Wide underscores the importance of incorporating domain knowledge into policy architectures. In real-world UAM systems, operating at 34\% of optimal performance would result in substantial operational inefficiencies and reduced service quality, validating our design choice of capacity-aware action clipping.
