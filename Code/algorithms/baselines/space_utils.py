@@ -1,5 +1,5 @@
 """
-空间处理工具函数
+Space handling utility functions
 Utility functions for handling Dict observation and action spaces
 """
 
@@ -12,7 +12,7 @@ except ImportError:
 
 
 def get_space_dimensions(space):
-    """获取空间的维度"""
+    """Get dimensions of space"""
     if hasattr(space, 'spaces'):
         # Dict space
         total_dim = 0
@@ -28,7 +28,7 @@ def get_space_dimensions(space):
 
 
 def flatten_dict_observation(obs: Union[Dict, np.ndarray]) -> np.ndarray:
-    """将字典观测扁平化为向量"""
+    """Flatten dictionary observation to vector"""
     if isinstance(obs, dict):
         flattened = []
         for key in sorted(obs.keys()):
@@ -45,15 +45,15 @@ def flatten_dict_observation(obs: Union[Dict, np.ndarray]) -> np.ndarray:
 
 
 def dict_action_to_vector(action: Dict) -> np.ndarray:
-    """将字典动作转换为向量形式（用于存储到replay buffer）"""
+    """Convert dictionary action to vector form (for storing in replay buffer)"""
     vector = []
     
-    # service_intensities: 映射回[-1,1]范围
+    # service_intensities: map back to [-1,1] range
     service_intensities = action.get('service_intensities', np.array([1.0]*5))
     service_raw = (service_intensities - 0.1) / (2.0 - 0.1) * 2 - 1
     vector.extend(service_raw)
     
-    # arrival_multiplier: 映射回[-1,1]范围
+    # arrival_multiplier: map back to [-1,1] range
     arrival_multiplier = action.get('arrival_multiplier', np.array([1.0]))
     if isinstance(arrival_multiplier, np.ndarray):
         arrival_val = arrival_multiplier[0]
@@ -62,7 +62,7 @@ def dict_action_to_vector(action: Dict) -> np.ndarray:
     arrival_raw = (arrival_val - 0.5) / (5.0 - 0.5) * 2 - 1
     vector.append(arrival_raw)
     
-    # emergency_transfers: 映射到[-1,1]
+    # emergency_transfers: map to [-1,1]
     emergency_transfers = action.get('emergency_transfers', np.array([0]*5))
     emergency_raw = emergency_transfers * 2 - 1  # 0->-1, 1->1
     vector.extend(emergency_raw)
@@ -71,23 +71,23 @@ def dict_action_to_vector(action: Dict) -> np.ndarray:
 
 
 def vector_to_dict_action(action_vector: np.ndarray) -> Dict:
-    """将向量动作转换为字典格式"""
+    """Convert vector action to dictionary format"""
     action_vector = action_vector.flatten()
     idx = 0
     
-    # service_intensities: 从[-1,1]映射到[0.1,2.0]
+    # service_intensities: map from [-1,1] to [0.1,2.0]
     service_intensities = action_vector[idx:idx+5]
     service_intensities = 0.1 + (service_intensities + 1) / 2 * (2.0 - 0.1)
     service_intensities = np.clip(service_intensities, 0.1, 2.0).astype(np.float32)
     idx += 5
     
-    # arrival_multiplier: 从[-1,1]映射到[0.5,5.0]
+    # arrival_multiplier: map from [-1,1] to [0.5,5.0]
     arrival_multiplier = action_vector[idx]
     arrival_multiplier = 0.5 + (arrival_multiplier + 1) / 2 * (5.0 - 0.5)
     arrival_multiplier = np.clip(arrival_multiplier, 0.5, 5.0)
     idx += 1
     
-    # emergency_transfers: 从[-1,1]映射到{0,1}
+    # emergency_transfers: map from [-1,1] to {0,1}
     emergency_transfers = (action_vector[idx:idx+5] > 0).astype(np.int8)
     
     return {
@@ -98,7 +98,7 @@ def vector_to_dict_action(action_vector: np.ndarray) -> Dict:
 
 
 def get_random_dict_action() -> Dict:
-    """生成随机字典动作"""
+    """Generate random dictionary action"""
     return {
         'service_intensities': np.random.uniform(0.1, 2.0, 5).astype(np.float32),
         'arrival_multiplier': np.random.uniform(0.5, 5.0, 1).astype(np.float32),
@@ -107,7 +107,7 @@ def get_random_dict_action() -> Dict:
 
 
 def validate_dict_action(action: Dict) -> Dict:
-    """验证并修正字典动作格式"""
+    """Validate and correct dictionary action format"""
     validated_action = {}
     
     # service_intensities
@@ -134,20 +134,20 @@ def validate_dict_action(action: Dict) -> Dict:
 
 class SB3DictWrapper(gym.Wrapper):
     """
-    SB3兼容的字典空间包装器
-    将Dict观测和动作空间转换为Box空间以兼容SB3算法
+    SB3-compatible dictionary space wrapper
+    Converts Dict observation and action spaces to Box spaces for SB3 algorithm compatibility
     """
     
     def __init__(self, env):
         super().__init__(env)
         
-        # 计算观测空间维度
+        # Calculate observation space dimensions
         obs_dim = get_space_dimensions(env.observation_space)
         self.observation_space = gym.spaces.Box(
             low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32
         )
         
-        # 计算动作空间维度 (5+1+5=11)
+        # Calculate action space dimensions (5+1+5=11)
         action_dim = get_space_dimensions(env.action_space)
         self.action_space = gym.spaces.Box(
             low=-1.0, high=1.0, shape=(action_dim,), dtype=np.float32
@@ -156,20 +156,20 @@ class SB3DictWrapper(gym.Wrapper):
         print(f"SB3DictWrapper: obs_dim={obs_dim}, action_dim={action_dim}")
     
     def reset(self, **kwargs):
-        """重置环境并转换观测"""
+        """Reset environment and convert observation"""
         obs, info = self.env.reset(**kwargs)
         flat_obs = flatten_dict_observation(obs)
         return flat_obs, info
     
     def step(self, action):
-        """执行步骤并转换观测"""
-        # 将向量动作转换为字典格式
+        """Execute step and convert observation"""
+        # Convert vector action to dictionary format
         dict_action = vector_to_dict_action(action)
         
-        # 执行环境步骤
+        # Execute environment step
         obs, reward, terminated, truncated, info = self.env.step(dict_action)
         
-        # 转换观测
+        # Convert observation
         flat_obs = flatten_dict_observation(obs)
         
         return flat_obs, reward, terminated, truncated, info
