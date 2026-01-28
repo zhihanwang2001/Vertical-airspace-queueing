@@ -86,7 +86,7 @@ def create_final_graphical_abstract():
                                  facecolor='#FFF9E6', edgecolor='#F39C12', linewidth=1.5)
     ax.add_patch(findings_bg)
 
-    ax.text(50, 53, '🎯 Key Findings', ha='center', va='center',
+    ax.text(50, 53, 'Key Findings', ha='center', va='center',
             fontsize=8.5, fontweight='bold', color='#2C3E50')
 
     findings_list = [
@@ -109,7 +109,7 @@ def create_final_graphical_abstract():
                               facecolor='#E8F4F8', edgecolor='#3498DB', linewidth=1.5)
     ax.add_patch(stats_bg)
 
-    ax.text(50, 23, '📊 Statistical Validation', ha='center', va='center',
+    ax.text(50, 23, 'Statistical Validation', ha='center', va='center',
             fontsize=8.5, fontweight='bold', color='#2C3E50')
 
     # Left column metrics
@@ -153,11 +153,11 @@ if __name__ == '__main__':
     plt.savefig(OUTPUT_FILE, dpi=DPI, bbox_inches=None, pad_inches=0,
                 facecolor='white', edgecolor='none')
 
-    print(f"✅ Final graphical abstract saved: {OUTPUT_FILE}")
-    print(f"📐 Target: 590×590 pixels (5×5 cm at 300 DPI)")
-    print(f"🎨 Figure: {SIZE_INCHES:.6f} inches × {SIZE_INCHES:.6f} inches")
-    print(f"🔍 DPI: {DPI}")
-    print(f"✨ Expected output: {SIZE_PIXELS}×{SIZE_PIXELS} pixels")
+    print(f"Final graphical abstract saved: {OUTPUT_FILE}")
+    print(f"Target: 590×590 pixels (5×5 cm at 300 DPI)")
+    print(f"Figure: {SIZE_INCHES:.6f} inches × {SIZE_INCHES:.6f} inches")
+    print(f"DPI: {DPI}")
+    print(f"Expected output: {SIZE_PIXELS}×{SIZE_PIXELS} pixels")
 
     plt.close()
 
@@ -165,7 +165,8 @@ if __name__ == '__main__':
     import os
     if os.path.exists(OUTPUT_FILE):
         size_kb = os.path.getsize(OUTPUT_FILE) / 1024
-        print(f"✅ File size: {size_kb:.1f} KB")
-        print(f"\n🔍 Verify with: file {OUTPUT_FILE}")
+        print(f"File size: {size_kb:.1f} KB")
+        print(f"
+Verify with: file {OUTPUT_FILE}")
     else:
-        print("❌ Error: File not created")
+        print("Error: File not created")
