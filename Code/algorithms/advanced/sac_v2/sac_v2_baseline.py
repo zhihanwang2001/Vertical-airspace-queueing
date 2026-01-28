@@ -75,14 +75,14 @@ class SAC_v2_Baseline:
             'training_steps': []
         }
         
-        print("🎭 SAC v2 Baseline initialized")
+        print("SAC v2 Baseline initialized")
     
     def setup_env(self):
         """Setup environment"""
         base_env = DRLOptimizedQueueEnvFixed()
         self.env = SB3DictWrapper(base_env)
         
-        print(f"✅ Environment setup completed")
+        print(f"Environment setup completed")
         print(f"   Observation space: {self.env.observation_space}")
         print(f"   Action space: {self.env.action_space}")
         
@@ -99,7 +99,7 @@ class SAC_v2_Baseline:
             config=self.config
         )
         
-        print("✅ SAC v2 Agent created successfully")
+        print("SAC v2 Agent created successfully")
         return self.agent
     
     def train(self, total_timesteps: int, eval_freq: int = 10000, save_freq: int = 50000):
@@ -123,7 +123,7 @@ class SAC_v2_Baseline:
             log_dir=os.path.join(self.config['tensorboard_log'], tb_log_name)
         )
         
-        print(f"🚀 Starting SAC v2 training for {total_timesteps:,} timesteps...")
+        print(f"Starting SAC v2 training for {total_timesteps:,} timesteps...")
         print(f"   TensorBoard log: {tb_log_name}")
 
         # Training variables
@@ -150,7 +150,7 @@ class SAC_v2_Baseline:
                 else:  # Gym format
                     next_state, reward, done, info = step_result
             except Exception as e:
-                print(f"❌ Environment step error: {e}")
+                print(f"Environment step error: {e}")
                 break
 
             # Store experience
@@ -214,7 +214,7 @@ class SAC_v2_Baseline:
                 writer.add_scalar('eval/mean_reward', eval_results['mean_reward'], timestep)
                 writer.add_scalar('eval/std_reward', eval_results['std_reward'], timestep)
                 
-                print(f"📊 Evaluation at step {timestep}: "
+                print(f"Evaluation at step {timestep}: "
                       f"Mean reward: {eval_results['mean_reward']:.2f} ± {eval_results['std_reward']:.2f}")
 
             # Save model
@@ -222,13 +222,13 @@ class SAC_v2_Baseline:
                 save_path = f"../../../../Models/sac_v2_step_{timestep}.pt"
                 os.makedirs(os.path.dirname(save_path), exist_ok=True)
                 self.agent.save(save_path)
-                print(f"💾 Model saved at step {timestep}: {save_path}")
+                print(f"Model saved at step {timestep}: {save_path}")
 
         # Training completed
         total_time = time.time() - start_time
         writer.close()
 
-        print(f"✅ SAC v2 training completed!")
+        print(f"SAC v2 training completed!")
         print(f"   Total episodes: {episode}")
         print(f"   Total time: {total_time:.2f}s")
         print(f"   Average reward (last 100): {np.mean(self.training_history['episode_rewards'][-100:]):.2f}")
@@ -280,7 +280,7 @@ class SAC_v2_Baseline:
                     else:
                         next_state, reward, done, info = step_result
                 except Exception as e:
-                    print(f"❌ Evaluation error: {e}")
+                    print(f"Evaluation error: {e}")
                     break
                 
                 episode_reward += reward
@@ -307,7 +307,7 @@ class SAC_v2_Baseline:
         }
         
         if verbose:
-            print(f"📈 SAC v2 Evaluation Results:")
+            print(f"SAC v2 Evaluation Results:")
             print(f"   Mean reward: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
             print(f"   Mean length: {results['mean_length']:.1f}")
             print(f"   Alpha: {self.agent.networks.alpha.item():.4f}")
@@ -331,7 +331,7 @@ class SAC_v2_Baseline:
             
             json.dump(serializable_history, f, indent=2)
         
-        print(f"💾 SAC v2 results saved to: {path_prefix}")
+        print(f"SAC v2 results saved to: {path_prefix}")
     
     def save(self, path: str):
         """Save model"""
@@ -339,7 +339,7 @@ class SAC_v2_Baseline:
             raise ValueError("Agent not trained yet!")
         
         self.agent.save(path)
-        print(f"💾 SAC v2 model saved to: {path}")
+        print(f"SAC v2 model saved to: {path}")
     
     def load(self, path: str):
         """Load model"""
@@ -350,14 +350,14 @@ class SAC_v2_Baseline:
             self.create_agent()
         
         self.agent.load(path)
-        print(f"📂 SAC v2 model loaded from: {path}")
+        print(f"SAC v2 model loaded from: {path}")
         
         return self.agent
 
 
 def test_sac_v2():
     """Test SAC v2"""
-    print("🧪 Testing SAC v2...")
+    print("Testing SAC v2...")
 
     # Create baseline
     baseline = SAC_v2_Baseline()
@@ -373,7 +373,7 @@ def test_sac_v2():
     # Save test
     baseline.save("../../../../Models/sac_v2_test.pt")
     
-    print("✅ SAC v2 test completed!")
+    print("SAC v2 test completed!")
 
 
 if __name__ == "__main__":
