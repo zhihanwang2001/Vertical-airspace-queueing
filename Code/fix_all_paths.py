@@ -1,11 +1,11 @@
 """
-全面修复所有文件路径引用
+Comprehensive Fix for All File Path References
 Fix All File Path References
 
-这个脚本会修复：
-1. 模型文件路径 (./models/ → ../../Models/)
-2. 结果文件路径 (./comparison_results → ../../Results/comparison)
-3. 图表保存路径 (analysis_scripts中的相对路径)
+This script fixes:
+1. Model file paths (./models/ → ../../Models/)
+2. Result file paths (./comparison_results → ../../Results/comparison)
+3. Figure save paths (relative paths in analysis_scripts)
 """
 
 import os
@@ -13,7 +13,7 @@ import re
 from pathlib import Path
 
 def fix_paths_in_file(filepath):
-    """修复单个文件中的所有路径"""
+    """Fix all paths in a single file"""
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
 
@@ -21,7 +21,7 @@ def fix_paths_in_file(filepath):
     filename = filepath.name
     parent_dir = filepath.parent.name
 
-    # 1. 修复模型路径
+    # 1. Fix model paths
     # ./models/ → ../../Models/
     content = re.sub(
         r'(["\'])\.\/models\/',
@@ -29,7 +29,7 @@ def fix_paths_in_file(filepath):
         content
     )
 
-    # 2. 修复结果路径 - comparison_results
+    # 2. Fix result paths - comparison_results
     content = re.sub(
         r'(["\'])\.\/comparison_results(["\'/])',
         r'\1../../Results/comparison\2',
@@ -43,31 +43,31 @@ def fix_paths_in_file(filepath):
         content
     )
 
-    # 3. 修复结果路径 - generalization_results
+    # 3. Fix result paths - generalization_results
     content = re.sub(
         r'(["\'])\.\/generalization_results(["\'/])',
         r'\1../../Results/generalization\2',
         content
     )
 
-    # 4. 修复结果路径 - result_excel
+    # 4. Fix result paths - result_excel
     content = re.sub(
         r'(["\'])\.\/result_excel\/',
         r'\1../../Results/excel/',
         content
     )
 
-    # 5. 修复图表保存路径（仅在analysis_scripts中）
+    # 5. Fix figure save paths (only in analysis_scripts)
     if parent_dir == 'analysis_scripts':
-        # 修复直接保存到当前目录的PNG文件 → Figures/analysis/
-        # 但保留已经有路径的
+        # Fix PNG files saved directly to current directory → Figures/analysis/
+        # But preserve paths that already exist
         content = re.sub(
             r"plt\.savefig\(['\"]([a-zA-Z0-9_]+\.png)['\"](.*?)\)",
             r"plt.savefig('../../Figures/analysis/\1'\2)",
             content
         )
 
-        # 修复output_dir为相对路径的情况
+        # Fix output_dir with relative paths
         content = re.sub(
             r'output_dir\s*=\s*["\']\.\/paper_figures\/?["\']',
             'output_dir = "../../Figures/publication/"',
@@ -80,30 +80,30 @@ def fix_paths_in_file(filepath):
             content
         )
 
-    # 6. 修复training_scripts中output_dir的路径
+    # 6. Fix output_dir paths in training_scripts
     if parent_dir == 'training_scripts':
-        # 修复默认输出目录
+        # Fix default output directory
         content = re.sub(
             r'save_path\s*=\s*["\']\.\/models\/',
             'save_path = "../../Models/',
             content
         )
 
-    # 7. 修复Path对象中的路径
+    # 7. Fix paths in Path objects
     content = re.sub(
         r'Path\(["\']\.\/generalization_results["\']\)',
         'Path("../../Results/generalization")',
         content
     )
 
-    # 8. 修复makedirs中的路径
+    # 8. Fix paths in makedirs
     content = re.sub(
         r'makedirs\(f?["\'][^"\']*\/models\/',
         'makedirs(f"../../Models/',
         content
     )
 
-    # 如果内容有变化，写回文件
+    # If content changed, write back to file
     if content != original_content:
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(content)
@@ -111,21 +111,21 @@ def fix_paths_in_file(filepath):
     return False
 
 def main():
-    """主函数：遍历所有Python文件并修复路径"""
+    """Main function: Traverse all Python files and fix paths"""
     code_dir = Path(__file__).parent
     fixed_files = []
 
     print("="*80)
-    print("开始修复所有文件路径...")
+    print("Starting to fix all file paths...")
     print("="*80)
 
-    # 遍历training_scripts和analysis_scripts
+    # Traverse training_scripts and analysis_scripts
     for script_dir in ['training_scripts', 'analysis_scripts']:
         dir_path = code_dir / script_dir
         if not dir_path.exists():
             continue
 
-        print(f"\n正在检查 {script_dir}/ ...")
+        print(f"\nChecking {script_dir}/ ...")
 
         for py_file in dir_path.glob('*.py'):
             try:
@@ -138,11 +138,11 @@ def main():
                 print(f"  ✗ Error fixing {py_file.name}: {e}")
 
     print(f"\n{'='*80}")
-    print(f"路径修复完成！共修复了 {len(fixed_files)} 个文件")
+    print(f"Path fixing completed! Fixed {len(fixed_files)} files")
     print(f"{'='*80}")
 
     if fixed_files:
-        print("\n修复的文件列表:")
+        print("\nList of fixed files:")
         for f in fixed_files:
             print(f"  - {f.relative_to(code_dir)}")
 
