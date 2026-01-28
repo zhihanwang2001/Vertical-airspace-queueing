@@ -1,12 +1,11 @@
 """
-工具函数模块
 Utility Functions Module
 
-提供数学计算、统计分析、性能评估等辅助功能：
-- 数学工具：向量归一化、统计计算、概率分布
-- 性能分析：稳定性检查、负载计算、效率评估
-- 可视化工具：状态绘制、性能曲线、实验结果展示
-- 数据处理：日志记录、结果保存、配置管理
+Provides mathematical calculations, statistical analysis, performance evaluation and other auxiliary functions:
+- Mathematical tools: Vector normalization, statistical calculations, probability distributions
+- Performance analysis: Stability checks, load calculations, efficiency evaluation
+- Visualization tools: State plotting, performance curves, experimental result display
+- Data processing: Logging, result saving, configuration management
 """
 
 import numpy as np
@@ -24,34 +23,34 @@ warnings.filterwarnings('ignore')
 
 class MathUtils:
     """
-    数学工具类
+    Mathematical Utilities Class
     
-    提供各种数学计算和统计分析功能
+    Provides various mathematical calculations and statistical analysis functions
     """
     
     @staticmethod
     def normalize_vector(vector: np.ndarray, method: str = 'sum') -> np.ndarray:
         """
-        向量归一化
+        Vector normalization
         
         Args:
-            vector: 输入向量
-            method: 归一化方法 ('sum', 'max', 'minmax', 'zscore')
+            vector: Input vector
+            method: Normalization method ('sum', 'max', 'minmax', 'zscore')
         """
         vector = np.array(vector, dtype=np.float32)
         
         if method == 'sum':
-            # 和归一化 (概率分布)
+            # Sum normalization (probability distribution)
             total = np.sum(vector)
             return vector / total if total > 0 else vector
             
         elif method == 'max':
-            # 最大值归一化
+            # Max normalization
             max_val = np.max(vector)
             return vector / max_val if max_val > 0 else vector
             
         elif method == 'minmax':
-            # 最小-最大归一化到[0,1]
+            # Min-max normalization to [0,1]
             min_val, max_val = np.min(vector), np.max(vector)
             if max_val > min_val:
                 return (vector - min_val) / (max_val - min_val)
@@ -59,7 +58,7 @@ class MathUtils:
                 return np.zeros_like(vector)
                 
         elif method == 'zscore':
-            # Z-score标准化
+            # Z-score standardization
             mean_val, std_val = np.mean(vector), np.std(vector)
             if std_val > 0:
                 return (vector - mean_val) / std_val
@@ -67,21 +66,21 @@ class MathUtils:
                 return vector - mean_val
                 
         else:
-            raise ValueError(f"未知的归一化方法: {method}")
+            raise ValueError(f"Unknown normalization method: {method}")
     
     @staticmethod
     def calculate_entropy(probabilities: np.ndarray) -> float:
         """
-        计算概率分布的熵
+        Calculate entropy of probability distribution
         """
         probs = np.array(probabilities)
-        probs = probs[probs > 0]  # 移除零概率
+        probs = probs[probs > 0]  # Remove zero probabilities
         return -np.sum(probs * np.log2(probs))
     
     @staticmethod
     def calculate_gini_coefficient(values: np.ndarray) -> float:
         """
-        计算基尼系数 (不平等度量)
+        Calculate Gini coefficient (inequality measure)
         """
         values = np.sort(np.array(values))
         n = len(values)
@@ -91,7 +90,7 @@ class MathUtils:
     @staticmethod
     def moving_average(data: List[float], window: int) -> List[float]:
         """
-        计算移动平均
+        Calculate moving average
         """
         if len(data) < window:
             return data
@@ -106,7 +105,7 @@ class MathUtils:
     @staticmethod
     def exponential_moving_average(data: List[float], alpha: float = 0.1) -> List[float]:
         """
-        计算指数移动平均
+        Calculate exponential moving average
         """
         if not data:
             return []
@@ -121,7 +120,7 @@ class MathUtils:
     @staticmethod
     def linear_regression(x: np.ndarray, y: np.ndarray) -> Tuple[float, float, float]:
         """
-        简单线性回归
+        Simple linear regression
         
         Returns:
             slope, intercept, r_squared
@@ -142,7 +141,7 @@ class MathUtils:
         slope = numerator / denominator
         intercept = y_mean - slope * x_mean
         
-        # 计算R²
+        # Calculate R²
         y_pred = slope * x + intercept
         ss_res = np.sum((y - y_pred) ** 2)
         ss_tot = np.sum((y - y_mean) ** 2)
@@ -153,9 +152,9 @@ class MathUtils:
 
 class PerformanceAnalyzer:
     """
-    性能分析器
+    Performance Analyzer
     
-    用于分析系统性能、验证理论假设
+    Used for analyzing system performance and validating theoretical hypotheses
     """
     
     def __init__(self):
@@ -165,9 +164,9 @@ class PerformanceAnalyzer:
                                    service_rates: List[float], 
                                    capacities: List[int]) -> Dict:
         """
-        分析稳定性条件
+        Analyze stability condition
         
-        验证 ρᵢ = λᵢᵉᶠᶠ/(μᵢ·cᵢ) < 1
+        Verify ρᵢ = λᵢᵉᶠᶠ/(μᵢ·cᵢ) < 1
         """
         load_factors = []
         is_stable = True
@@ -192,16 +191,16 @@ class PerformanceAnalyzer:
                                    theoretical_max: float,
                                    waiting_times: List[List[float]]) -> Dict:
         """
-        计算效率指标
+        Calculate efficiency metrics
         """
         if not throughput_data:
             return {}
         
-        # 吞吐量效率
+        # Throughput efficiency
         avg_throughput = np.mean(throughput_data)
         throughput_efficiency = avg_throughput / theoretical_max if theoretical_max > 0 else 0
         
-        # 等待时间分析
+        # Waiting time analysis
         if waiting_times:
             avg_waiting_times = [np.mean(layer_waits) for layer_waits in zip(*waiting_times)]
             overall_avg_wait = np.mean(avg_waiting_times)
@@ -218,13 +217,13 @@ class PerformanceAnalyzer:
             'avg_waiting_time': overall_avg_wait,
             'waiting_time_variance': wait_time_variance,
             'waiting_time_fairness': wait_time_fairness,
-            'efficiency_score': throughput_efficiency * wait_time_fairness  # 综合效率分数
+            'efficiency_score': throughput_efficiency * wait_time_fairness  # Composite efficiency score
         }
     
     def analyze_layer_performance(self, queue_lengths_history: List[List[int]],
                                  capacities: List[int]) -> Dict:
         """
-        分析各层性能
+        Analyze layer performance
         """
         if not queue_lengths_history:
             return {}
@@ -254,20 +253,20 @@ class PerformanceAnalyzer:
     def calculate_pyramid_efficiency(self, capacities: List[int], 
                                    utilizations: List[float]) -> Dict:
         """
-        计算倒金字塔结构效率
+        Calculate inverted pyramid structure efficiency
         
-        验证H1: 倒金字塔容量分配是最优结构
+        Verify H1: Inverted pyramid capacity allocation is optimal structure
         """
-        # 检查是否为倒金字塔结构
+        # Check if it's an inverted pyramid structure
         is_pyramid = all(capacities[i] >= capacities[i+1] for i in range(len(capacities)-1))
         
-        # 计算容量利用效率
+        # Calculate capacity utilization efficiency
         weighted_utilization = sum(u * c for u, c in zip(utilizations, capacities)) / sum(capacities)
         
-        # 计算负载平衡度
+        # Calculate load balance
         load_balance = 1 - self.math_utils.calculate_gini_coefficient(utilizations)
         
-        # 计算容量梯度合理性
+        # Calculate capacity gradient rationality
         if len(capacities) > 1:
             capacity_ratios = [capacities[i] / capacities[i+1] for i in range(len(capacities)-1) 
                              if capacities[i+1] > 0]
@@ -286,9 +285,9 @@ class PerformanceAnalyzer:
 
 class VisualizationUtils:
     """
-    可视化工具类
+    Visualization Utilities Class
     
-    用于绘制性能图表、实验结果展示
+    Used for plotting performance charts and displaying experimental results
     """
     
     def __init__(self):
@@ -299,7 +298,7 @@ class VisualizationUtils:
                            capacities: List[int],
                            save_path: Optional[str] = None):
         """
-        绘制队列长度演化图
+        Plot queue length evolution
         """
         if not queue_history:
             return
@@ -310,33 +309,33 @@ class VisualizationUtils:
         num_layers = len(capacities)
         steps = range(len(queue_history))
         
-        for i in range(min(num_layers, 6)):  # 最多显示6层
+        for i in range(min(num_layers, 6)):  # Display at most 6 layers
             ax = axes[i]
             
-            # 提取该层的历史数据
+            # Extract historical data for this layer
             layer_data = [step_data[i] if i < len(step_data) else 0 
                          for step_data in queue_history]
             
-            # 绘制队列长度
-            ax.plot(steps, layer_data, label=f'L{i+1}队列长度', 
+            # Plot queue length
+            ax.plot(steps, layer_data, label=f'L{i+1} Queue Length', 
                    color=self.colors[i], linewidth=2)
             
-            # 绘制容量线
+            # Plot capacity line
             ax.axhline(y=capacities[i], color='red', linestyle='--', 
-                      label=f'容量={capacities[i]}')
+                      label=f'Capacity={capacities[i]}')
             
-            ax.set_title(f'第{i+1}层队列演化 (H={100-i*20}m)')
-            ax.set_xlabel('时间步')
-            ax.set_ylabel('队列长度')
+            ax.set_title(f'Layer {i+1} Queue Evolution (H={100-i*20}m)')
+            ax.set_xlabel('Time Step')
+            ax.set_ylabel('Queue Length')
             ax.legend()
             ax.grid(True, alpha=0.3)
         
-        # 隐藏多余的子图
+        # Hide extra subplots
         for i in range(num_layers, 6):
             axes[i].set_visible(False)
         
         plt.tight_layout()
-        plt.suptitle('垂直分层队列演化分析', fontsize=16, y=1.02)
+        plt.suptitle('Vertical Layered Queue Evolution Analysis', fontsize=16, y=1.02)
         
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
@@ -345,45 +344,45 @@ class VisualizationUtils:
     def plot_performance_metrics(self, metrics_history: Dict[str, List],
                                save_path: Optional[str] = None):
         """
-        绘制性能指标图
+        Plot performance metrics
         """
         fig, axes = plt.subplots(2, 2, figsize=(12, 8))
         
-        # 吞吐量
+        # Throughput
         if 'throughput' in metrics_history:
             axes[0, 0].plot(metrics_history['throughput'], color='blue', linewidth=2)
-            axes[0, 0].set_title('系统吞吐量')
-            axes[0, 0].set_ylabel('吞吐量 (订单/步)')
+            axes[0, 0].set_title('System Throughput')
+            axes[0, 0].set_ylabel('Throughput (orders/step)')
             axes[0, 0].grid(True, alpha=0.3)
         
-        # 平均等待时间
+        # Average waiting time
         if 'avg_waiting_time' in metrics_history:
             axes[0, 1].plot(metrics_history['avg_waiting_time'], color='green', linewidth=2)
-            axes[0, 1].set_title('平均等待时间')
-            axes[0, 1].set_ylabel('等待时间 (步)')
+            axes[0, 1].set_title('Average Waiting Time')
+            axes[0, 1].set_ylabel('Waiting Time (steps)')
             axes[0, 1].grid(True, alpha=0.3)
         
-        # 系统利用率
+        # System utilization
         if 'system_utilization' in metrics_history:
             axes[1, 0].plot(metrics_history['system_utilization'], color='orange', linewidth=2)
-            axes[1, 0].set_title('系统利用率')
-            axes[1, 0].set_ylabel('利用率')
+            axes[1, 0].set_title('System Utilization')
+            axes[1, 0].set_ylabel('Utilization')
             axes[1, 0].grid(True, alpha=0.3)
         
-        # 稳定性指标
+        # Stability metric
         if 'max_load_factor' in metrics_history:
             axes[1, 1].plot(metrics_history['max_load_factor'], color='red', linewidth=2)
-            axes[1, 1].axhline(y=1.0, color='black', linestyle='--', label='稳定性阈值')
-            axes[1, 1].set_title('最大负载系数')
-            axes[1, 1].set_ylabel('负载系数 ρ')
+            axes[1, 1].axhline(y=1.0, color='black', linestyle='--', label='Stability Threshold')
+            axes[1, 1].set_title('Maximum Load Factor')
+            axes[1, 1].set_ylabel('Load Factor ρ')
             axes[1, 1].legend()
             axes[1, 1].grid(True, alpha=0.3)
         
         for ax in axes.flat:
-            ax.set_xlabel('时间步')
+            ax.set_xlabel('Time Step')
         
         plt.tight_layout()
-        plt.suptitle('系统性能指标监控', fontsize=16, y=1.02)
+        plt.suptitle('System Performance Metrics Monitoring', fontsize=16, y=1.02)
         
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
@@ -393,30 +392,30 @@ class VisualizationUtils:
                                  hypothesis: str,
                                  save_path: Optional[str] = None):
         """
-        绘制假设验证对比图
+        Plot hypothesis validation comparison
         """
         fig, axes = plt.subplots(1, 3, figsize=(15, 5))
         
         configurations = list(results.keys())
         metrics = ['throughput', 'avg_waiting_time', 'efficiency_score']
-        metric_names = ['吞吐量', '平均等待时间', '效率分数']
+        metric_names = ['Throughput', 'Average Waiting Time', 'Efficiency Score']
         
         for i, (metric, name) in enumerate(zip(metrics, metric_names)):
             values = [results[config].get(metric, 0) for config in configurations]
             
             bars = axes[i].bar(configurations, values, color=self.colors[:len(configurations)])
-            axes[i].set_title(f'{name}对比')
+            axes[i].set_title(f'{name} Comparison')
             axes[i].set_ylabel(name)
             axes[i].tick_params(axis='x', rotation=45)
             
-            # 添加数值标签
+            # Add value labels
             for bar, value in zip(bars, values):
                 height = bar.get_height()
                 axes[i].text(bar.get_x() + bar.get_width()/2., height,
                            f'{value:.3f}', ha='center', va='bottom')
         
         plt.tight_layout()
-        plt.suptitle(f'{hypothesis}假设验证结果对比', fontsize=16, y=1.02)
+        plt.suptitle(f'{hypothesis} Hypothesis Validation Results Comparison', fontsize=16, y=1.02)
         
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
@@ -425,9 +424,9 @@ class VisualizationUtils:
 
 class DataLogger:
     """
-    数据记录器
+    Data Logger
     
-    用于记录实验数据、保存结果、生成报告
+    Used for recording experimental data, saving results, generating reports
     """
     
     def __init__(self, log_dir: str = "./logs"):
@@ -439,7 +438,7 @@ class DataLogger:
         
     def log_step_data(self, step: int, data: Dict):
         """
-        记录单步数据
+        Log single step data
         """
         data['step'] = step
         data['timestamp'] = time.time()
@@ -449,35 +448,35 @@ class DataLogger:
     
     def log_episode_summary(self, episode: int, summary: Dict):
         """
-        记录回合总结
+        Log episode summary
         """
         summary['episode'] = episode
         summary['timestamp'] = time.time()
         
-        # 保存回合总结
+        # Save episode summary
         summary_file = self.log_dir / f"episode_{episode}_summary.json"
         with open(summary_file, 'w') as f:
             json.dump(summary, f, indent=2, default=str)
     
     def save_experiment_data(self, experiment_name: str):
         """
-        保存完整实验数据
+        Save complete experimental data
         """
-        # 保存原始数据
+        # Save raw data
         data_file = self.log_dir / f"{experiment_name}_data.pkl"
         with open(data_file, 'wb') as f:
             pickle.dump(dict(self.experiment_data), f)
         
-        # 保存元数据
+        # Save metadata
         metadata_file = self.log_dir / f"{experiment_name}_metadata.json"
         with open(metadata_file, 'w') as f:
             json.dump(self.metadata, f, indent=2, default=str)
         
-        print(f"实验数据已保存到: {self.log_dir}")
+        print(f"Experimental data saved to: {self.log_dir}")
     
     def load_experiment_data(self, experiment_name: str) -> Dict:
         """
-        加载实验数据
+        Load experimental data
         """
         data_file = self.log_dir / f"{experiment_name}_data.pkl"
         
@@ -485,16 +484,16 @@ class DataLogger:
             with open(data_file, 'rb') as f:
                 return pickle.load(f)
         else:
-            raise FileNotFoundError(f"未找到实验数据: {data_file}")
+            raise FileNotFoundError(f"Experimental data not found: {data_file}")
     
     def generate_report(self, experiment_name: str) -> str:
         """
-        生成实验报告
+        Generate experimental report
         """
         if not self.experiment_data:
-            return "无数据可生成报告"
+            return "No data available to generate report"
         
-        # 计算基本统计
+        # Calculate basic statistics
         stats = {}
         for key, values in self.experiment_data.items():
             if isinstance(values[0], (int, float)):
@@ -505,28 +504,28 @@ class DataLogger:
                     'max': np.max(values)
                 }
         
-        # 生成报告
+        # Generate report
         report = f"""
-# {experiment_name} 实验报告
+# {experiment_name} Experimental Report
 
-## 实验概况
-- 总步数: {len(self.experiment_data.get('step', []))}
-- 开始时间: {time.ctime(min(self.experiment_data.get('timestamp', [time.time()])))}
-- 结束时间: {time.ctime(max(self.experiment_data.get('timestamp', [time.time()])))}
+## Experiment Overview
+- Total Steps: {len(self.experiment_data.get('step', []))}
+- Start Time: {time.ctime(min(self.experiment_data.get('timestamp', [time.time()])))}
+- End Time: {time.ctime(max(self.experiment_data.get('timestamp', [time.time()])))}
 
-## 性能统计
+## Performance Statistics
 """
         
         for key, stat in stats.items():
             report += f"""
 ### {key}
-- 平均值: {stat['mean']:.4f}
-- 标准差: {stat['std']:.4f}  
-- 最小值: {stat['min']:.4f}
-- 最大值: {stat['max']:.4f}
+- Mean: {stat['mean']:.4f}
+- Std Dev: {stat['std']:.4f}  
+- Min: {stat['min']:.4f}
+- Max: {stat['max']:.4f}
 """
         
-        # 保存报告
+        # Save report
         report_file = self.log_dir / f"{experiment_name}_report.md"
         with open(report_file, 'w', encoding='utf-8') as f:
             f.write(report)
@@ -535,16 +534,16 @@ class DataLogger:
     
     def set_metadata(self, **kwargs):
         """
-        设置实验元数据
+        Set experimental metadata
         """
         self.metadata.update(kwargs)
 
 
 class ExperimentUtils:
     """
-    实验工具类
+    Experiment Utilities Class
     
-    用于实验设计、假设验证、结果分析
+    Used for experimental design, hypothesis validation, result analysis
     """
     
     def __init__(self):
@@ -555,29 +554,29 @@ class ExperimentUtils:
     def run_hypothesis_test(self, env_class, configurations: Dict, 
                           num_episodes: int = 100) -> Dict:
         """
-        运行假设测试
+        Run hypothesis test
         
         Args:
-            env_class: 环境类
-            configurations: 配置字典 {name: config}
-            num_episodes: 测试回合数
+            env_class: Environment class
+            configurations: Configuration dictionary {name: config}
+            num_episodes: Number of test episodes
         """
         results = {}
         
         for config_name, config in configurations.items():
-            print(f"测试配置: {config_name}")
+            print(f"Testing configuration: {config_name}")
             
-            # 创建环境
+            # Create environment
             env = env_class(config)
             
-            # 运行实验
+            # Run experiment
             episode_results = []
             for episode in range(num_episodes):
                 obs, info = env.reset()
                 episode_data = []
                 
                 for step in range(config.max_episode_steps):
-                    # 随机动作 (可以替换为训练好的策略)
+                    # Random action (can be replaced with trained policy)
                     action = env.action_space.sample()
                     obs, reward, terminated, truncated, info = env.step(action)
                     
@@ -594,7 +593,7 @@ class ExperimentUtils:
                 
                 episode_results.append(episode_data)
             
-            # 分析结果
+            # Analyze results
             config_analysis = self._analyze_configuration_results(episode_results)
             results[config_name] = config_analysis
             
@@ -604,9 +603,9 @@ class ExperimentUtils:
     
     def _analyze_configuration_results(self, episode_results: List) -> Dict:
         """
-        分析配置结果
+        Analyze configuration results
         """
-        # 聚合所有回合的数据
+        # Aggregate data from all episodes
         all_throughputs = []
         all_waiting_times = []
         all_queue_lengths = []
@@ -620,7 +619,7 @@ class ExperimentUtils:
             all_waiting_times.extend(episode_waiting_times)
             all_queue_lengths.extend(episode_queue_lengths)
         
-        # 计算统计指标
+        # Calculate statistical metrics
         return {
             'throughput': np.mean(all_throughputs) if all_throughputs else 0,
             'avg_waiting_time': np.mean([np.mean(wt) for wt in all_waiting_times if wt]) if all_waiting_times else 0,
@@ -631,7 +630,7 @@ class ExperimentUtils:
     def validate_theoretical_predictions(self, actual_results: Dict, 
                                        theoretical_bounds: Dict) -> Dict:
         """
-        验证理论预测
+        Validate theoretical predictions
         """
         validation_results = {}
         
@@ -652,27 +651,27 @@ class ExperimentUtils:
         return validation_results
 
 
-# 测试工具函数
+# Test utility functions
 if __name__ == "__main__":
-    print("测试工具函数...")
+    print("Testing utility functions...")
     
-    # 测试数学工具
+    # Test mathematical tools
     math_utils = MathUtils()
     vector = np.array([1, 2, 3, 4, 5])
     normalized = math_utils.normalize_vector(vector, 'sum')
-    print(f"向量归一化: {vector} -> {normalized}")
+    print(f"Vector normalization: {vector} -> {normalized}")
     
-    # 测试性能分析
+    # Test performance analysis
     analyzer = PerformanceAnalyzer()
     stability = analyzer.analyze_stability_condition([0.2, 0.3, 0.4], [1.0, 1.1, 1.2], [5, 4, 3])
-    print(f"稳定性分析: {stability}")
+    print(f"Stability analysis: {stability}")
     
-    # 测试数据记录
+    # Test data logging
     logger = DataLogger("./test_logs")
     logger.log_step_data(1, {'throughput': 0.8, 'waiting_time': 15})
     logger.log_step_data(2, {'throughput': 0.9, 'waiting_time': 12})
     
     report = logger.generate_report("test_experiment")
-    print("生成报告成功")
+    print("Report generation successful")
     
-    print("✅ 工具函数测试完成!")
+    print("✅ Utility functions test completed!")
