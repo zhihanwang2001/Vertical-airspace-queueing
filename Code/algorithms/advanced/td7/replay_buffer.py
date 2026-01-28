@@ -104,7 +104,7 @@ class TD7_PrioritizedReplayBuffer:
         self.use_lap = True
         self.lap_weight = 0.1
 
-        print(f"📦 TD7 Prioritized Replay Buffer initialized")
+        print(f"TD7 Prioritized Replay Buffer initialized")
         print(f"   Capacity: {capacity:,}")
         print(f"   Batch size: {batch_size}")
         print(f"   Alpha: {alpha}, Beta: {beta}")
