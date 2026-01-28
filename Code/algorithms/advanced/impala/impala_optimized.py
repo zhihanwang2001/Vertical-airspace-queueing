@@ -1,12 +1,12 @@
 """
 IMPALA Optimized for Vertical Stratified Queue System
-专门针对垂直分层队列环境优化的IMPALA实现
+IMPALA implementation specifically optimized for vertical stratified queue environment
 
-核心优化:
-1. 支持混合动作空间（连续+离散）
-2. 队列系统专用的网络架构
-3. 保守的V-trace参数设置
-4. 针对环境特点的状态特征提取
+Core optimizations:
+1. Support for hybrid action space (continuous + discrete)
+2. Queue system-specific network architecture
+3. Conservative V-trace parameter settings
+4. State feature extraction tailored to environment characteristics
 """
 
 import sys
@@ -26,21 +26,21 @@ from baselines.space_utils import SB3DictWrapper
 
 
 class QueueSpecificNetwork(nn.Module):
-    """专门为队列系统设计的网络架构"""
+    """Network architecture specifically designed for queue system"""
 
     def __init__(self, state_dim: int, config: Dict = None):
         super().__init__()
 
-        # 默认配置
+        # Default configuration
         self.config = config or {}
         self.hidden_dim = self.config.get('hidden_dim', 512)
         self.num_layers = self.config.get('num_layers', 3)
 
-        # 队列特征维度（环境固定为5层）
+        # Queue feature dimensions (environment fixed at 5 layers)
         self.n_layers = 5
 
-        # 分层特征提取
-        # 1. 队列状态特征提取器（5层队列的专用处理）
+        # Hierarchical feature extraction
+        # 1. Queue state feature extractor (specialized processing for 5-layer queue)
         self.queue_feature_extractor = nn.Sequential(
             nn.Linear(self.n_layers * 7, 256),  # 7个特征per layer: lengths, util, changes, load, service, capacity, weights
             nn.ReLU(),
@@ -48,7 +48,7 @@ class QueueSpecificNetwork(nn.Module):
             nn.ReLU()
         )
 
-        # 2. 系统级特征提取器
+        # 2. System-level feature extractor
         self.system_feature_extractor = nn.Sequential(
             nn.Linear(4, 64),  # system_metrics (3) + prev_reward (1)
             nn.ReLU(),
@@ -56,7 +56,7 @@ class QueueSpecificNetwork(nn.Module):
             nn.ReLU()
         )
 
-        # 3. 融合层
+        # 3. Fusion layer
         fusion_input_dim = 128 + 32  # queue features + system features
         self.fusion_layers = nn.Sequential(
             nn.Linear(fusion_input_dim, self.hidden_dim),
@@ -67,19 +67,19 @@ class QueueSpecificNetwork(nn.Module):
             nn.Dropout(0.1)
         )
 
-        # 4. 输出头
-        # Actor: 混合动作空间
-        # 连续动作: service_intensities (5) + arrival_multiplier (1) = 6
+        # 4. Output heads
+        # Actor: Hybrid action space
+        # Continuous actions: service_intensities (5) + arrival_multiplier (1) = 6
         self.continuous_actor_mean = nn.Linear(self.hidden_dim, 6)
         self.continuous_actor_logstd = nn.Linear(self.hidden_dim, 6)
 
-        # 离散动作: emergency_transfers (5个二进制选择)
+        # Discrete actions: emergency_transfers (5 binary choices)
         self.discrete_actor = nn.Linear(self.hidden_dim, self.n_layers)
 
-        # Critic: 价值函数
+        # Critic: Value function
         self.critic = nn.Linear(self.hidden_dim, 1)
 
-        # 初始化权重
+        # Initialize weights
         self._init_weights()
 
         print(f"🏗️  Queue-Specific Network initialized:")
@@ -89,28 +89,28 @@ class QueueSpecificNetwork(nn.Module):
         print(f"   - Discrete actions: {self.n_layers} (emergency_transfers)")
 
     def _init_weights(self):
-        """初始化网络权重"""
+        """Initialize network weights"""
         for module in self.modules():
             if isinstance(module, nn.Linear):
                 nn.init.orthogonal_(module.weight, gain=np.sqrt(2))
                 nn.init.constant_(module.bias, 0.0)
 
-        # Actor输出层使用小的初始化值
+        # Actor output layers use small initialization values
         nn.init.orthogonal_(self.continuous_actor_mean.weight, gain=0.01)
         nn.init.orthogonal_(self.continuous_actor_logstd.weight, gain=0.01)
         nn.init.orthogonal_(self.discrete_actor.weight, gain=0.01)
 
     def extract_queue_features(self, state: torch.Tensor) -> torch.Tensor:
-        """提取队列相关特征"""
-        # 假设state是flatten后的35维向量
-        # 重构为有意义的队列特征
+        """Extract queue-related features"""
+        # Assume state is flattened 35-dimensional vector
+        # Reconstruct into meaningful queue features
 
         batch_size = state.shape[0]
 
-        # 按照环境的观测空间提取特征
+        # Extract features according to environment's observation space
         # queue_lengths (5) + utilization_rates (5) + queue_changes (5) +
         # load_rates (5) + service_rates (5) + prev_reward (1) + system_metrics (3) = 29
-        # 剩余维度为扩展特征
+        # Remaining dimensions are extended features
 
         queue_lengths = state[:, :5]
         utilization_rates = state[:, 5:10]
@@ -120,12 +120,12 @@ class QueueSpecificNetwork(nn.Module):
         # prev_reward = state[:, 25:26]  # 后面单独处理
         # system_metrics = state[:, 26:29]  # 后面单独处理
 
-        # 添加固定的队列特征（容量和权重）
+        # Add fixed queue features (capacity and weights)
         device = state.device
         capacities = torch.tensor([8, 6, 4, 3, 2], dtype=torch.float32, device=device).unsqueeze(0).expand(batch_size, -1)
         arrival_weights = torch.tensor([0.3, 0.25, 0.2, 0.15, 0.1], dtype=torch.float32, device=device).unsqueeze(0).expand(batch_size, -1)
 
-        # 合并队列特征 [batch, 5*7]
+        # Merge queue features [batch, 5*7]
         queue_features = torch.cat([
             queue_lengths, utilization_rates, queue_changes,
             load_rates, service_rates, capacities, arrival_weights
@@ -134,15 +134,15 @@ class QueueSpecificNetwork(nn.Module):
         return self.queue_feature_extractor(queue_features)
 
     def extract_system_features(self, state: torch.Tensor) -> torch.Tensor:
-        """提取系统级特征"""
+        """Extract system-level features"""
         batch_size = state.shape[0]
 
-        # 提取系统级特征
+        # Extract system-level features
         if state.shape[1] >= 29:
             prev_reward = state[:, 25:26]
             system_metrics = state[:, 26:29]
         else:
-            # 如果维度不够，用零填充
+            # If dimensions are insufficient, pad with zeros
             prev_reward = torch.zeros(batch_size, 1, device=state.device)
             system_metrics = torch.zeros(batch_size, 3, device=state.device)
 
@@ -151,23 +151,23 @@ class QueueSpecificNetwork(nn.Module):
 
     def forward(self, state: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
-        前向传播
+        Forward pass
 
         Returns:
-            continuous_mean: 连续动作均值 [batch, 6]
-            continuous_logstd: 连续动作log标准差 [batch, 6]
-            discrete_logits: 离散动作logits [batch, 5]
-            value: 状态价值 [batch, 1]
+            continuous_mean: Continuous action mean [batch, 6]
+            continuous_logstd: Continuous action log std [batch, 6]
+            discrete_logits: Discrete action logits [batch, 5]
+            value: State value [batch, 1]
         """
-        # 特征提取
+        # Feature extraction
         queue_features = self.extract_queue_features(state)
         system_features = self.extract_system_features(state)
 
-        # 特征融合
+        # Feature fusion
         combined_features = torch.cat([queue_features, system_features], dim=1)
         fused_features = self.fusion_layers(combined_features)
 
-        # 输出计算
+        # Output computation
         continuous_mean = self.continuous_actor_mean(fused_features)
         continuous_logstd = torch.clamp(self.continuous_actor_logstd(fused_features), -10, 2)
         discrete_logits = self.discrete_actor(fused_features)
@@ -176,58 +176,58 @@ class QueueSpecificNetwork(nn.Module):
         return continuous_mean, continuous_logstd, discrete_logits, value
 
     def get_action_and_value(self, state: torch.Tensor, deterministic: bool = False):
-        """获取动作和价值"""
+        """Get action and value"""
         continuous_mean, continuous_logstd, discrete_logits, value = self.forward(state)
 
         if deterministic:
-            # 确定性策略
+            # Deterministic policy
             continuous_action = continuous_mean
             discrete_action = torch.sigmoid(discrete_logits) > 0.5
 
-            # 计算log_prob (用于一致性)
+            # Compute log_prob (for consistency)
             continuous_log_prob = torch.zeros_like(continuous_mean).sum(dim=-1, keepdim=True)
             discrete_log_prob = torch.zeros_like(discrete_logits).sum(dim=-1, keepdim=True)
         else:
-            # 随机策略
-            # 连续动作采样
+            # Stochastic policy
+            # Continuous action sampling
             continuous_std = torch.exp(continuous_logstd)
             continuous_dist = torch.distributions.Normal(continuous_mean, continuous_std)
             continuous_action = continuous_dist.sample()
             continuous_log_prob = continuous_dist.log_prob(continuous_action).sum(dim=-1, keepdim=True)
 
-            # 离散动作采样
+            # Discrete action sampling
             discrete_dist = torch.distributions.Bernoulli(logits=discrete_logits)
             discrete_action = discrete_dist.sample()
             discrete_log_prob = discrete_dist.log_prob(discrete_action).sum(dim=-1, keepdim=True)
 
-        # 合并log_prob
+        # Merge log_prob
         total_log_prob = continuous_log_prob + discrete_log_prob
 
-        # 组合动作
+        # Combine actions
         action = torch.cat([continuous_action, discrete_action], dim=-1)
 
         return action, total_log_prob, value
 
     def evaluate_action(self, state: torch.Tensor, action: torch.Tensor):
-        """评估给定状态和动作"""
+        """Evaluate given state and action"""
         continuous_mean, continuous_logstd, discrete_logits, value = self.forward(state)
 
-        # 分离连续和离散动作
+        # Separate continuous and discrete actions
         continuous_action = action[:, :6]
         discrete_action = action[:, 6:]
 
-        # 计算连续动作的log_prob和熵
+        # Compute log_prob and entropy for continuous actions
         continuous_std = torch.exp(continuous_logstd)
         continuous_dist = torch.distributions.Normal(continuous_mean, continuous_std)
         continuous_log_prob = continuous_dist.log_prob(continuous_action).sum(dim=-1, keepdim=True)
         continuous_entropy = continuous_dist.entropy().sum(dim=-1, keepdim=True)
 
-        # 计算离散动作的log_prob和熵
+        # Compute log_prob and entropy for discrete actions
         discrete_dist = torch.distributions.Bernoulli(logits=discrete_logits)
         discrete_log_prob = discrete_dist.log_prob(discrete_action).sum(dim=-1, keepdim=True)
         discrete_entropy = discrete_dist.entropy().sum(dim=-1, keepdim=True)
 
-        # 合并
+        # Merge
         total_log_prob = continuous_log_prob + discrete_log_prob
         total_entropy = continuous_entropy + discrete_entropy
 
@@ -235,37 +235,37 @@ class QueueSpecificNetwork(nn.Module):
 
 
 class OptimizedIMPALAAgent:
-    """优化的IMPALA智能体"""
+    """Optimized IMPALA agent"""
 
     def __init__(self, state_space, action_space, config: Dict = None):
-        # 保守的优化配置
+        # Conservative optimization configuration
         default_config = {
-            # 网络配置 - 增加网络容量
+            # Network configuration - increased network capacity
             'hidden_dim': 512,
             'num_layers': 3,
 
-            # 学习参数 - 更保守的设置
-            'learning_rate': 5e-5,  # 降低学习率
+            # Learning parameters - more conservative settings
+            'learning_rate': 5e-5,  # Lower learning rate
             'gamma': 0.99,
-            'entropy_coeff': 0.02,  # 增加探索
+            'entropy_coeff': 0.02,  # Increase exploration
             'value_loss_coeff': 0.5,
-            'gradient_clip': 10.0,  # 更严格的梯度裁剪
+            'gradient_clip': 10.0,  # Stricter gradient clipping
 
-            # V-trace参数 - 保守设置避免训练崩溃
-            'rho_bar': 0.8,  # 降低重要性权重截断
-            'c_bar': 0.8,    # 降低TD权重截断
+            # V-trace parameters - conservative settings to avoid training collapse
+            'rho_bar': 0.8,  # Lower importance weight clipping
+            'c_bar': 0.8,    # Lower TD weight clipping
 
-            # 回放缓冲区 - 增加容量和序列长度
-            'buffer_size': 50000,  # 增加缓冲区
-            'sequence_length': 32,  # 增加序列长度捕获长期依赖
-            'batch_size': 32,       # 增加批次大小
+            # Replay buffer - increased capacity and sequence length
+            'buffer_size': 50000,  # Larger buffer
+            'sequence_length': 32,  # Longer sequences to capture long-term dependencies
+            'batch_size': 32,       # Larger batch size
 
-            # 训练参数 - 更频繁的更新
+            # Training parameters - more frequent updates
             'learning_starts': 2000,
-            'train_freq': 2,  # 更频繁训练
+            'train_freq': 2,  # More frequent training
             'update_freq': 50,
 
-            # 其他
+            # Other
             'seed': 42,
             'device': 'auto'
         }
@@ -274,13 +274,13 @@ class OptimizedIMPALAAgent:
             default_config.update(config)
         self.config = default_config
 
-        # 设置设备
+        # Set device
         if self.config['device'] == 'auto':
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         else:
             self.device = torch.device(self.config['device'])
 
-        # 设置随机种子
+        # Set random seed
         if self.config['seed'] is not None:
             torch.manual_seed(self.config['seed'])
             np.random.seed(self.config['seed'])
@@ -288,36 +288,36 @@ class OptimizedIMPALAAgent:
         self.state_space = state_space
         self.action_space = action_space
 
-        # 获取状态维度
+        # Get state dimension
         if hasattr(state_space, 'shape'):
             self.state_dim = state_space.shape[0]
         else:
-            # 处理Dict状态空间
+            # Handle Dict state space
             self.state_dim = sum([space.shape[0] for space in state_space.spaces.values()])
 
-        # 创建专用网络
+        # Create specialized network
         self.network = QueueSpecificNetwork(
             state_dim=self.state_dim,
             config=self.config
         ).to(self.device)
 
-        # 优化器
+        # Optimizer
         self.optimizer = torch.optim.Adam(
             self.network.parameters(),
             lr=self.config['learning_rate'],
-            eps=1e-8  # 增加数值稳定性
+            eps=1e-8  # Increase numerical stability
         )
 
-        # 学习率调度器
+        # Learning rate scheduler
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             self.optimizer, T_max=100000, eta_min=1e-6
         )
 
-        # 简单的经验存储
+        # Simple experience storage
         self.memory = []
         self.max_memory_size = self.config['buffer_size']
 
-        # 训练统计
+        # Training statistics
         self.training_step = 0
         self.episode_count = 0
 
@@ -328,9 +328,9 @@ class OptimizedIMPALAAgent:
         print(f"   - Longer sequences: {self.config['sequence_length']}")
 
     def act(self, state, training: bool = True):
-        """选择动作"""
+        """Select action"""
         if isinstance(state, dict):
-            # 将Dict状态转换为扁平向量
+            # Convert Dict state to flat vector
             state_vector = []
             for key in ['queue_lengths', 'utilization_rates', 'queue_changes',
                        'load_rates', 'service_rates', 'prev_reward', 'system_metrics']:
@@ -349,7 +349,7 @@ class OptimizedIMPALAAgent:
         if not isinstance(state, np.ndarray):
             state = np.array(state, dtype=np.float32)
 
-        # 转换为tensor
+        # Convert to tensor
         state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
@@ -361,16 +361,16 @@ class OptimizedIMPALAAgent:
             log_prob = log_prob.cpu().numpy()[0]
             value = value.cpu().numpy()[0]
 
-        # 存储用于训练的原始动作和转换后的动作
+        # Store raw action and converted action for training
         self._last_raw_action = action
         self._last_log_prob = log_prob[0]
         self._last_value = value[0]
 
-        # 返回原始动作向量（让SB3DictWrapper进行转换）
+        # Return raw action vector (let SB3DictWrapper perform conversion)
         return action
 
     def store_transition(self, state, action, reward, next_state, done):
-        """存储经验"""
+        """Store experience"""
         if hasattr(self, '_last_raw_action'):
             self.memory.append({
                 'state': state,
@@ -382,12 +382,12 @@ class OptimizedIMPALAAgent:
                 'value': self._last_value
             })
 
-            # 限制内存大小
+            # Limit memory size
             if len(self.memory) > self.max_memory_size:
                 self.memory.pop(0)
 
     def train(self):
-        """训练一步"""
+        """Train one step"""
         if len(self.memory) < self.config['sequence_length'] * self.config['batch_size']:
             return None
 
@@ -395,7 +395,7 @@ class OptimizedIMPALAAgent:
             self.training_step += 1
             return None
 
-        # 简化的V-trace训练
+        # Simplified V-trace training
         batch_size = min(self.config['batch_size'], len(self.memory) // self.config['sequence_length'])
 
         total_loss = 0.0
@@ -404,40 +404,40 @@ class OptimizedIMPALAAgent:
         entropy_loss_sum = 0.0
 
         for _ in range(batch_size):
-            # 随机采样序列
+            # Randomly sample sequence
             start_idx = np.random.randint(0, len(self.memory) - self.config['sequence_length'])
             sequence = self.memory[start_idx:start_idx + self.config['sequence_length']]
 
-            # 构建batch数据
+            # Build batch data
             states = torch.FloatTensor([self._process_state(exp['state']) for exp in sequence]).to(self.device)
             actions = torch.FloatTensor([exp['action'] for exp in sequence]).to(self.device)
             rewards = torch.FloatTensor([exp['reward'] for exp in sequence]).to(self.device)
             dones = torch.FloatTensor([exp['done'] for exp in sequence]).to(self.device)
             old_log_probs = torch.FloatTensor([exp['log_prob'] for exp in sequence]).to(self.device)
 
-            # 计算当前策略的输出
+            # Compute current policy outputs
             new_log_probs, values, entropies = self.network.evaluate_action(states, actions)
             values = values.squeeze(-1)
             new_log_probs = new_log_probs.squeeze(-1)
             entropies = entropies.squeeze(-1)
 
-            # 简化的V-trace计算
+            # Simplified V-trace computation
             with torch.no_grad():
-                # 计算重要性权重
+                # Compute importance weights
                 importance_weights = torch.exp(new_log_probs - old_log_probs)
                 clipped_importance_weights = torch.clamp(importance_weights, max=self.config['rho_bar'])
 
-                # 计算V-trace targets
+                # Compute V-trace targets
                 next_values = torch.cat([values[1:], torch.zeros(1, device=self.device)])
                 td_targets = rewards + self.config['gamma'] * next_values * (1 - dones)
                 advantages = clipped_importance_weights * (td_targets - values)
 
-            # 计算损失
+            # Compute losses
             pg_loss = -(new_log_probs * advantages.detach()).mean()
             value_loss = F.mse_loss(values, td_targets.detach())
             entropy_loss = -entropies.mean()
 
-            # 组合损失
+            # Combine losses
             loss = pg_loss + self.config['value_loss_coeff'] * value_loss + self.config['entropy_coeff'] * entropy_loss
 
             total_loss += loss
@@ -445,7 +445,7 @@ class OptimizedIMPALAAgent:
             value_loss_sum += value_loss.item()
             entropy_loss_sum += entropy_loss.item()
 
-        # 反向传播
+        # Backward pass
         self.optimizer.zero_grad()
         total_loss.backward()
         torch.nn.utils.clip_grad_norm_(self.network.parameters(), self.config['gradient_clip'])
@@ -465,7 +465,7 @@ class OptimizedIMPALAAgent:
         }
 
     def _process_state(self, state):
-        """处理状态为向量格式"""
+        """Process state to vector format"""
         if isinstance(state, dict):
             state_vector = []
             for key in ['queue_lengths', 'utilization_rates', 'queue_changes',
@@ -484,7 +484,7 @@ class OptimizedIMPALAAgent:
         return np.array(state, dtype=np.float32)
 
     def save(self, filepath: str):
-        """保存模型"""
+        """Save model"""
         torch.save({
             'network': self.network.state_dict(),
             'optimizer': self.optimizer.state_dict(),
@@ -494,7 +494,7 @@ class OptimizedIMPALAAgent:
         }, filepath)
 
     def load(self, filepath: str):
-        """加载模型"""
+        """Load model"""
         checkpoint = torch.load(filepath, map_location=self.device)
         self.network.load_state_dict(checkpoint['network'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])
@@ -504,7 +504,7 @@ class OptimizedIMPALAAgent:
 
 
 class OptimizedIMPALABaseline:
-    """优化的IMPALA基线算法"""
+    """Optimized IMPALA baseline algorithm"""
 
     def __init__(self, config: Dict[str, Any] = None):
         self.config = config or {}
@@ -521,7 +521,7 @@ class OptimizedIMPALABaseline:
         print("🎯 Optimized IMPALA Baseline initialized with queue-specific optimizations")
 
     def setup_env(self):
-        """设置环境"""
+        """Setup environment"""
         base_env = DRLOptimizedQueueEnvFixed()
         self.env = SB3DictWrapper(base_env)
 
@@ -532,7 +532,7 @@ class OptimizedIMPALABaseline:
         return self.env
 
     def create_agent(self):
-        """创建优化的IMPALA智能体"""
+        """Create optimized IMPALA agent"""
         if self.env is None:
             self.setup_env()
 
@@ -546,11 +546,11 @@ class OptimizedIMPALABaseline:
         return self.agent
 
     def train(self, total_timesteps: int, eval_freq: int = 10000, save_freq: int = 50000):
-        """训练优化的IMPALA模型"""
+        """Train optimized IMPALA model"""
         if self.agent is None:
             self.create_agent()
 
-        # 创建TensorBoard writer
+        # Create TensorBoard writer
         tb_log_name = f"IMPALA_Optimized_{int(time.time())}"
         writer = SummaryWriter(log_dir=f"./tensorboard_logs/{tb_log_name}")
 
@@ -562,7 +562,7 @@ class OptimizedIMPALABaseline:
         print(f"   - Conservative V-trace parameters")
         print(f"   - Lower learning rate with scheduling")
 
-        # 训练循环
+        # Training loop
         episode = 0
         timestep = 0
         episode_reward = 0.0
@@ -572,10 +572,10 @@ class OptimizedIMPALABaseline:
         start_time = time.time()
 
         while timestep < total_timesteps:
-            # 选择动作
+            # Select action
             action = self.agent.act(state, training=True)
 
-            # 执行动作
+            # Execute action
             try:
                 step_result = self.env.step(action)
                 if len(step_result) == 5:
@@ -587,20 +587,20 @@ class OptimizedIMPALABaseline:
                 print(f"❌ Environment step error: {e}")
                 break
 
-            # 存储经验
+            # Store experience
             self.agent.store_transition(state, action, reward, next_state, done)
 
-            # 更新统计
+            # Update statistics
             episode_reward += reward
             episode_length += 1
             timestep += 1
 
-            # 训练智能体
+            # Train agent
             if timestep >= self.config.get('learning_starts', 2000):
                 train_info = self.agent.train()
 
                 if train_info and timestep % 1000 == 0:
-                    # 记录训练信息
+                    # Log training information
                     writer.add_scalar('train/total_loss', train_info['total_loss'], timestep)
                     writer.add_scalar('train/pg_loss', train_info['pg_loss'], timestep)
                     writer.add_scalar('train/value_loss', train_info['value_loss'], timestep)
@@ -609,23 +609,23 @@ class OptimizedIMPALABaseline:
                     writer.add_scalar('train/buffer_size', train_info['buffer_size'], timestep)
                     writer.add_scalar('train/learning_rate', train_info['learning_rate'], timestep)
 
-            # Episode结束处理
+            # Episode end handling
             if done:
-                # 记录episode信息
+                # Log episode information
                 self.training_history['episode_rewards'].append(episode_reward)
                 self.training_history['episode_lengths'].append(episode_length)
 
-                # TensorBoard记录
+                # TensorBoard logging
                 writer.add_scalar('train/episode_reward', episode_reward, episode)
                 writer.add_scalar('train/episode_length', episode_length, episode)
 
-                # 计算滑动平均
+                # Calculate moving average
                 if len(self.training_history['episode_rewards']) >= 100:
                     avg_reward = np.mean(self.training_history['episode_rewards'][-100:])
                     self.training_history['avg_rewards'].append(avg_reward)
                     writer.add_scalar('train/avg_reward_100', avg_reward, episode)
 
-                # 打印进度
+                # Print progress
                 if episode % 100 == 0:
                     elapsed_time = time.time() - start_time
                     recent_rewards = self.training_history['episode_rewards'][-100:] if len(self.training_history['episode_rewards']) >= 100 else self.training_history['episode_rewards']
@@ -638,7 +638,7 @@ class OptimizedIMPALABaseline:
                           f"Length: {episode_length:4d} | "
                           f"Time: {elapsed_time:.1f}s")
 
-                # 重置episode
+                # Reset episode
                 episode += 1
                 episode_reward = 0.0
                 episode_length = 0
@@ -646,7 +646,7 @@ class OptimizedIMPALABaseline:
             else:
                 state = next_state
 
-            # 评估
+            # Evaluation
             if eval_freq > 0 and timestep % eval_freq == 0 and timestep > 0:
                 eval_results = self.evaluate(n_episodes=5, deterministic=True, verbose=False)
                 writer.add_scalar('eval/mean_reward', eval_results['mean_reward'], timestep)
@@ -655,14 +655,14 @@ class OptimizedIMPALABaseline:
                 print(f"📊 Evaluation at step {timestep}: "
                       f"Mean reward: {eval_results['mean_reward']:.2f} ± {eval_results['std_reward']:.2f}")
 
-            # 保存模型
+            # Save model
             if save_freq > 0 and timestep % save_freq == 0 and timestep > 0:
                 save_path = f"../../../../Models/impala_optimized_step_{timestep}.pt"
                 os.makedirs(os.path.dirname(save_path), exist_ok=True)
                 self.agent.save(save_path)
                 print(f"💾 Model saved at step {timestep}: {save_path}")
 
-        # 训练完成
+        # Training completed
         total_time = time.time() - start_time
         writer.close()
 
@@ -672,7 +672,7 @@ class OptimizedIMPALABaseline:
         final_avg = np.mean(self.training_history['episode_rewards'][-100:]) if len(self.training_history['episode_rewards']) >= 100 else np.mean(self.training_history['episode_rewards']) if self.training_history['episode_rewards'] else 0
         print(f"   Average reward (last 100): {final_avg:.2f}")
 
-        # 保存最终模型
+        # Save final model
         final_save_path = "../../../../Models/impala_optimized_final.pt"
         os.makedirs(os.path.dirname(final_save_path), exist_ok=True)
         self.agent.save(final_save_path)
@@ -685,7 +685,7 @@ class OptimizedIMPALABaseline:
         }
 
     def evaluate(self, n_episodes: int = 10, deterministic: bool = True, verbose: bool = True):
-        """评估模型性能"""
+        """Evaluate model performance"""
         if self.agent is None:
             raise ValueError("Agent not initialized. Please train first.")
 
@@ -741,7 +741,7 @@ class OptimizedIMPALABaseline:
         return results
 
     def save_results(self, path_prefix: str):
-        """保存训练结果"""
+        """Save training results"""
         os.makedirs(os.path.dirname(path_prefix) if os.path.dirname(path_prefix) else ".", exist_ok=True)
 
         import json
@@ -757,7 +757,7 @@ class OptimizedIMPALABaseline:
         print(f"💾 Optimized IMPALA results saved to: {path_prefix}")
 
     def save(self, path: str):
-        """保存模型"""
+        """Save model"""
         if self.agent is None:
             raise ValueError("Agent not trained yet!")
 
@@ -765,7 +765,7 @@ class OptimizedIMPALABaseline:
         print(f"💾 Optimized IMPALA model saved to: {path}")
 
     def load(self, path: str):
-        """加载模型"""
+        """Load model"""
         if self.env is None:
             self.setup_env()
 
@@ -779,16 +779,16 @@ class OptimizedIMPALABaseline:
 
 
 def test_optimized_impala():
-    """测试优化的IMPALA"""
+    """Test optimized IMPALA"""
     print("🧪 Testing Optimized IMPALA...")
 
     baseline = OptimizedIMPALABaseline()
 
-    # 快速训练测试
+    # Quick training test
     results = baseline.train(total_timesteps=5000)
     print(f"Training results: {results}")
 
-    # 评估测试
+    # Evaluation test
     eval_results = baseline.evaluate(n_episodes=3)
     print(f"Evaluation results: {eval_results}")
 
