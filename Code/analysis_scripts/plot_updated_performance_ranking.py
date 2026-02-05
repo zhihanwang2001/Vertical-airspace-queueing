@@ -1,5 +1,4 @@
 """
-Update Performance Ranking Figure (图3) - with A2C-v3 Champion Results
 Update Performance Ranking Figure with A2C-v3 Champion Results
 """
 
@@ -64,31 +63,31 @@ std_rewards = [
 
 # Algorithm type classification (for color coding)
 algorithm_types = [
-    'A2C-v3 (优化)',      # Gold - Champion
+    'A2C-v3 (Optimized)',      # Gold - Champion
     'Policy-Based RL',   # Deep blue
     'Off-Policy RL',     # Purple
     'Value-Based RL',    # Orange
     'Off-Policy RL',     # Purple
     'Off-Policy RL',     # Purple
     'Traditional',       # Green
-    'Value-Based RL (优化)',  # Orange
+    'Value-Based RL (Optimized)',  # Orange
     'Traditional',       # Green
     'Traditional',       # Green
     'Traditional',       # Green
-    'Distributed RL (优化)',  # Red
+    'Distributed RL (Optimized)',  # Red
     'Off-Policy RL (Abandoned)',   # Gray
     'Baseline'           # Black
 ]
 
 # Color mapping
 color_map = {
-    'A2C-v3 (优化)': '#FFD700',        # Gold - Champion
+    'A2C-v3 (Optimized)': '#FFD700',        # Gold - Champion
     'Policy-Based RL': '#1f77b4',      # Deep blue
     'Off-Policy RL': '#9467bd',        # Purple
     'Value-Based RL': '#ff7f0e',       # Orange
-    'Value-Based RL (优化)': '#ff9f4a',  # Light orange
+    'Value-Based RL (Optimized)': '#ff9f4a',  # Light orange
     'Traditional': '#2ca02c',          # Green
-    'Distributed RL (优化)': '#d62728',  # Red
+    'Distributed RL (Optimized)': '#d62728',  # Red
     'Off-Policy RL (Abandoned)': '#7f7f7f',   # Gray
     'Baseline': '#000000'              # Black
 }
@@ -110,12 +109,12 @@ ax.set_yticklabels(algorithms, fontsize=12)
 ax.invert_yaxis()  # highest score at top
 
 # Set x-axis
-ax.set_xlabel('Average Reward (Average Reward)', fontsize=14, fontweight='bold')
+ax.set_xlabel('Average Reward', fontsize=14, fontweight='bold')
 ax.set_xlim([0, 5000])
 ax.grid(axis='x', alpha=0.3, linestyle='--')
 
 # Add title
-ax.set_title('Algorithm Performance Ranking Overview (Algorithm Performance Ranking)\nUpdate: A2C-v3Delayed Cosine Annealing Optimization Tops',
+ax.set_title('Algorithm Performance Ranking Overview\nUpdate: A2C-v3 Delayed Cosine Annealing Optimization Tops',
              fontsize=16, fontweight='bold', pad=20)
 
 # Add value labels on each bar
@@ -144,7 +143,7 @@ legend_elements = [
     Patch(facecolor='#9467bd', edgecolor='black', label='Off-Policy RL'),
     Patch(facecolor='#ff7f0e', edgecolor='black', label='Value-Based RL'),
     Patch(facecolor='#2ca02c', edgecolor='black', label='Traditional Schedulers'),
-    Patch(facecolor='#d62728', edgecolor='black', label='Distributed RL (优化)'),
+    Patch(facecolor='#d62728', edgecolor='black', label='Distributed RL (Optimized)'),
     Patch(facecolor='#7f7f7f', edgecolor='black', label='DDPG (Abandoned)'),
     Patch(facecolor='#000000', edgecolor='black', label='Random Baseline')
 ]

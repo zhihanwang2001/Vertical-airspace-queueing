@@ -1,5 +1,4 @@
 """
-生成CCF论文所需的所有图表
 Generate All Figures Required for CCF Conference Paper
 """
 
@@ -14,7 +13,7 @@ from matplotlib.patches import FancyBboxPatch
 import warnings
 warnings.filterwarnings('ignore')
 
-# 设置中文字体和图表风格
+# Set Chinese font and chart style
 plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
 plt.rcParams['figure.dpi'] = 300
@@ -22,130 +21,130 @@ plt.rcParams['savefig.dpi'] = 300
 sns.set_palette("husl")
 
 class PaperFigureGenerator:
-    """论文图表生成器"""
-    
+    """Paper figure generator"""
+
     def __init__(self, output_dir = "../../Figures/publication/"):
-        """初始化"""
+        """Initialize"""
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
-        
-        # 实验数据
+
+        # Experimental data
         self.main_algorithms = {
             'PPO': 4399,
             'TD3': 4255,
             'A2C': 1721
         }
-        
+
         self.ablation_results = {
             'Full System': 1679.61,
             'No High Priority': 2810.08,
-            'Single Objective': 1679.61, 
+            'Single Objective': 1679.61,
             'Traditional Pyramid': 1714.29,
             'No Transfer': 1679.61
         }
-        
-        # 训练时间数据（示例）
+
+        # Training time data (example)
         self.training_times = {
             'PPO': 3600,  # seconds
             'TD3': 5995,  # from the data
             'A2C': 1800
         }
-        
-        print("🎨 论文图表生成器初始化完成")
-        
+
+        print("🎨 Paper figure generator initialized")
+
     def generate_all_figures(self):
-        """生成所有论文图表"""
-        print("\n📊 开始生成CCF论文图表...")
-        
-        # 1. 主算法性能对比
+        """Generate all paper figures"""
+        print("\n📊 Starting to generate CCF paper figures...")
+
+        # 1. Main algorithm performance comparison
         self.plot_main_algorithm_comparison()
-        
-        # 2. 训练收敛曲线对比
+
+        # 2. Training convergence curve comparison
         self.plot_convergence_curves()
-        
-        # 3. 消融实验分析
+
+        # 3. Ablation experiment analysis
         self.plot_ablation_analysis()
-        
-        # 4. 综合性能雷达图
+
+        # 4. Comprehensive performance radar chart
         self.plot_performance_radar()
-        
-        # 5. 算法稳定性箱型图
+
+        # 5. Algorithm stability box plot
         self.plot_stability_analysis()
-        
-        # 6. 训练效率对比
+
+        # 6. Training efficiency comparison
         self.plot_training_efficiency()
-        
-        # 7. 系统架构示意图
+
+        # 7. System architecture diagram
         self.plot_system_architecture()
-        
-        print(f"\n🎉 所有图表生成完成！保存至: {self.output_dir}")
-        
+
+        print(f"\n🎉 All figures generated! Saved to: {self.output_dir}")
+
     def plot_main_algorithm_comparison(self):
-        """图1: 主算法性能对比柱状图"""
-        print("📈 生成主算法性能对比图...")
-        
+        """Figure 1: Main algorithm performance comparison bar chart"""
+        print("📈 Generating main algorithm performance comparison...")
+
         fig, ax = plt.subplots(figsize=(10, 6))
-        
+
         algorithms = list(self.main_algorithms.keys())
         rewards = list(self.main_algorithms.values())
         colors = ['#2E86AB', '#A23B72', '#F18F01']
-        
+
         bars = ax.bar(algorithms, rewards, color=colors, alpha=0.8, width=0.6)
-        
-        # 添加数值标签
+
+        # Add value labels
         for bar, reward in zip(bars, rewards):
             ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 50,
                    f'{reward}', ha='center', va='bottom', fontsize=12, fontweight='bold')
-        
+
         ax.set_ylabel('Average Reward', fontsize=14)
         ax.set_title('Performance Comparison of DRL Algorithms', fontsize=16, fontweight='bold')
         ax.set_ylim(0, max(rewards) * 1.15)
-        
-        # 美化图表
+
+        # Beautify chart
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.grid(axis='y', alpha=0.3, linestyle='--')
-        
+
         plt.tight_layout()
         plt.savefig(self.output_dir / '1_main_algorithm_comparison.png', bbox_inches='tight')
         plt.savefig(self.output_dir / '1_main_algorithm_comparison.pdf', bbox_inches='tight')
         plt.close()
-        
+
     def plot_convergence_curves(self):
-        """图2: 训练收敛曲线对比"""
-        print("📈 生成收敛曲线对比图...")
-        
-        # 模拟收敛曲线数据
+        """Figure 2: Training convergence curve comparison"""
+        print("📈 Generating convergence curve comparison...")
+
+        # Simulate convergence curve data
         timesteps = np.linspace(0, 1000000, 1000)
-        
-        # PPO收敛曲线（快速上升后稳定）
+
+        # PPO convergence curve (fast rise then stable)
         ppo_curve = 4399 * (1 - np.exp(-timesteps / 200000)) + np.random.normal(0, 50, len(timesteps))
         ppo_curve = np.maximum(ppo_curve, 0)
-        
-        # TD3收敛曲线（较慢上升但稳定）
+
+        # TD3 convergence curve (slower rise but stable)
         td3_curve = 4255 * (1 - np.exp(-timesteps / 300000)) + np.random.normal(0, 80, len(timesteps))
         td3_curve = np.maximum(td3_curve, 0)
-        
-        # A2C收敛曲线（快速收敛到较低值）
+
+        # A2C convergence curve (fast convergence to lower value)
         a2c_curve = 1721 * (1 - np.exp(-timesteps / 100000)) + np.random.normal(0, 30, len(timesteps))
         a2c_curve = np.maximum(a2c_curve, 0)
-        
+
         fig, ax = plt.subplots(figsize=(12, 6))
-        
+
         ax.plot(timesteps, ppo_curve, label='PPO', linewidth=2, color='#2E86AB', alpha=0.8)
         ax.plot(timesteps, td3_curve, label='TD3', linewidth=2, color='#A23B72', alpha=0.8)
         ax.plot(timesteps, a2c_curve, label='A2C', linewidth=2, color='#F18F01', alpha=0.8)
-        
+
         ax.set_xlabel('Training Steps', fontsize=14)
         ax.set_ylabel('Episode Reward', fontsize=14)
         ax.set_title('Training Convergence Curves', fontsize=16, fontweight='bold')
         ax.legend(fontsize=12)
         ax.grid(alpha=0.3, linestyle='--')
-        
-        # 美化
+
+        # Beautify
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
-        
+
         plt.tight_layout()
         plt.savefig(self.output_dir / '2_convergence_curves.png', bbox_inches='tight')
         plt.savefig(self.output_dir / '2_convergence_curves.pdf', bbox_inches='tight')
