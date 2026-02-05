@@ -150,34 +150,34 @@ def main():
     model_path = "../../Models/td7/td7_model_500000.pt"
 
     if not os.path.exists(model_path):
-        print(f"❌ 错误：找不到TD7模型文件 {model_path}")
-        print("   请先训练TD7模型！")
+        print(f"❌ Error: TD7 model file not found {model_path}")
+        print("   Please train TD7 model first!")
         return
 
-    print(f"📂 加载模型: {model_path}")
-    print(f"   文件大小: {os.path.getsize(model_path) / (1024*1024):.1f} MB")
+    print(f"📂 Loading model: {model_path}")
+    print(f"   File size: {os.path.getsize(model_path) / (1024*1024):.1f} MB")
 
-    # 创建TD7 baseline并加载模型
+    # Create TD7 baseline and load model
     td7 = TD7Baseline()
     td7.load(model_path)
 
-    print("✅ TD7模型加载成功！")
+    print("✅ TD7 model loaded successfully!")
 
-    # ========== 第2步：创建异质性区域配置 ==========
-    print("\n第2步：创建异质性区域配置")
+    # ========== Step 2: Create heterogeneous region configurations ==========
+    print("\nStep 2: Create heterogeneous region configurations")
     print("-"*80)
 
     config_generator = HeterogeneousRegionConfigs()
     all_configs = config_generator.get_all_configs()
 
-    print(f"✅ 已创建 {len(all_configs)} 个区域配置:")
+    print(f"✅ Created {len(all_configs)} region configurations:")
     for region_name in all_configs.keys():
         print(f"   - {region_name}")
 
-    # ========== 第3步：在每个区域运行测试 ==========
-    print("\n第3步：在每个区域运行泛化测试")
+    # ========== Step 3: Run tests in each region ==========
+    print("\nStep 3: Run generalization tests in each region")
     print("-"*80)
-    print("⚠️  这是真实测试，不是mock数据！每个区域将运行10个完整episode")
+    print("⚠️  This is a real test, not mock data! Each region will run 10 complete episodes")
 
     all_results = {}
     n_episodes_per_region = 10
@@ -196,12 +196,12 @@ def main():
 
     total_time = time.time() - start_time
 
-    # ========== 第4步：汇总结果 ==========
+    # ========== Step 4: Summarize results ==========
     print("\n" + "="*80)
-    print("测试完成！汇总结果")
+    print("Testing completed! Summary of results")
     print("="*80 + "\n")
 
-    print(f"{'区域':<30} {'平均奖励':<20} {'标准差':<15} {'平均长度':<15}")
+    print(f"{'Region':<30} {'Mean Reward':<20} {'Std Dev':<15} {'Mean Length':<15}")
     print("-"*80)
 
     baseline_reward = None
@@ -210,11 +210,11 @@ def main():
         std_reward = results['std_reward']
         mean_length = results['mean_length']
 
-        # 记录baseline（Region A）的性能
+        # Record baseline (Region A) performance
         if 'Standard' in region_name:
             baseline_reward = mean_reward
 
-        # 计算与baseline的差异百分比
+        # Calculate difference percentage from baseline
         if baseline_reward is not None and 'Standard' not in region_name:
             diff_pct = ((mean_reward - baseline_reward) / baseline_reward) * 100
             diff_str = f"({diff_pct:+.1f}%)"
@@ -224,11 +224,11 @@ def main():
         print(f"{region_name:<30} {mean_reward:<20.2f} {std_reward:<15.2f} {mean_length:<15.1f} {diff_str}")
 
     print("\n" + "-"*80)
-    print(f"总测试时间: {total_time:.1f}秒")
-    print(f"总episode数: {len(all_configs) * n_episodes_per_region}")
+    print(f"Total test time: {total_time:.1f} seconds")
+    print(f"Total episodes: {len(all_configs) * n_episodes_per_region}")
 
-    # ========== 第5步：保存结果 ==========
-    print("\n第5步：保存测试结果")
+    # ========== Step 5: Save results ==========
+    print("\nStep 5: Save test results")
     print("-"*80)
 
     # 创建保存目录
@@ -249,9 +249,9 @@ def main():
     with open(results_file, 'w', encoding='utf-8') as f:
         json.dump(full_results, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ 详细结果已保存到: {results_file}")
+    print(f"✅ Detailed results saved to: {results_file}")
 
-    # 保存汇总表格（CSV格式）
+    # Save summary table (CSV format)
     summary_file = save_dir / "td7_generalization_summary.csv"
     import csv
 
@@ -273,13 +273,13 @@ def main():
                 f"{diff_pct:+.1f}%"
             ])
 
-    print(f"✅ 汇总表格已保存到: {summary_file}")
+    print(f"✅ Summary table saved to: {summary_file}")
 
     print("\n" + "="*80)
-    print("✅ TD7 泛化性测试全部完成！")
+    print("✅ TD7 generalization testing completed!")
     print("="*80 + "\n")
 
-    print("📌 关键发现:")
+    print("📌 Key findings:")
     print(f"   1. Region A (Baseline): {all_results['Region_A_Standard']['mean_reward']:.2f} ± {all_results['Region_A_Standard']['std_reward']:.2f}")
 
     if baseline_reward:
@@ -288,10 +288,10 @@ def main():
                 diff_pct = ((results['mean_reward'] - baseline_reward) / baseline_reward) * 100
                 print(f"   - {region_name}: {results['mean_reward']:.2f} ({diff_pct:+.1f}%)")
 
-    print("\n💡 下一步：")
-    print("   1. 查看详细结果: cat generalization_results/td7_generalization_results.json")
-    print("   2. 对比A2C和PPO的泛化性能")
-    print("   3. 绘制可视化图表")
+    print("\n💡 Next steps:")
+    print("   1. View detailed results: cat generalization_results/td7_generalization_results.json")
+    print("   2. Compare A2C and PPO generalization performance")
+    print("   3. Create visualization charts")
 
 
 if __name__ == "__main__":

@@ -26,7 +26,7 @@ from stable_baselines3 import A2C, PPO
 from env.config import VerticalQueueConfig
 from env.configurable_env_wrapper import ConfigurableEnvWrapper
 from env.drl_wrapper_fixed import DictToBoxActionWrapperFixed, ObservationWrapperFixed
-from gymnasium.wrappers import TimeLimit  # 用于限制episode长度
+from gymnasium.wrappers import TimeLimit  # For limiting episode length
 
 
 def create_config(config_type='capacity_4x5', high_load_multiplier=10.0):
@@ -154,9 +154,9 @@ def train_and_evaluate(algorithm='A2C', config_type='capacity_4x5',
             completions += 1
 
         if (ep + 1) % 10 == 0:
-            print(f"  评估进度: {ep+1}/{eval_episodes}")
+            print(f"  Evaluation progress: {ep+1}/{eval_episodes}")
 
-    # 统计结果
+    # Calculate statistics
     crash_rate = crashes / eval_episodes
     completion_rate = completions / eval_episodes
 
@@ -172,36 +172,36 @@ def train_and_evaluate(algorithm='A2C', config_type='capacity_4x5',
         'eval_episodes': eval_episodes
     }
 
-    # 保存结果
+    # Save results
     results_file = save_dir / f'{algorithm}_results.json'
     with open(results_file, 'w') as f:
         json.dump(results, f, indent=2)
 
     print(f"\n{'='*80}")
-    print(f"评估结果:")
-    print(f"  平均奖励: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
-    print(f"  {'🔴' if crash_rate > 0 else '✅'} 崩溃率: {crash_rate*100:.1f}% ({crashes}/{eval_episodes})")
-    print(f"  ✅ 完成率: {completion_rate*100:.1f}% ({completions}/{eval_episodes})")
-    print(f"  平均回合长度: {results['mean_episode_length']:.1f}")
-    print(f"  训练时间: {results['training_time_minutes']:.2f}分钟")
-    print(f"  结果已保存至: {results_file}")
+    print(f"Evaluation Results:")
+    print(f"  Mean reward: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
+    print(f"  {'🔴' if crash_rate > 0 else '✅'} Crash rate: {crash_rate*100:.1f}% ({crashes}/{eval_episodes})")
+    print(f"  ✅ Completion rate: {completion_rate*100:.1f}% ({completions}/{eval_episodes})")
+    print(f"  Mean episode length: {results['mean_episode_length']:.1f}")
+    print(f"  Training time: {results['training_time_minutes']:.2f} minutes")
+    print(f"  Results saved to: {results_file}")
     print(f"{'='*80}\n")
 
     return results
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='补充实验：验证状态空间大小假设')
+    parser = argparse.ArgumentParser(description='Supplementary experiments: Verify state space size hypothesis')
     parser.add_argument('--algorithm', type=str, required=True, choices=['A2C', 'PPO'],
-                       help='算法: A2C or PPO')
+                       help='Algorithm: A2C or PPO')
     parser.add_argument('--config', type=str, required=True, choices=['capacity_4x5', 'capacity_6x5'],
-                       help='配置: capacity_4x5 or capacity_6x5')
+                       help='Configuration: capacity_4x5 or capacity_6x5')
     parser.add_argument('--timesteps', type=int, default=100000,
-                       help='训练步数 (default: 100000)')
+                       help='Training timesteps (default: 100000)')
     parser.add_argument('--eval-episodes', type=int, default=50,
-                       help='评估轮次 (default: 50)')
+                       help='Evaluation episodes (default: 50)')
     parser.add_argument('--high-load-multiplier', type=float, default=10.0,
-                       help='高负载倍数 (default: 10.0)')
+                       help='High load multiplier (default: 10.0)')
 
     args = parser.parse_args()
 

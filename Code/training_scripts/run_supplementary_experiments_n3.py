@@ -149,11 +149,11 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
     model.save(str(model_path))
 
     # Evaluation
-    print(f"\n评估 ({eval_episodes} 回合)...")
+    print(f"\nEvaluation ({eval_episodes} episodes)...")
     eval_rewards = []
     eval_lengths = []
-    eval_terminated_count = 0  # 真实崩溃
-    eval_truncated_count = 0   # 正常截断
+    eval_terminated_count = 0  # Actual crashes
+    eval_truncated_count = 0   # Normal truncation
     eval_waiting_times = []
     eval_utilizations = []
 
@@ -191,7 +191,7 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
             crash_marker = " 🔴[CRASHED]"
         elif episode_truncated:
             eval_truncated_count += 1
-            crash_marker = " ✅[完成]"
+            crash_marker = " ✅[COMPLETED]"
         else:
             crash_marker = ""
 
@@ -201,9 +201,9 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
             eval_utilizations.append(np.mean(ep_utils))
 
         if (ep + 1) % 10 == 0:
-            print(f"  Episode {ep+1}: {ep_reward:.2f} (长度{ep_len}){crash_marker}")
+            print(f"  Episode {ep+1}: {ep_reward:.2f} (length {ep_len}){crash_marker}")
 
-    # 统计结果
+    # Calculate statistics
     mean_reward = np.mean(eval_rewards)
     std_reward = np.std(eval_rewards)
     terminated_rate = eval_terminated_count / eval_episodes
@@ -213,16 +213,16 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
     mean_length = np.mean(eval_lengths)
 
     print(f"\n{'='*80}")
-    print(f"评估结果:")
-    print(f"  平均奖励: {mean_reward:.2f} ± {std_reward:.2f}")
-    print(f"  最佳奖励: {np.max(eval_rewards):.2f}")
-    print(f"  🔴 崩溃率: {terminated_rate*100:.1f}% ({eval_terminated_count}/{eval_episodes})")
-    print(f"  ✅ 完成率: {truncated_rate*100:.1f}% ({eval_truncated_count}/{eval_episodes})")
-    print(f"  平均回合长度: {mean_length:.1f}")
-    print(f"  训练时间: {training_time/60:.2f}分钟")
+    print(f"Evaluation Results:")
+    print(f"  Mean reward: {mean_reward:.2f} ± {std_reward:.2f}")
+    print(f"  Best reward: {np.max(eval_rewards):.2f}")
+    print(f"  🔴 Crash rate: {terminated_rate*100:.1f}% ({eval_terminated_count}/{eval_episodes})")
+    print(f"  ✅ Completion rate: {truncated_rate*100:.1f}% ({eval_truncated_count}/{eval_episodes})")
+    print(f"  Mean episode length: {mean_length:.1f}")
+    print(f"  Training time: {training_time/60:.2f} minutes")
     print(f"{'='*80}")
 
-    # 保存结果
+    # Save results
     results = {
         'config_type': config_type,
         'algorithm': algorithm_name,
@@ -253,7 +253,7 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
     with open(results_path, 'w') as f:
         json.dump(results, f, indent=2)
 
-    print(f"\n✅ 结果已保存至: {results_path}\n")
+    print(f"\n✅ Results saved to: {results_path}\n")
 
     env.close()
     return results
@@ -261,38 +261,38 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
 
 def run_all_supplementary_experiments():
     """
-    运行所有12个补充实验
+    Run all 12 supplementary experiments
 
-    Experiment Set 1: 结构对比 (8 runs)
+    Experiment Set 1: Structural comparison (8 runs)
     - Inverted vs Normal Pyramid
     - Algorithms: A2C, PPO
     - Seeds: 123, 456
 
-    Experiment Set 2: 容量悖论 (4 runs)
+    Experiment Set 2: Capacity paradox (4 runs)
     - K=10 vs K=30
     - Algorithm: A2C only
     - Seeds: 123, 456
     """
 
-    # 定义实验矩阵
+    # Define experiment matrix
     experiments = [
-        # Set 1: 结构对比 (Structural Comparison)
+        # Set 1: Structural Comparison
         {'config': 'inverted_pyramid', 'algo': 'A2C', 'seeds': [123, 456]},
         {'config': 'inverted_pyramid', 'algo': 'PPO', 'seeds': [123, 456]},
         {'config': 'normal_pyramid', 'algo': 'A2C', 'seeds': [123, 456]},
         {'config': 'normal_pyramid', 'algo': 'PPO', 'seeds': [123, 456]},
 
-        # Set 2: 容量悖论 (Capacity Paradox)
+        # Set 2: Capacity Paradox
         {'config': 'low_capacity', 'algo': 'A2C', 'seeds': [123, 456]},  # K=10
         {'config': 'capacity_30', 'algo': 'A2C', 'seeds': [123, 456]},   # K=30
     ]
 
     total_experiments = sum(len(exp['seeds']) for exp in experiments)
     print(f"\n{'='*80}")
-    print(f"补充实验计划: 总计 {total_experiments} 次训练")
+    print(f"Supplementary experiment plan: Total {total_experiments} training runs")
     print(f"{'='*80}")
 
-    # 运行实验
+    # Run experiments
     all_results = []
     completed = 0
 
@@ -304,7 +304,7 @@ def run_all_supplementary_experiments():
         for seed in seeds:
             completed += 1
             print(f"\n\n{'#'*80}")
-            print(f"进度: [{completed}/{total_experiments}] {config_type} + {algorithm} (seed={seed})")
+            print(f"Progress: [{completed}/{total_experiments}] {config_type} + {algorithm} (seed={seed})")
             print(f"{'#'*80}")
 
             try:
@@ -317,15 +317,15 @@ def run_all_supplementary_experiments():
                     high_load_multiplier=10.0
                 )
                 all_results.append(result)
-                print(f"\n✅ [{completed}/{total_experiments}] 完成: {result['mean_reward']:.2f} ± {result['std_reward']:.2f}")
+                print(f"\n✅ [{completed}/{total_experiments}] Completed: {result['mean_reward']:.2f} ± {result['std_reward']:.2f}")
 
             except Exception as e:
-                print(f"\n❌ [{completed}/{total_experiments}] 失败: {config_type} + {algorithm} (seed={seed})")
-                print(f"错误: {e}")
+                print(f"\n❌ [{completed}/{total_experiments}] Failed: {config_type} + {algorithm} (seed={seed})")
+                print(f"Error: {e}")
                 import traceback
                 traceback.print_exc()
 
-    # 保存总结
+    # Save summary
     summary = {
         'total_experiments': total_experiments,
         'completed': len(all_results),
@@ -339,9 +339,9 @@ def run_all_supplementary_experiments():
         json.dump(summary, f, indent=2)
 
     print(f"\n\n{'='*80}")
-    print(f"所有补充实验完成!")
-    print(f"成功: {len(all_results)}/{total_experiments}")
-    print(f"总结已保存至: {summary_path}")
+    print(f"All supplementary experiments completed!")
+    print(f"Success: {len(all_results)}/{total_experiments}")
+    print(f"Summary saved to: {summary_path}")
     print(f"{'='*80}\n")
 
     return all_results
@@ -350,33 +350,33 @@ def run_all_supplementary_experiments():
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='运行补充实验 (n=1→n=3)')
+    parser = argparse.ArgumentParser(description='Run supplementary experiments (n=1→n=3)')
     parser.add_argument('--mode', choices=['single', 'all'], default='all',
-                       help='运行模式: single (单次实验) 或 all (全部12次)')
+                       help='Run mode: single (single experiment) or all (all 12 runs)')
     parser.add_argument('--algorithm', choices=['A2C', 'PPO'],
-                       help='算法 (仅single模式)')
+                       help='Algorithm (single mode only)')
     parser.add_argument('--config',
                        choices=['inverted_pyramid', 'normal_pyramid', 'low_capacity', 'capacity_30'],
-                       help='配置类型 (仅single模式)')
+                       help='Configuration type (single mode only)')
     parser.add_argument('--seed', type=int, default=123,
-                       help='随机种子 (仅single模式)')
+                       help='Random seed (single mode only)')
     parser.add_argument('--timesteps', type=int, default=100000,
-                       help='训练步数')
+                       help='Training timesteps')
     parser.add_argument('--eval-episodes', type=int, default=50,
-                       help='评估回合数')
+                       help='Evaluation episodes')
 
     args = parser.parse_args()
 
     if args.mode == 'all':
-        print("\n🚀 开始运行全部补充实验 (12次训练)...\n")
+        print("\n🚀 Starting all supplementary experiments (12 training runs)...\n")
         run_all_supplementary_experiments()
 
     elif args.mode == 'single':
         if not args.algorithm or not args.config:
-            print("❌ 错误: single模式需要指定 --algorithm 和 --config")
+            print("❌ Error: single mode requires --algorithm and --config")
             parser.print_help()
         else:
-            print(f"\n🚀 运行单次实验: {args.algorithm} + {args.config} (seed={args.seed})\n")
+            print(f"\n🚀 Running single experiment: {args.algorithm} + {args.config} (seed={args.seed})\n")
             result = train_and_evaluate(
                 algorithm_name=args.algorithm,
                 config_type=args.config,
@@ -384,4 +384,4 @@ if __name__ == '__main__':
                 eval_episodes=args.eval_episodes,
                 seed=args.seed
             )
-            print(f"\n✅ 完成: {result['mean_reward']:.2f} ± {result['std_reward']:.2f}")
+            print(f"\n✅ Completed: {result['mean_reward']:.2f} ± {result['std_reward']:.2f}")
