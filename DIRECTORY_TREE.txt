@@ -68,7 +68,6 @@ final/RP1
 │   │   ├── GENERALIZATION_TEST_README.md
 │   │   ├── GENERALIZATION_V2_README.md
 │   │   ├── QUICK_REFERENCE_FINAL.md
-│   │   ├── RP1_完整研究报告.md
 │   │   ├── RUN_GENERALIZATION_TEST.md
 │   │   ├── RUN_V2_TEST.md
 │   │   ├── RUN_V3_TEST.md
@@ -137,7 +136,6 @@ final/RP1
 │       ├── U8.pdf
 │       ├── U8_Albalawi_CloudLoadBalancing_Analysis.md
 │       ├── t14.pdf
-│       └── 文献引用格式规范.md
 ├── FINAL_CHECK_SUMMARY.txt
 ├── Figures
 │   ├── analysis

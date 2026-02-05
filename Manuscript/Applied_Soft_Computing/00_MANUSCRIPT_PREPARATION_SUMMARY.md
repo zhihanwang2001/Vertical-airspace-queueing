@@ -336,6 +336,6 @@ All manuscript preparation files are located in:
 
 ---
 
-**Good luck with your manuscript! 加油！🚀**
+**Good luck with your manuscript! 🚀**
 
 **Last updated**: January 17, 2026
