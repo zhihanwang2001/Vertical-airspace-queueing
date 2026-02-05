@@ -1,5 +1,5 @@
 """
-美化版垂直分层排队系统3D结构图 (图1)
+Beautiful 3D Vertical Stratified Queue System Structure (Figure 1)
 Beautiful 3D Vertical Stratified Queue System Structure
 """
 

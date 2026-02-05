@@ -1,5 +1,5 @@
 """
-Elegant Vertical Stratified Queue System Structure (图1)
+Elegant Vertical Stratified Queue System Structure (Figure 1)
 Elegant Vertical Stratified Queue System Structure
 """
 

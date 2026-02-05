@@ -278,9 +278,9 @@ class ParetoAnalyzer:
 
         n_solutions = len(self.objective_values)
 
-        # 🔧 Fix 1: First filter out infeasible solutions (system crash solutions with Stability=0)
+        # Fix 1: First filter out infeasible solutions (system crash solutions with Stability=0)
         STABILITY_THRESHOLD = 0.5  # Minimum stability threshold
-        feasible_mask = self.objective_values[:, 4] > STABILITY_THRESHOLD  # Stabilityis the 5th objective
+        feasible_mask = self.objective_values[:, 4] > STABILITY_THRESHOLD  # Stability is the 5th objective
 
         feasible_indices = np.where(feasible_mask)[0]
         print(f"  Filtering feasible solutions: {len(feasible_indices)}/{n_solutions} are stable")
@@ -316,7 +316,7 @@ class ParetoAnalyzer:
                     dominated_solutions[j].append(i)
                     domination_count[i] += 1
 
-        # 找到非支配解（Domination count为0）
+        # Find non-dominated solutions (Domination count is 0)
         pareto_mask = domination_count == 0
         local_pareto_indices = np.where(pareto_mask)[0]
 
@@ -348,7 +348,7 @@ class ParetoAnalyzer:
 
         # Fixed number of knee points (avoid instability of threshold method)
         n_pareto = len(self.pareto_front)
-        target_knees = max(5, min(15, n_pareto // 20))  # 5-15个，About 5%
+        target_knees = max(5, min(15, n_pareto // 20))  # 5-15 points, about 5%
 
         print(f"  Target knee points: {target_knees} (from {n_pareto} Pareto solutions)")
 
@@ -543,7 +543,7 @@ class ParetoAnalyzer:
         unstable_in_pareto = np.sum(self.pareto_front[:, 4] < 0.5)
 
         with open(save_path, 'w', encoding='utf-8') as f:
-            f.write("垂直分Layers队列系统帕累托最优解集分析报告\n")
+            f.write("Vertical Stratified Queue System Pareto Optimal Set Analysis Report\n")
             f.write("="*60 + "\n\n")
 
             f.write(f"Total solutions: {len(self.objective_values)}\n")
@@ -552,7 +552,7 @@ class ParetoAnalyzer:
             f.write(f"Unstable solutions in Pareto: {unstable_in_pareto}\n")
             f.write(f"Pareto ratio: {len(self.pareto_front)/len(self.objective_values)*100:.2f}%\n")
             f.write(f"Hypervolume indicator: {hypervolume:.4f}\n")
-            f.write(f"Knee points数量: {len(knee_indices)} ({len(knee_indices)/len(self.pareto_front)*100:.1f}%)\n\n")
+            f.write(f"Number of knee points: {len(knee_indices)} ({len(knee_indices)/len(self.pareto_front)*100:.1f}%)\n\n")
             
             f.write("Objective statistics:\n")
             f.write("-"*40 + "\n")
@@ -572,10 +572,10 @@ class ParetoAnalyzer:
                 f.write(f"{conflict_pair}: {strength:.3f}\n")
             
             if knee_indices:
-                f.write(f"\nKnee points解详情:\n")
+                f.write(f"\nKnee points details:\n")
                 f.write("-"*40 + "\n")
                 for i, idx in enumerate(knee_indices):
-                    f.write(f"Knee points {i+1}:\n")
+                    f.write(f"Knee point {i+1}:\n")
                     for j, name in enumerate(self.objective_names):
                         f.write(f"  {name}: {self.objective_values[idx, j]:.3f}\n")
                     f.write("\n")
@@ -583,7 +583,7 @@ class ParetoAnalyzer:
         print(f"Report saved to: {save_path}")
     
     def compute_hypervolume(self, reference_point: Optional[np.ndarray] = None) -> float:
-        """计算Hypervolume indicator"""
+        """Calculate Hypervolume indicator"""
         if len(self.pareto_front) == 0:
             return 0.0
         
@@ -606,9 +606,9 @@ def main():
     print("Starting Pareto Optimal Set Analysis for Vertical Stratified Queuing System (Enhanced Version)")
     print("=" * 80)
     
-    # 创建环境
+    # Create environment
     env = DRLOptimizedQueueEnvFixed()
-    
+
     # Verify environment configuration
     print(f"✅ Environment Configuration:")
     print(f"   Layers: {env.n_layers}")
@@ -623,7 +623,7 @@ def main():
     print("\n1. Generating random solutions...")
     analyzer.generate_random_solutions(n_solutions=10000)
     
-    # 识别Pareto front
+    # Identify Pareto front
     print("\n2. Finding Pareto front...")
     analyzer.find_pareto_front()
     

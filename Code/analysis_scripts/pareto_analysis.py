@@ -427,7 +427,7 @@ class ParetoAnalyzer:
         
         print(f"Pareto analysis plots saved")
         
-        # 3. 3DPareto front可视化（前3个目标）
+        # 3. 3D Pareto front visualization (first 3 objectives)
         fig = plt.figure(figsize=(12, 9))
         ax = fig.add_subplot(111, projection='3d')
         
@@ -466,7 +466,7 @@ class ParetoAnalyzer:
         hypervolume = self.compute_hypervolume()
         
         with open(save_path, 'w', encoding='utf-8') as f:
-            f.write("垂直分层队列系统帕累托最优解集分析报告\n")
+            f.write("Vertical Stratified Queue System Pareto Optimal Set Analysis Report\n")
             f.write("="*60 + "\n\n")
             
             f.write(f"Total solutions: {len(self.objective_values)}\n")
@@ -492,10 +492,10 @@ class ParetoAnalyzer:
                 f.write(f"{conflict_pair}: {strength:.3f}\n")
             
             if knee_indices:
-                f.write(f"\nKnee points解详情:\n")
+                f.write(f"\nKnee points details:\n")
                 f.write("-"*40 + "\n")
                 for i, idx in enumerate(knee_indices):
-                    f.write(f"Knee points {i+1}:\n")
+                    f.write(f"Knee point {i+1}:\n")
                     for j, name in enumerate(self.objective_names):
                         f.write(f"  {name}: {self.objective_values[idx, j]:.3f}\n")
                     f.write("\n")

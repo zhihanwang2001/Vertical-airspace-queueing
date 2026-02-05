@@ -1,5 +1,5 @@
 """
-TD7跳跃学习现象分析图（基于最新训练数据）
+TD7 Jump Learning Phenomenon Analysis (Based on Latest Training Data)
 TD7 Jump Learning Phenomenon Analysis with Latest Training Data
 """
 
@@ -30,18 +30,18 @@ jump2_before = 3085.8
 jump2_after = 4309.1
 
 ax1.scatter([jump1_step], [jump1_after], color='red', s=200, zorder=5, marker='^',
-            label=f'跳跃1: {jump1_before:.0f}→{jump1_after:.0f} (+515%)')
+            label=f'Jump 1: {jump1_before:.0f}→{jump1_after:.0f} (+515%)')
 ax1.scatter([jump2_step], [jump2_after], color='orange', s=200, zorder=5, marker='^',
-            label=f'跳跃2: {jump2_before:.0f}→{jump2_after:.0f} (+40%)')
+            label=f'Jump 2: {jump2_before:.0f}→{jump2_after:.0f} (+40%)')
 
 ax1.axhline(y=4360.88, color='green', linestyle='--', linewidth=1.5, alpha=0.7,
-            label='最终性能: 4360.88')
+            label='Final Performance: 4360.88')
 ax1.axvline(x=75000, color='red', linestyle='--', linewidth=2, alpha=0.5,
-            label='75k步: 学习率衰减开始')
+            label='75k steps: Learning rate decay starts')
 
-ax1.set_xlabel('训练步数 (Training Steps)', fontsize=12, fontweight='bold')
-ax1.set_ylabel('奖励 (Reward)', fontsize=12, fontweight='bold')
-ax1.set_title('TD7完整训练曲线\nSALE表示学习 + 阶段性学习率调度 (75k步转折)',
+ax1.set_xlabel('Training Steps', fontsize=12, fontweight='bold')
+ax1.set_ylabel('Reward', fontsize=12, fontweight='bold')
+ax1.set_title('TD7 Complete Training Curve\nSALE Representation Learning + Staged Learning Rate Schedule (75k step turning point)',
               fontsize=13, fontweight='bold')
 ax1.grid(True, alpha=0.3)
 ax1.legend(fontsize=9, loc='lower right')

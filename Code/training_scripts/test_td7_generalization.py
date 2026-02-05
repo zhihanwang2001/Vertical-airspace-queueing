@@ -231,11 +231,11 @@ def main():
     print("\nStep 5: Save test results")
     print("-"*80)
 
-    # 创建保存目录
+    # Create save directory
     save_dir = Path("../../Results/generalization")
     save_dir.mkdir(exist_ok=True)
 
-    # 保存详细结果
+    # Save detailed results
     results_file = save_dir / "td7_generalization_results.json"
 
     full_results = {
