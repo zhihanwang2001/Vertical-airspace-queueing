@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-生成Major Revision论文图表
-基于n=3, 5× load的结构对比数据
-生成日期: 2026-01-08
+Generate Major Revision Paper Figures
+Based on n=3, 5× load structural comparison data
+Generation date: 2026-01-08
 """
 
 import json
@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from pathlib import Path
 
-# 设置中文字体和样式
+# Set font and style
 mpl.rcParams['font.family'] = 'DejaVu Sans'
 mpl.rcParams['font.size'] = 11
 mpl.rcParams['axes.labelsize'] = 12
@@ -21,7 +21,7 @@ mpl.rcParams['ytick.labelsize'] = 10
 mpl.rcParams['legend.fontsize'] = 10
 mpl.rcParams['figure.titlesize'] = 16
 
-# 数据路径
+# Data paths
 DATA_DIR = Path("Data/ablation_studies/structural_5x_load")
 OUTPUT_DIR = Path("Analysis/figures/major_revision")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

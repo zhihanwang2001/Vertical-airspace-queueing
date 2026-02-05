@@ -164,7 +164,7 @@ def analyze_structural_comparison_5x():
 
     for algorithm in ['A2C', 'PPO']:
         print(f"\n{'─'*80}")
-        print(f"算法: {algorithm}")
+        print(f"Algorithm: {algorithm}")
         print(f"{'─'*80}")
 
         # Load data

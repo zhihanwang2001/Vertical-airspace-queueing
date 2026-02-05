@@ -149,11 +149,11 @@ ax2.grid(True, alpha=0.25, linestyle='--', linewidth=1.2, color='#7F8C8D')
 ax2.legend(fontsize=12, loc='upper left', framealpha=0.95,
           edgecolor='#2C3E50', fancybox=True, shadow=True)
 
-# 设置范围
+# Set ranges
 ax2.set_xlim([24000, 29000])
 ax2.set_ylim([0, 4600])
 
-# 美化边框
+# Beautify borders
 for spine in ['top', 'right']:
     ax2.spines[spine].set_visible(False)
 ax2.spines['left'].set_linewidth(2)
