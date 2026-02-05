@@ -1,6 +1,5 @@
 """
 Fix Import Paths Script
-Fix Import Paths Script
 
 Fix import statements in all Python files to adapt to new folder structure
 """
@@ -24,7 +23,7 @@ def fix_import_statements(file_path):
         flags=re.MULTILINE
     )
 
-    # 2. Fix 'from baselines.' Import为 'from algorithms.baselines.'
+    # 2. Fix 'from baselines.' import to 'from algorithms.baselines.'
     content = re.sub(
         r'^from baselines\.',
         'from algorithms.baselines.',
@@ -32,7 +31,7 @@ def fix_import_statements(file_path):
         flags=re.MULTILINE
     )
 
-    # 3. Fix 'from advanced_algorithms.' Import为 'from algorithms.advanced.'
+    # 3. Fix 'from advanced_algorithms.' import to 'from algorithms.advanced.'
     content = re.sub(
         r'^from advanced_algorithms\.',
         'from algorithms.advanced.',
@@ -47,11 +46,11 @@ def fix_import_statements(file_path):
         content
     )
 
-    # 5. Fixheterogeneous_configs的Import
-    # 移除动态Import的代码块
+    # 5. Fix heterogeneous_configs import
+    # Remove dynamic import code block
     content = re.sub(
         r'# Import异质性配置生成器\nimport importlib\.util\nspec = importlib\.util\.spec_from_file_location\(\s*"heterogeneous_configs",\s*os\.path\.join\(os\.path\.dirname\(__file__\), \'\.\.\'.*?\n\).*?\nheterogeneous_configs = importlib\.util\.module_from_spec\(spec\)\nspec\.loader\.exec_module\(heterogeneous_configs\)\n\nHeterogeneousRegionConfigs = heterogeneous_configs\.HeterogeneousRegionConfigs',
-        '# Import异质性配置生成器\nfrom heterogeneous_configs import HeterogeneousRegionConfigs',
+        '# Import heterogeneous config generator\nfrom heterogeneous_configs import HeterogeneousRegionConfigs',
         content,
         flags=re.DOTALL
     )
@@ -82,11 +81,11 @@ def fix_import_statements(file_path):
     return False
 
 def main():
-    """主函数：遍历所有Python文件并FixImport"""
+    """Main function: Traverse all Python files and fix imports"""
     code_dir = Path(__file__).parent
     fixed_files = []
 
-    # 遍历所有.py文件
+    # Traverse all .py files
     for py_file in code_dir.rglob('*.py'):
         if py_file.name == 'fix_imports.py':
             continue
@@ -99,7 +98,7 @@ def main():
             print(f"✗ Error fixing {py_file}: {e}")
 
     print(f"\n{'='*80}")
-    print(f"Fix完成！共Fix了 {len(fixed_files)} files")
+    print(f"Fix completed! Fixed {len(fixed_files)} files")
     print(f"{'='*80}")
 
 if __name__ == '__main__':
