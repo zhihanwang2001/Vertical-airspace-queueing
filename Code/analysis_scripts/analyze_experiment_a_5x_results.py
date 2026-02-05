@@ -149,15 +149,15 @@ def welch_t_test(group1_stats, group2_stats):
 
 def analyze_structural_comparison_5x():
     """
-    分析实验A: 5× Load结构对比
+    Analyze Experiment A: 5× Load Structural Comparison
     Inverted vs Normal Pyramid
 
-    对比:
+    Comparison:
     - A2C: inverted vs normal @ 5× load
     - PPO: inverted vs normal @ 5× load
     """
     print("\n" + "="*80)
-    print("实验A分析: 5× Load结构对比 (Inverted vs Normal Pyramid)")
+    print("Experiment A Analysis: 5× Load Structural Comparison (Inverted vs Normal Pyramid)")
     print("="*80)
 
     results_summary = []
@@ -167,44 +167,44 @@ def analyze_structural_comparison_5x():
         print(f"算法: {algorithm}")
         print(f"{'─'*80}")
 
-        # 加载数据
+        # Load data
         inverted_results = load_experiment_results_5x('inverted_pyramid', algorithm)
         normal_results = load_experiment_results_5x('normal_pyramid', algorithm)
 
-        # 计算统计量
+        # Calculate statistics
         inverted_stats = compute_statistics_n3(inverted_results)
         normal_stats = compute_statistics_n3(normal_results)
 
         if inverted_stats is None or normal_stats is None:
-            print(f"❌ 跳过{algorithm}: 数据不完整")
+            print(f"❌ Skip {algorithm}: Incomplete data")
             continue
 
         # t-test
         test_results = welch_t_test(inverted_stats, normal_stats)
 
-        # 打印结果
-        print(f"\n【Inverted Pyramid @ 5× Load】")
+        # Print results
+        print(f"\n[Inverted Pyramid @ 5× Load]")
         print(f"  n = {inverted_stats['n']}, seeds = {inverted_stats['seeds']}")
         print(f"  Mean rewards: {inverted_stats['mean_rewards_per_run']}")
-        print(f"  平均奖励: {inverted_stats['mean_reward']:.2f} ± {inverted_stats['std_reward']:.2f} (SD)")
+        print(f"  Average reward: {inverted_stats['mean_reward']:.2f} ± {inverted_stats['std_reward']:.2f} (SD)")
         print(f"  95% CI: [{inverted_stats['ci_95_lower']:.2f}, {inverted_stats['ci_95_upper']:.2f}]")
-        print(f"  崩溃率: {inverted_stats['mean_crash_rate']*100:.1f}% ± {inverted_stats['std_crash_rate']*100:.1f}%")
+        print(f"  Crash rate: {inverted_stats['mean_crash_rate']*100:.1f}% ± {inverted_stats['std_crash_rate']*100:.1f}%")
 
-        print(f"\n【Normal Pyramid @ 5× Load】")
+        print(f"\n[Normal Pyramid @ 5× Load]")
         print(f"  n = {normal_stats['n']}, seeds = {normal_stats['seeds']}")
         print(f"  Mean rewards: {normal_stats['mean_rewards_per_run']}")
-        print(f"  平均奖励: {normal_stats['mean_reward']:.2f} ± {normal_stats['std_reward']:.2f} (SD)")
+        print(f"  Average reward: {normal_stats['mean_reward']:.2f} ± {normal_stats['std_reward']:.2f} (SD)")
         print(f"  95% CI: [{normal_stats['ci_95_lower']:.2f}, {normal_stats['ci_95_upper']:.2f}]")
-        print(f"  崩溃率: {normal_stats['mean_crash_rate']*100:.1f}% ± {normal_stats['std_crash_rate']*100:.1f}%")
+        print(f"  Crash rate: {normal_stats['mean_crash_rate']*100:.1f}% ± {normal_stats['std_crash_rate']*100:.1f}%")
 
-        print(f"\n【统计检验】")
+        print(f"\n[Statistical Test]")
         print(f"  Welch's t-test:")
         print(f"    t({test_results['df']:.2f}) = {test_results['t_statistic']:.3f}")
         print(f"    p = {test_results['p_value']:.6f} {'***' if test_results['p_value'] < 0.001 else '**' if test_results['p_value'] < 0.01 else '*' if test_results['p_value'] < 0.05 else 'ns'}")
         print(f"  Cohen's d = {test_results['cohen_d']:.3f}")
         print(f"  Cohen's d 95% CI: [{test_results['cohen_d_ci_lower']:.3f}, {test_results['cohen_d_ci_upper']:.3f}]")
 
-        # 效应量解释
+        # Effect size interpretation
         d_abs = abs(test_results['cohen_d'])
         if d_abs < 0.2:
             effect_size = "negligible"
@@ -215,15 +215,15 @@ def analyze_structural_comparison_5x():
         else:
             effect_size = "large/very large"
 
-        print(f"  效应量大小: {effect_size} (|d| = {d_abs:.3f})")
+        print(f"  Effect size: {effect_size} (|d| = {d_abs:.3f})")
 
-        # 统计显著性解释
+        # Statistical significance interpretation
         if test_results['p_value'] < 0.05:
-            print(f"  ✅ 结论: Inverted pyramid在{algorithm}下显著优于Normal pyramid (α=0.05)")
-            verdict = "显著优于"
+            print(f"  ✅ Conclusion: Inverted pyramid significantly outperforms Normal pyramid in {algorithm} (α=0.05)")
+            verdict = "Significantly superior"
         else:
-            print(f"  ⚠️  结论: 差异不显著 (p={test_results['p_value']:.3f}), 但注意n=3的低power")
-            verdict = "差异不显著"
+            print(f"  ⚠️  Conclusion: Difference not significant (p={test_results['p_value']:.3f}), but note low power with n=3")
+            verdict = "Difference not significant"
 
         # 保存结果
         results_summary.append({
@@ -241,10 +241,10 @@ def analyze_structural_comparison_5x():
 
 def create_latex_table_5x(results_summary):
     """
-    创建LaTeX汇总表 (实验A: 5× load)
+    Create LaTeX summary table (Experiment A: 5× load)
     """
     print("\n" + "="*80)
-    print("LaTeX表格生成 (实验A: 5× Load结构对比)")
+    print("LaTeX Table Generation (Experiment A: 5× Load Structural Comparison)")
     print("="*80)
 
     rows = []
@@ -271,13 +271,13 @@ def create_latex_table_5x(results_summary):
         }
         rows.append(row)
 
-    # Markdown表格
+    # Markdown table
     df = pd.DataFrame(rows)
-    print("\n【Markdown表格】")
+    print("\n[Markdown Table]")
     print(df.to_markdown(index=False))
 
-    # LaTeX代码
-    print("\n\n【LaTeX代码】")
+    # LaTeX code
+    print("\n\n[LaTeX Code]")
     print("\\begin{table}[htbp]")
     print("\\centering")
     print("\\caption{Experiment A: Structural Comparison at 5$\\times$ Load (n=3)}")
@@ -297,8 +297,8 @@ def create_latex_table_5x(results_summary):
     print("\\end{tabular}")
     print("\\end{table}")
 
-    # 生成简化版（用于主文）
-    print("\n\n【简化LaTeX表格 (用于论文正文)】")
+    # Generate simplified version (for main text)
+    print("\n\n[Simplified LaTeX Table (for paper main text)]")
     print("\\begin{table}[htbp]")
     print("\\centering")
     print("\\caption{Structural Comparison: Inverted vs Normal Pyramid at 5$\\times$ Load}")
@@ -323,7 +323,7 @@ def create_latex_table_5x(results_summary):
 
 def save_results_json_5x(results_summary):
     """
-    保存分析结果到JSON
+    Save analysis results to JSON
     """
     output_path = Path(__file__).parent.parent.parent / 'Data' / 'ablation_studies' / 'structural_5x_load' / 'STATISTICAL_ANALYSIS.json'
 
@@ -361,24 +361,24 @@ def save_results_json_5x(results_summary):
     with open(output_path, 'w') as f:
         json.dump(output_data, f, indent=2)
 
-    print(f"\n✅ 分析结果已保存至: {output_path}")
+    print(f"\n✅ Analysis results saved to: {output_path}")
 
 
 if __name__ == '__main__':
     print("\n" + "#"*80)
-    print("实验A统计分析: 5× Load结构对比 (n=3)")
+    print("Experiment A Statistical Analysis: 5× Load Structural Comparison (n=3)")
     print("#"*80)
 
-    # 分析结构对比
+    # Analyze structural comparison
     results_summary = analyze_structural_comparison_5x()
 
     if len(results_summary) > 0:
-        # 生成LaTeX表格
+        # Generate LaTeX table
         create_latex_table_5x(results_summary)
 
-        # 保存结果
+        # Save results
         save_results_json_5x(results_summary)
 
     print("\n" + "="*80)
-    print("分析完成!")
+    print("Analysis complete!")
     print("="*80)

@@ -303,66 +303,66 @@ class PaperFigureGenerator:
         plt.close()
         
     def plot_training_efficiency(self):
-        """图6: 训练效率对比"""
-        print("📈 生成训练效率对比图...")
-        
+        """Figure 6: Training efficiency comparison"""
+        print("📈 Generating training efficiency comparison...")
+
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
-        
+
         algorithms = list(self.training_times.keys())
-        times = [t/3600 for t in self.training_times.values()]  # 转换为小时
+        times = [t/3600 for t in self.training_times.values()]  # Convert to hours
         rewards = [self.main_algorithms[alg] for alg in algorithms]
-        
+
         colors = ['#2E86AB', '#A23B72', '#F18F01']
-        
-        # 左图：训练时间对比
+
+        # Left plot: Training time comparison
         bars1 = ax1.bar(algorithms, times, color=colors, alpha=0.8)
         ax1.set_ylabel('Training Time (Hours)', fontsize=12)
         ax1.set_title('Training Time Comparison', fontsize=14, fontweight='bold')
-        
+
         for bar, time in zip(bars1, times):
             ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.1,
                     f'{time:.1f}h', ha='center', va='bottom', fontsize=10)
-        
-        # 右图：效率散点图 (性能/时间)
+
+        # Right plot: Efficiency scatter plot (performance/time)
         efficiency = [r/t for r, t in zip(rewards, times)]
         scatter = ax2.scatter(times, rewards, c=colors, s=200, alpha=0.8)
-        
+
         for i, alg in enumerate(algorithms):
-            ax2.annotate(alg, (times[i], rewards[i]), 
+            ax2.annotate(alg, (times[i], rewards[i]),
                         xytext=(5, 5), textcoords='offset points', fontsize=12)
-        
+
         ax2.set_xlabel('Training Time (Hours)', fontsize=12)
         ax2.set_ylabel('Final Performance', fontsize=12)
         ax2.set_title('Performance vs Training Time', fontsize=14, fontweight='bold')
-        
-        # 美化
+
+        # Beautify
         for ax in [ax1, ax2]:
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
             ax.grid(alpha=0.3, linestyle='--')
-        
+
         plt.tight_layout()
         plt.savefig(self.output_dir / '6_training_efficiency.png', bbox_inches='tight')
         plt.savefig(self.output_dir / '6_training_efficiency.pdf', bbox_inches='tight')
         plt.close()
         
     def plot_system_architecture(self):
-        """图7: 系统架构示意图"""
-        print("📈 生成系统架构示意图...")
-        
+        """Figure 7: System architecture diagram"""
+        print("📈 Generating system architecture diagram...")
+
         fig, ax = plt.subplots(figsize=(14, 10))
         ax.set_xlim(0, 10)
         ax.set_ylim(0, 8)
         ax.axis('off')
-        
-        # 绘制倒金字塔结构
+
+        # Draw inverted pyramid structure
         pyramid_layers = [
             {'y': 6.5, 'width': 2, 'label': 'Layer 1 (High)', 'color': '#FF6B6B'},
             {'y': 5, 'width': 3, 'label': 'Layer 2 (Medium)', 'color': '#4ECDC4'},
             {'y': 3.5, 'width': 4, 'label': 'Layer 3 (Low)', 'color': '#45B7D1'},
             {'y': 2, 'width': 5, 'label': 'Layer 4 (Ground)', 'color': '#96CEB4'}
         ]
-        
+
         for layer in pyramid_layers:
             x_center = 2.5
             rect = FancyBboxPatch(
@@ -371,59 +371,59 @@ class PaperFigureGenerator:
                 edgecolor='black', linewidth=1.5
             )
             ax.add_patch(rect)
-            ax.text(x_center, layer['y'] + 0.4, layer['label'], 
+            ax.text(x_center, layer['y'] + 0.4, layer['label'],
                    ha='center', va='center', fontsize=11, fontweight='bold')
-        
+
         # DRL Agent
         agent_rect = FancyBboxPatch(
-            (6, 4), 3, 2, boxstyle="round,pad=0.2", 
+            (6, 4), 3, 2, boxstyle="round,pad=0.2",
             facecolor='#F39C12', alpha=0.8, edgecolor='black', linewidth=2
         )
         ax.add_patch(agent_rect)
-        ax.text(7.5, 5, 'DRL Agent\n(PPO/TD3)', ha='center', va='center', 
+        ax.text(7.5, 5, 'DRL Agent\n(PPO/TD3)', ha='center', va='center',
                fontsize=12, fontweight='bold')
-        
-        # 环境反馈
+
+        # Environment feedback
         ax.arrow(6, 5, -1, 0, head_width=0.15, head_length=0.2, fc='blue', ec='blue')
         ax.text(5.2, 5.3, 'State', ha='center', fontsize=10, color='blue')
-        
+
         ax.arrow(5, 4.5, 1, 0, head_width=0.15, head_length=0.2, fc='red', ec='red')
         ax.text(5.5, 4.2, 'Action', ha='center', fontsize=10, color='red')
-        
-        # 标题和说明
-        ax.text(5, 7.5, 'Vertical Stratified Queue System with DRL', 
+
+        # Title and description
+        ax.text(5, 7.5, 'Vertical Stratified Queue System with DRL',
                ha='center', va='center', fontsize=16, fontweight='bold')
-        
-        # 添加说明文字
+
+        # Add description text
         ax.text(1, 0.5, 'Features:', fontsize=12, fontweight='bold')
         ax.text(1, 0.2, '• Inverted Pyramid Structure', fontsize=10)
         ax.text(1, -0.1, '• Dynamic Priority Mechanism', fontsize=10)
         ax.text(1, -0.4, '• Multi-objective Optimization', fontsize=10)
-        
+
         ax.text(6, 0.5, 'DRL Algorithms:', fontsize=12, fontweight='bold')
         ax.text(6, 0.2, '• PPO: 4399 reward', fontsize=10)
         ax.text(6, -0.1, '• TD3: 4255 reward', fontsize=10)
         ax.text(6, -0.4, '• A2C: 1721 reward (baseline)', fontsize=10)
-        
+
         plt.tight_layout()
         plt.savefig(self.output_dir / '7_system_architecture.png', bbox_inches='tight')
         plt.savefig(self.output_dir / '7_system_architecture.pdf', bbox_inches='tight')
         plt.close()
 
 def main():
-    """主函数"""
+    """Main function"""
     generator = PaperFigureGenerator()
     generator.generate_all_figures()
-    
-    print("\n📋 生成的图表列表:")
-    print("1. 主算法性能对比柱状图 - 1_main_algorithm_comparison.png")
-    print("2. 训练收敛曲线对比 - 2_convergence_curves.png") 
-    print("3. 消融实验分析图 - 3_ablation_analysis.png")
-    print("4. 综合性能雷达图 - 4_performance_radar.png")
-    print("5. 算法稳定性箱型图 - 5_stability_analysis.png")
-    print("6. 训练效率对比 - 6_training_efficiency.png")
-    print("7. 系统架构示意图 - 7_system_architecture.png")
-    print("\n🎯 所有图表同时生成了PNG和PDF格式，适合论文使用！")
+
+    print("\n📋 Generated figure list:")
+    print("1. Main algorithm performance comparison bar chart - 1_main_algorithm_comparison.png")
+    print("2. Training convergence curve comparison - 2_convergence_curves.png")
+    print("3. Ablation experiment analysis - 3_ablation_analysis.png")
+    print("4. Comprehensive performance radar chart - 4_performance_radar.png")
+    print("5. Algorithm stability box plot - 5_stability_analysis.png")
+    print("6. Training efficiency comparison - 6_training_efficiency.png")
+    print("7. System architecture diagram - 7_system_architecture.png")
+    print("\n🎯 All figures generated in both PNG and PDF formats, suitable for paper use!")
 
 if __name__ == "__main__":
     main()

@@ -149,7 +149,7 @@ def plot_algorithm_robustness():
     ax1.grid(axis='y', alpha=0.3, linestyle='--')
     ax1.set_ylim(0, 12500)
 
-    # 子图2: 崩溃率对比
+    # Subplot 2: Crash rate comparison
     x = np.arange(len(configs))
 
     bars3 = ax2.bar(x - width/2, a2c_crash, width, label='A2C',
@@ -157,7 +157,7 @@ def plot_algorithm_robustness():
     bars4 = ax2.bar(x + width/2, ppo_crash, width, label='PPO',
                     color='#FFC000', edgecolor='black', linewidth=1)
 
-    # 添加百分比标签
+    # Add percentage labels
     for bars in [bars3, bars4]:
         for bar in bars:
             height = bar.get_height()
@@ -176,7 +176,7 @@ def plot_algorithm_robustness():
 
     plt.tight_layout()
 
-    # 保存
+    # Save
     output_file = OUTPUT_DIR / "fig4_algorithm_robustness"
     plt.savefig(f"{output_file}.pdf", dpi=300, bbox_inches='tight')
     plt.savefig(f"{output_file}.png", dpi=300, bbox_inches='tight')
@@ -186,19 +186,19 @@ def plot_algorithm_robustness():
 
 def main():
     print("="*60)
-    print("生成Major Revision额外图表")
-    print("基于Table 4和Table 7数据")
+    print("Generate Major Revision Additional Figures")
+    print("Based on Table 4 and Table 7 data")
     print("="*60)
 
-    print("\n[1/2] 生成容量悖论图...")
+    print("\n[1/2] Generating capacity paradox figure...")
     plot_capacity_paradox()
 
-    print("\n[2/2] 生成算法鲁棒性图...")
+    print("\n[2/2] Generating algorithm robustness figure...")
     plot_algorithm_robustness()
 
     print("\n" + "="*60)
-    print("图表生成完成！")
-    print(f"输出目录: {OUTPUT_DIR}")
+    print("Figure generation complete!")
+    print(f"Output directory: {OUTPUT_DIR}")
     print("="*60)
 
 
