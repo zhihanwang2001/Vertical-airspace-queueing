@@ -1,9 +1,9 @@
 """
 Run Optimized IMPALA with CSV Logging (Compatible with result_excel format)
-Run optimized IMPALA algorithm with CSV logging, compatible with result_excel file format
 
-This script is specifically created for compatibility with existing result formats,
-generating CSV files in the same format as other algorithms
+This script runs the optimized IMPALA algorithm with CSV logging, compatible with result_excel file format.
+It is specifically created for compatibility with existing result formats,
+generating CSV files in the same format as other algorithms.
 """
 
 import argparse

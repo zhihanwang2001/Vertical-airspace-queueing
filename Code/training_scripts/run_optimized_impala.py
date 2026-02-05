@@ -1,6 +1,7 @@
 """
 Run Optimized IMPALA for Queue System
-Run optimized IMPALA algorithm for queue system
+
+This script runs the optimized IMPALA algorithm for the queue system.
 
 Usage:
 python run_optimized_impala.py [--timesteps TIMESTEPS] [--eval] [--load PATH]

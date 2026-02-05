@@ -39,7 +39,9 @@ def create_config(config_type='inverted_pyramid', high_load_multiplier=10.0):
     """
     Create high load configuration
 
-    high_load_multiplier: Load multiplier (relative to v3)
+    Args:
+        config_type: Configuration type
+        high_load_multiplier: Load multiplier (relative to v3 baseline)
     """
     config = VerticalQueueConfig()
 

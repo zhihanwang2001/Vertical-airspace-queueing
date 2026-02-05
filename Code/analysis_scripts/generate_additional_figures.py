@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-生成Major Revision论文的额外图表
-基于Table 4 (容量悖论) 和 Table 7 (算法鲁棒性)
-生成日期: 2026-01-08
+Generate Additional Figures for Major Revision Paper
+Based on Table 4 (Capacity Paradox) and Table 7 (Algorithm Robustness)
+Generation date: 2026-01-08
 """
 
 import numpy as np
@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from pathlib import Path
 
-# 设置样式
+# Set style
 mpl.rcParams['font.family'] = 'DejaVu Sans'
 mpl.rcParams['font.size'] = 11
 mpl.rcParams['axes.labelsize'] = 12
@@ -20,47 +20,47 @@ mpl.rcParams['ytick.labelsize'] = 10
 mpl.rcParams['legend.fontsize'] = 10
 mpl.rcParams['figure.titlesize'] = 16
 
-# 输出目录
+# Output directory
 OUTPUT_DIR = Path("Analysis/figures/major_revision")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 def plot_capacity_paradox():
     """
-    Figure 3: 容量悖论可视化
-    基于Table 4数据
+    Figure 3: Capacity Paradox Visualization
+    Based on Table 4 data
     """
-    # Table 4数据：Capacity Configuration Performance Ranking
+    # Table 4 data: Capacity Configuration Performance Ranking
     configs = ['Low-10', 'Unif-20', 'Inv-Pyr\n(K=23)', 'Unif-25', 'Norm-Pyr\n(K=23)', 'Unif-30', 'High-40']
     capacities = [10, 20, 23, 25, 23, 30, 40]
     rewards = [11180, 10855, 8844, 7817, 3950, 13, -32]
     crash_rates = [0, 10, 29, 35, 65, 100, 100]
 
-    # 为了绘制连续曲线，按capacity排序（处理K=23的两个配置）
+    # For continuous curve plotting, sort by capacity (handle two K=23 configs)
     capacity_plot = [10, 20, 23, 25, 30, 40]
-    reward_plot = [11180, 10855, 8844, 7817, 13, -32]  # 使用Inv-Pyr的K=23
+    reward_plot = [11180, 10855, 8844, 7817, 13, -32]  # Use Inv-Pyr for K=23
     crash_plot = [0, 10, 29, 35, 100, 100]
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
-    # 子图1: 平均奖励 vs 容量（显示倒U型曲线）
+    # Subplot 1: Average reward vs capacity (showing inverted-U curve)
     ax1.plot(capacity_plot, reward_plot, 'o-', linewidth=2.5, markersize=10,
              color='#4472C4', label='Average Reward')
 
-    # 标注关键点
+    # Mark key points
     ax1.plot(10, 11180, 'o', markersize=15, color='#70AD47', label='Optimal (K=10)')
     ax1.plot(30, 13, 'x', markersize=15, markeredgewidth=3, color='#C00000', label='Collapse (K≥30)')
 
-    # 添加数值标签
+    # Add value labels
     for cap, rew in zip(capacity_plot, reward_plot):
-        if rew > 100:  # 只标注非崩溃点
+        if rew > 100:  # Only label non-collapse points
             ax1.text(cap, rew + 500, f'{rew:,}', ha='center', fontsize=9, fontweight='bold')
 
-    # 添加critical threshold标注
+    # Add critical threshold annotation
     ax1.axvline(x=25, color='orange', linestyle='--', linewidth=2, alpha=0.7, label='Critical Threshold')
     ax1.text(25, 9000, 'Critical\nThreshold', ha='center', fontsize=10,
              bbox=dict(boxstyle='round', facecolor='orange', alpha=0.3))
 
-    # 添加99.8%悬崖标注
+    # Add 99.8% cliff annotation
     ax1.annotate('', xy=(30, 13), xytext=(25, 7817),
                 arrowprops=dict(arrowstyle='->', color='red', lw=2.5))
     ax1.text(27.5, 4000, '99.8%\nDrop', ha='center', fontsize=10, color='red', fontweight='bold')
@@ -73,16 +73,16 @@ def plot_capacity_paradox():
     ax1.set_ylim(-2000, 12000)
     ax1.set_xticks(capacity_plot)
 
-    # 子图2: 崩溃率 vs 容量
+    # Subplot 2: Crash rate vs capacity
     bars = ax2.bar(capacity_plot, crash_plot, color=['#70AD47', '#92D050', '#FFC000',
                                                        '#ED7D31', '#C00000', '#C00000'],
                    width=3, edgecolor='black', linewidth=1.5)
 
-    # 添加百分比标签
+    # Add percentage labels
     for cap, crash in zip(capacity_plot, crash_plot):
         ax2.text(cap, crash + 3, f'{crash}%', ha='center', fontsize=10, fontweight='bold')
 
-    # 标注viable vs collapse区域
+    # Mark viable vs collapse regions
     ax2.axhline(y=100, color='red', linestyle='-', linewidth=2, alpha=0.5)
     ax2.fill_between([9, 26], 0, 100, alpha=0.15, color='green', label='Viable (K≤25)')
     ax2.fill_between([28, 41], 0, 105, alpha=0.15, color='red', label='Collapse (K≥30)')
@@ -97,33 +97,33 @@ def plot_capacity_paradox():
 
     plt.tight_layout()
 
-    # 保存
+    # Save
     output_file = OUTPUT_DIR / "fig3_capacity_paradox"
     plt.savefig(f"{output_file}.pdf", dpi=300, bbox_inches='tight')
     plt.savefig(f"{output_file}.png", dpi=300, bbox_inches='tight')
-    print(f"✅ Generated: {output_file}.pdf/.png")
+    print(f"Generated: {output_file}.pdf/.png")
     plt.close()
 
 
 def plot_algorithm_robustness():
     """
-    Figure 4: 算法鲁棒性对比
-    基于Table 7数据
+    Figure 4: Algorithm Robustness Comparison
+    Based on Table 7 data
     """
-    # Table 7数据：Algorithm Robustness Comparison (Viable Configurations K≤25)
+    # Table 7 data: Algorithm Robustness Comparison (Viable Configurations K≤25)
     configs = ['Low-10', 'Unif-20', 'Inv-Pyr\n(K=23)', 'Unif-25', 'Norm-Pyr\n(K=23)']
 
-    # A2C数据
+    # A2C data
     a2c_rewards = [11264, 11063, 9864, 8623, 5326]
     a2c_crash = [0, 10, 20, 20, 50]
 
-    # PPO数据
+    # PPO data
     ppo_rewards = [11097, 10648, 7825, 7012, 2574]
     ppo_crash = [0, 10, 38, 50, 80]
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
-    # 子图1: 平均奖励对比
+    # Subplot 1: Average reward comparison
     x = np.arange(len(configs))
     width = 0.35
 
@@ -132,7 +132,7 @@ def plot_algorithm_robustness():
     bars2 = ax1.bar(x + width/2, ppo_rewards, width, label='PPO',
                     color='#ED7D31', edgecolor='black', linewidth=1)
 
-    # 添加数值标签
+    # Add value labels
     for bars in [bars1, bars2]:
         for bar in bars:
             height = bar.get_height()

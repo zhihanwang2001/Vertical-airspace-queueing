@@ -42,7 +42,7 @@ def main():
     runner = ComparisonRunner(env, save_dir=args.save_dir)
 
     # Run comparison experiments
-    print(f"\\nStarting comparison with algorithms: {args.algorithms}")
+    print(f"\nStarting comparison with algorithms: {args.algorithms}")
     print(f"Using optimized configurations for better convergence...")
 
     results = runner.run_comparison(
@@ -56,7 +56,7 @@ def main():
     # Save data
     runner.save_comparison_data()
 
-    print(f"\\nComparison completed! Results saved to: {args.save_dir}")
+    print(f"\nComparison completed! Results saved to: {args.save_dir}")
     print(f"Check the following files:")
     print(f"  - comparison_report.txt: Detailed text report")
     print(f"  - training_curves.png: Training progress visualization")

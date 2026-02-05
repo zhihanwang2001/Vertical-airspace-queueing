@@ -1,14 +1,13 @@
 """
-消融实验结果分析器
 Ablation Study Results Analyzer
 
-分析消融实验结果并生成：
-1. 组件贡献度分析
-2. 性能对比图表
-3. 统计显著性测试
-4. 论文所需的精确数值
+Analyze ablation study results and generate:
+1. Component contribution analysis
+2. Performance comparison charts
+3. Statistical significance tests
+4. Precise numerical values for paper
 
-用法：
+Usage:
     python analyze_ablation_results.py --results ablation_results/final_results.json
     python analyze_ablation_results.py --generate-figures
 """
@@ -25,116 +24,116 @@ from scipy import stats
 
 
 class AblationResultsAnalyzer:
-    """消融实验结果分析器"""
-    
+    """Ablation study results analyzer"""
+
     def __init__(self, results_file: str = None):
         self.results = {}
         self.analysis = {}
-        
+
         if results_file and os.path.exists(results_file):
             self.load_results(results_file)
-    
+
     def load_results(self, filepath: str):
-        """加载消融实验结果"""
-        print(f"📂 加载消融实验结果: {filepath}")
-        
+        """Load ablation study results"""
+        print(f"Loading ablation study results: {filepath}")
+
         with open(filepath, 'r', encoding='utf-8') as f:
             self.results = json.load(f)
-        
-        print(f"✅ 已加载 {len(self.results)} 个实验结果")
-        
-        # 验证结果完整性
+
+        print(f"Loaded {len(self.results)} experiment results")
+
+        # Validate results completeness
         self._validate_results()
-        
+
     def _validate_results(self):
-        """验证结果完整性"""
-        required_experiments = ['full_system', 'no_high_priority', 'single_objective', 
+        """Validate results completeness"""
+        required_experiments = ['full_system', 'no_high_priority', 'single_objective',
                               'traditional_pyramid', 'no_transfer']
-        
+
         missing = []
         failed = []
-        
+
         for exp in required_experiments:
             if exp not in self.results:
                 missing.append(exp)
             elif not self.results[exp].get('success', False):
                 failed.append(exp)
-        
+
         if missing:
-            print(f"⚠️  缺失实验: {missing}")
+            print(f"Warning: Missing experiments: {missing}")
         if failed:
-            print(f"❌ 失败实验: {failed}")
-        
+            print(f"Error: Failed experiments: {failed}")
+
         successful = len([r for r in self.results.values() if r.get('success', False)])
-        print(f"✅ 成功实验: {successful}/{len(self.results)}")
-    
+        print(f"Successful experiments: {successful}/{len(self.results)}")
+
     def calculate_component_contributions(self) -> Dict[str, float]:
         """
-        计算各组件的贡献度
-        
-        贡献度 = (完整系统性能 - 移除组件后性能) / 完整系统性能 * 100%
+        Calculate contribution of each component
+
+        Contribution = (Full system performance - Performance without component) / Full system performance * 100%
         """
         if 'full_system' not in self.results:
-            raise ValueError("缺少完整系统基准结果")
-        
+            raise ValueError("Missing full system baseline results")
+
         full_system_performance = self.results['full_system']['mean_reward']
-        
+
         contributions = {}
         component_mapping = {
             'no_high_priority': 'High-Layer Priority',
-            'single_objective': 'Multi-Objective Optimization', 
+            'single_objective': 'Multi-Objective Optimization',
             'traditional_pyramid': 'Inverted Pyramid Structure',
             'no_transfer': 'Transfer Mechanism'
         }
-        
-        print("🧮 计算组件贡献度...")
+
+        print("Calculating component contributions...")
         print("-" * 50)
-        
+
         for ablation_type, component_name in component_mapping.items():
             if ablation_type in self.results and self.results[ablation_type].get('success'):
                 ablation_performance = self.results[ablation_type]['mean_reward']
-                
-                # 计算贡献度（性能下降百分比）
+
+                # Calculate contribution (performance degradation percentage)
                 contribution = (full_system_performance - ablation_performance) / full_system_performance * 100
                 contributions[component_name] = contribution
-                
+
                 print(f"{component_name:<25}: {contribution:>6.1f}%")
             else:
                 contributions[component_name] = 0.0
                 print(f"{component_name:<25}: {'N/A':>6}")
-        
+
         self.analysis['contributions'] = contributions
         return contributions
-    
+
     def perform_statistical_analysis(self) -> Dict[str, Any]:
-        """执行统计显著性分析"""
-        print("📊 执行统计显著性分析...")
-        
+        """Perform statistical significance analysis"""
+        print("Performing statistical significance analysis...")
+
         if 'full_system' not in self.results:
-            print("❌ 缺少完整系统基准，无法进行统计分析")
+            print("Error: Missing full system baseline, cannot perform statistical analysis")
             return {}
-        
+
         full_system_reward = self.results['full_system']['mean_reward']
         full_system_std = self.results['full_system']['std_reward']
-        
+
         statistical_results = {}
-        
+
         for ablation_type, result in self.results.items():
             if ablation_type == 'full_system' or not result.get('success'):
                 continue
-            
+
             ablation_reward = result['mean_reward']
             ablation_std = result['std_reward']
-            
-            # 假设正态分布，计算t统计量
-            # 这里简化处理，实际应该有更多样本数据
+
+            # Assume normal distribution, calculate t-statistic
+            # Simplified here, should have more sample data in practice
             pooled_std = np.sqrt((full_system_std**2 + ablation_std**2) / 2)
-            
+
             if pooled_std > 0:
                 t_stat = (full_system_reward - ablation_reward) / pooled_std
-                # 简化的p值估计（实际需要更复杂的计算）
+                # Simplified p-value estimation (actual calculation should be more complex)
                 p_value = 2 * (1 - stats.norm.cdf(abs(t_stat)))
-                
+
                 statistical_results[ablation_type] = {
                     't_statistic': t_stat,
                     'p_value': p_value,

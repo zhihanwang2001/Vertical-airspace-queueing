@@ -1,15 +1,14 @@
 """
-TD7跨区域泛化性测试脚本
 TD7 Cross-Region Generalization Test Script
 
-🎯 核心目标：验证TD7模型在不同异质性区域的泛化能力
-⚠️  重要：这不是mock测试，使用真实的环境运行和模型推理！
+Core Objective: Verify TD7 model's generalization ability across different heterogeneous regions
+Important: This is not a mock test - it uses real environment execution and model inference!
 
-测试逻辑：
-1. 加载已训练的TD7模型（./models/td7/td7_model_500000.pt）
-2. 在5个不同的heterogeneous region中测试
-3. 每个region运行10个episode获取真实性能数据
-4. 记录详细的性能指标和环境配置
+Test Logic:
+1. Load trained TD7 model (./models/td7/td7_model_500000.pt)
+2. Test in 5 different heterogeneous regions
+3. Run 10 episodes per region to obtain real performance data
+4. Record detailed performance metrics and environment configurations
 """
 
 import sys
@@ -44,58 +43,58 @@ HeterogeneousRegionConfigs = heterogeneous_configs.HeterogeneousRegionConfigs
 
 def test_td7_in_region(td7_baseline, config, region_name: str, n_episodes: int = 10, verbose: bool = True):
     """
-    在指定区域测试TD7模型
+    Test TD7 model in specified region
 
     Args:
-        td7_baseline: 已加载模型的TD7Baseline实例
-        config: VerticalQueueConfig配置
-        region_name: 区域名称
-        n_episodes: 测试episode数量
-        verbose: 是否打印详细信息
+        td7_baseline: TD7Baseline instance with loaded model
+        config: VerticalQueueConfig configuration
+        region_name: Region name
+        n_episodes: Number of test episodes
+        verbose: Whether to print detailed information
 
     Returns:
-        dict: 测试结果
+        dict: Test results
     """
     if verbose:
         print(f"\n{'='*80}")
-        print(f"测试区域: {region_name}")
+        print(f"Testing region: {region_name}")
         print(f"{'='*80}")
 
-    # 创建该区域的环境
+    # Create environment for this region
     base_env = ConfigurableEnvWrapper(config)
     eval_env = SB3DictWrapper(base_env)
 
-    # 记录结果
+    # Record results
     episode_rewards = []
     episode_lengths = []
     episode_details = []
 
-    # 运行n_episodes个episode
+    # Run n_episodes episodes
     for episode in range(n_episodes):
         obs, info = eval_env.reset()
         episode_reward = 0
         episode_length = 0
         done = False
 
-        # 运行一个完整的episode
+        # Run a complete episode
         while not done:
-            # 使用TD7模型预测动作（确定性策略）
+            # Use TD7 model to predict action (deterministic policy)
             action = td7_baseline.agent.act(obs, training=False)
 
-            # 执行动作
+            # Execute action
             obs, reward, terminated, truncated, info = eval_env.step(action)
             done = terminated or truncated
 
             episode_reward += reward
             episode_length += 1
 
-            # 防止无限循环
+            # Prevent infinite loop
             if episode_length >= 1000:
                 if verbose:
-                    print(f"  ⚠️  Episode {episode+1} 达到最大步数限制 (1000)")
+                    print(f"  Warning: Episode {episode+1} reached maximum step limit (1000)")
                 break
 
-        # 记录结果
+        # Record results
         episode_rewards.append(episode_reward)
         episode_lengths.append(episode_length)
         episode_details.append({
@@ -107,7 +106,7 @@ def test_td7_in_region(td7_baseline, config, region_name: str, n_episodes: int =
         if verbose:
             print(f"  Episode {episode+1}/{n_episodes}: Reward = {episode_reward:.2f}, Length = {episode_length}")
 
-    # 计算统计结果
+    # Calculate statistics
     mean_reward = np.mean(episode_rewards)
     std_reward = np.std(episode_rewards)
     mean_length = np.mean(episode_lengths)
@@ -125,28 +124,27 @@ def test_td7_in_region(td7_baseline, config, region_name: str, n_episodes: int =
     }
 
     if verbose:
-        print(f"\n📊 {region_name} 测试结果:")
-        print(f"   平均奖励: {mean_reward:.2f} ± {std_reward:.2f}")
-        print(f"   平均长度: {mean_length:.1f}")
-        print(f"   配置摘要: 到达率={results['config_summary']['base_arrival_rate']:.3f}, "
-              f"容量={results['config_summary']['total_capacity']}")
+        print(f"\nTest results for {region_name}:")
+        print(f"   Mean reward: {mean_reward:.2f} ± {std_reward:.2f}")
+        print(f"   Mean length: {mean_length:.1f}")
+        print(f"   Config summary: arrival_rate={results['config_summary']['base_arrival_rate']:.3f}, "
+              f"capacity={results['config_summary']['total_capacity']}")
 
-    # 清理环境
+    # Clean up environment
     eval_env.close()
 
     return results
 
 
 def main():
-    """主函数：测试TD7在所有异质性区域的泛化性能"""
+    """Main function: Test TD7 generalization performance across all heterogeneous regions"""
 
     print("\n" + "="*80)
-    print("TD7 跨区域泛化性测试")
-    print("Cross-Region Generalization Test for TD7")
+    print("TD7 Cross-Region Generalization Test")
     print("="*80 + "\n")
 
-    # ========== 第1步：加载训练好的TD7模型 ==========
-    print("第1步：加载训练好的TD7模型")
+    # ========== Step 1: Load trained TD7 model ==========
+    print("Step 1: Load trained TD7 model")
     print("-"*80)
 
     model_path = "../../Models/td7/td7_model_500000.pt"

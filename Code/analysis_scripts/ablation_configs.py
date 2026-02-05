@@ -1,14 +1,13 @@
 """
-消融实验配置模块
 Ablation Study Configuration Module
 
-定义4个关键组件的消融实验：
-1. 无高层优先 (No High-Layer Priority) - 移除到达权重优势
-2. 单目标优化 (Single-Objective) - 移除多目标优化
-3. 传统金字塔 (Traditional Pyramid) - 移除倒金字塔优势  
-4. 无转移机制 (No Transfer) - 移除层间转移功能
+Define ablation experiments for 4 key components:
+1. No High-Layer Priority - Remove arrival weight advantage
+2. Single-Objective - Remove multi-objective optimization
+3. Traditional Pyramid - Remove inverted pyramid advantage
+4. No Transfer - Remove inter-layer transfer functionality
 
-每个消融实验都保持其他组件不变，以确保公平对比
+Each ablation experiment keeps other components unchanged to ensure fair comparison
 """
 
 import copy
@@ -16,135 +15,135 @@ from typing import Dict, Any, List
 from env.config import VerticalQueueConfig
 
 class AblationConfigs:
-    """消融实验配置管理器"""
-    
+    """Ablation study configuration manager"""
+
     @staticmethod
     def get_full_system_config() -> VerticalQueueConfig:
         """
-        获取完整系统配置（我们的完整方法）
-        这是对照组，包含所有创新组件
+        Get full system configuration (our complete method)
+        This is the control group, containing all innovative components
         """
         config = VerticalQueueConfig()
-        
-        # 确保使用我们的核心创新配置
-        config.layer_capacities = [8, 6, 4, 3, 2]  # 倒金字塔
-        config.arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]  # 高层优先 
-        config.layer_service_rates = [1.2, 1.0, 0.8, 0.6, 0.4]  # 高层快速服务
-        
+
+        # Ensure using our core innovative configuration
+        config.layer_capacities = [8, 6, 4, 3, 2]  # Inverted pyramid
+        config.arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]  # High-layer priority
+        config.layer_service_rates = [1.2, 1.0, 0.8, 0.6, 0.4]  # High-layer fast service
+
         return config
-    
-    @staticmethod 
+
+    @staticmethod
     def get_no_high_priority_config() -> VerticalQueueConfig:
         """
-        消融实验1: 无高层优先 (No High-Layer Priority)
-        
-        移除组件: 高层优先到达机制
-        修改: arrival_weights -> 均匀分布 [0.2, 0.2, 0.2, 0.2, 0.2]
-        保持: 倒金字塔容量、多目标优化、转移机制
-        
-        预期影响: 失去高层快速处理优势，整体吞吐量下降
+        Ablation Experiment 1: No High-Layer Priority
+
+        Removed component: High-layer priority arrival mechanism
+        Modification: arrival_weights -> Uniform distribution [0.2, 0.2, 0.2, 0.2, 0.2]
+        Kept: Inverted pyramid capacity, multi-objective optimization, transfer mechanism
+
+        Expected impact: Loss of high-layer fast processing advantage, overall throughput decrease
         """
         config = AblationConfigs.get_full_system_config()
-        
-        # 移除高层优先：使用均匀到达权重
+
+        # Remove high-layer priority: use uniform arrival weights
         config.arrival_weights = [0.2, 0.2, 0.2, 0.2, 0.2]
-        
-        # 标记此配置用途
+
+        # Mark this configuration purpose
         config._ablation_type = "no_high_priority"
         config._removed_component = "High-Layer Priority Arrival"
-        
+
         return config
-    
+
     @staticmethod
     def get_single_objective_config() -> VerticalQueueConfig:
         """
-        消融实验2: 单目标优化 (Single-Objective)
-        
-        移除组件: 多目标优化框架  
-        修改: 只优化吞吐量，移除其他5个目标
-        保持: 倒金字塔容量、高层优先、转移机制
-        
-        预期影响: 失去多目标平衡，可能吞吐量高但稳定性差
+        Ablation Experiment 2: Single-Objective
+
+        Removed component: Multi-objective optimization framework
+        Modification: Only optimize throughput, remove other 5 objectives
+        Kept: Inverted pyramid capacity, high-layer priority, transfer mechanism
+
+        Expected impact: Loss of multi-objective balance, possibly high throughput but poor stability
         """
         config = AblationConfigs.get_full_system_config()
-        
-        # 标记为单目标优化
-        config._ablation_type = "single_objective"  
+
+        # Mark as single-objective optimization
+        config._ablation_type = "single_objective"
         config._removed_component = "Multi-Objective Optimization"
-        config._reward_type = "throughput_only"  # 环境会据此调整奖励函数
-        
+        config._reward_type = "throughput_only"  # Environment will adjust reward function accordingly
+
         return config
-    
+
     @staticmethod
     def get_traditional_pyramid_config() -> VerticalQueueConfig:
         """
-        消融实验3: 传统金字塔 (Traditional Pyramid)
-        
-        移除组件: 倒金字塔容量结构
-        修改: layer_capacities -> 传统金字塔 [2, 3, 4, 6, 8] (底大顶小)
-        保持: 高层优先、多目标优化、转移机制
-        
-        预期影响: 容量分配不合理，高层容量不足导致转移频繁
+        Ablation Experiment 3: Traditional Pyramid
+
+        Removed component: Inverted pyramid capacity structure
+        Modification: layer_capacities -> Traditional pyramid [2, 3, 4, 6, 8] (large bottom, small top)
+        Kept: High-layer priority, multi-objective optimization, transfer mechanism
+
+        Expected impact: Unreasonable capacity allocation, insufficient high-layer capacity leads to frequent transfers
         """
         config = AblationConfigs.get_full_system_config()
-        
-        # 使用传统金字塔结构（与我们的创新相反）
-        config.layer_capacities = [2, 3, 4, 6, 8]  # 底层大，顶层小
-        
-        # 标记此配置用途
+
+        # Use traditional pyramid structure (opposite of our innovation)
+        config.layer_capacities = [2, 3, 4, 6, 8]  # Large bottom, small top
+
+        # Mark this configuration purpose
         config._ablation_type = "traditional_pyramid"
         config._removed_component = "Inverted Pyramid Structure"
-        
+
         return config
-    
+
     @staticmethod
     def get_no_transfer_config() -> VerticalQueueConfig:
         """
-        消融实验4: 无转移机制 (No Transfer)
-        
-        移除组件: 层间转移机制
-        修改: 禁用下沉转移功能
-        保持: 倒金字塔容量、高层优先、多目标优化
-        
-        预期影响: 无法缓解局部拥塞，系统适应性下降
+        Ablation Experiment 4: No Transfer
+
+        Removed component: Inter-layer transfer mechanism
+        Modification: Disable downward transfer functionality
+        Kept: Inverted pyramid capacity, high-layer priority, multi-objective optimization
+
+        Expected impact: Cannot alleviate local congestion, system adaptability decreases
         """
         config = AblationConfigs.get_full_system_config()
-        
-        # 标记禁用转移机制
+
+        # Mark transfer mechanism disabled
         config._ablation_type = "no_transfer"
         config._removed_component = "Transfer Mechanism"
-        config._transfer_enabled = False  # 环境会据此禁用转移
-        
+        config._transfer_enabled = False  # Environment will disable transfer accordingly
+
         return config
-    
+
     @staticmethod
     def get_all_ablation_configs() -> Dict[str, VerticalQueueConfig]:
         """
-        获取所有消融实验配置
-        
+        Get all ablation experiment configurations
+
         Returns:
             Dict containing:
-            - 'full_system': 完整系统（对照组）
-            - 'no_high_priority': 无高层优先
-            - 'single_objective': 单目标优化
-            - 'traditional_pyramid': 传统金字塔
-            - 'no_transfer': 无转移机制
+            - 'full_system': Full system (control group)
+            - 'no_high_priority': No high-layer priority
+            - 'single_objective': Single-objective optimization
+            - 'traditional_pyramid': Traditional pyramid
+            - 'no_transfer': No transfer mechanism
         """
         return {
             'full_system': AblationConfigs.get_full_system_config(),
             'no_high_priority': AblationConfigs.get_no_high_priority_config(),
-            'single_objective': AblationConfigs.get_single_objective_config(), 
+            'single_objective': AblationConfigs.get_single_objective_config(),
             'traditional_pyramid': AblationConfigs.get_traditional_pyramid_config(),
             'no_transfer': AblationConfigs.get_no_transfer_config()
         }
-    
+
     @staticmethod
     def get_ablation_experiment_plan() -> Dict[str, Dict]:
         """
-        获取完整的消融实验计划
-        
+        Get complete ablation experiment plan
+
         Returns:
-            详细的实验设计，包含每个实验的目的、修改和预期结果
+            Detailed experiment design, including purpose, modifications, and expected results for each experiment
         """
         return {
             'full_system': {

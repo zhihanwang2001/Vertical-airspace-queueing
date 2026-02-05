@@ -1,6 +1,5 @@
 """
 Experiment A: Structural Comparison at 5× Load (CRITICAL)
-Experiment A: Structural Comparison at 5× Load (CRITICAL)
 
 Background:
 - Supplementary experiments (n=3) @ 10× load all crashed (crash_rate=100%)
@@ -50,11 +49,13 @@ def create_config(config_type='inverted_pyramid', high_load_multiplier=5.0):
     """
     Create high load configuration
 
-    config_type: Configuration type
-    - inverted_pyramid: [8,6,4,3,2] Inverted pyramid
-    - normal_pyramid: [2,3,4,6,8] Normal pyramid
-    - low_capacity: [2,2,2,2,2] K=10
-    - capacity_30: [6,6,6,6,6] K=30
+    Args:
+        config_type: Configuration type
+            - inverted_pyramid: [8,6,4,3,2] Inverted pyramid
+            - normal_pyramid: [2,3,4,6,8] Normal pyramid
+            - low_capacity: [2,2,2,2,2] K=10
+            - capacity_30: [6,6,6,6,6] K=30
+        high_load_multiplier: Load multiplier (default 5.0)
     """
     config = VerticalQueueConfig()
 
@@ -110,15 +111,15 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
                        timesteps=100000, eval_episodes=50, seed=42,
                        high_load_multiplier=5.0):
     """
-    Train and evaluate single experiment @ 5× load
+    Train and evaluate single experiment at 5× load
 
-    Parameters:
-    - algorithm_name: 'A2C' or 'PPO'
-    - config_type: Configuration type (inverted_pyramid or normal_pyramid)
-    - timesteps: Training steps (default 100K)
-    - eval_episodes: Evaluation episodes (default 50)
-    - seed: Random seed
-    - high_load_multiplier: High load multiplier (default 5x - reduced from 10x)
+    Args:
+        algorithm_name: 'A2C' or 'PPO'
+        config_type: Configuration type (inverted_pyramid or normal_pyramid)
+        timesteps: Training steps (default 100K)
+        eval_episodes: Evaluation episodes (default 50)
+        seed: Random seed
+        high_load_multiplier: High load multiplier (default 5x - reduced from 10x)
     """
 
     print(f"\n{'='*80}")

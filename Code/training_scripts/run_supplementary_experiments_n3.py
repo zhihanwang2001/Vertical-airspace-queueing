@@ -1,18 +1,17 @@
 """
-补充实验脚本：n=1→n=3 样本量提升
 Supplementary Experiments: Sample Size Augmentation from n=1 to n=3
 
-目标：
-- 针对核心claims补充2次独立训练（总计n=3）
-- Set 1: 结构对比 (Inverted vs Normal Pyramid) - A2C, PPO
-- Set 2: 容量悖论 (K=10 vs K=30) - A2C only
+Objective:
+- Add 2 independent training runs for core claims (total n=3)
+- Set 1: Structural comparison (Inverted vs Normal Pyramid) - A2C, PPO
+- Set 2: Capacity paradox (K=10 vs K=30) - A2C only
 
 Seeds:
-- Existing: 42 (原始实验)
+- Existing: 42 (original experiment)
 - New Run 1: 123
 - New Run 2: 456
 
-总计: 12 new training runs
+Total: 12 new training runs
 - 4 configs × 2 algorithms × 2 seeds = 8 (structural)
 - 2 configs × 1 algorithm × 2 seeds = 4 (capacity)
 """
@@ -38,38 +37,40 @@ from env.drl_wrapper_fixed import DictToBoxActionWrapperFixed, ObservationWrappe
 
 def create_config(config_type='inverted_pyramid', high_load_multiplier=10.0):
     """
-    创建高负载配置
+    Create high load configuration
 
-    config_type: 配置类型
-    - inverted_pyramid: [8,6,4,3,2] 倒金字塔
-    - normal_pyramid: [2,3,4,6,8] 正金字塔
-    - low_capacity: [2,2,2,2,2] K=10
-    - capacity_30: [6,6,6,6,6] K=30
+    Args:
+        config_type: Configuration type
+            - inverted_pyramid: [8,6,4,3,2] Inverted pyramid
+            - normal_pyramid: [2,3,4,6,8] Normal pyramid
+            - low_capacity: [2,2,2,2,2] K=10
+            - capacity_30: [6,6,6,6,6] K=30
+        high_load_multiplier: Load multiplier (default 10.0)
     """
     config = VerticalQueueConfig()
 
-    # 设置容量
+    # Set capacity
     if config_type == 'inverted_pyramid':
-        config.layer_capacities = [8, 6, 4, 3, 2]  # 总23
+        config.layer_capacities = [8, 6, 4, 3, 2]  # Total 23
     elif config_type == 'normal_pyramid':
-        config.layer_capacities = [2, 3, 4, 6, 8]  # 总23
+        config.layer_capacities = [2, 3, 4, 6, 8]  # Total 23
     elif config_type == 'low_capacity':
-        config.layer_capacities = [2, 2, 2, 2, 2]  # 总10 (K=10)
+        config.layer_capacities = [2, 2, 2, 2, 2]  # Total 10 (K=10)
     elif config_type == 'capacity_30':
-        config.layer_capacities = [6, 6, 6, 6, 6]  # 总30 (K=30)
+        config.layer_capacities = [6, 6, 6, 6, 6]  # Total 30 (K=30)
     else:
         raise ValueError(f"Unknown config type: {config_type}")
 
-    # 固定真实UAM流量模式
+    # Fixed real UAM traffic pattern
     config.arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]
 
-    # 高负载设置 (10x)
+    # High load setting (10x)
     total_capacity = sum(config.layer_capacities)
     avg_service_rate = np.mean(config.layer_service_rates)
     base_rate_v3 = 0.75 * total_capacity * avg_service_rate / 5
     config.base_arrival_rate = base_rate_v3 * high_load_multiplier
 
-    # 计算每层的理论负载
+    # Calculate theoretical load per layer
     layer_loads = []
     for i, (w, c) in enumerate(zip(config.arrival_weights, config.layer_capacities)):
         layer_arrival = config.base_arrival_rate * w
@@ -78,18 +79,18 @@ def create_config(config_type='inverted_pyramid', high_load_multiplier=10.0):
         layer_loads.append(layer_load)
 
     print(f"\n{'='*80}")
-    print(f"配置: {config_type}")
-    print(f"容量: {config.layer_capacities} (总计: {total_capacity})")
-    print(f"到达权重: {config.arrival_weights}")
-    print(f"总到达率: {config.base_arrival_rate:.2f} ({high_load_multiplier:.1f}x高负载)")
-    print(f"平均负载: {np.mean(layer_loads)*100:.1f}%")
+    print(f"Configuration: {config_type}")
+    print(f"Capacity: {config.layer_capacities} (Total: {total_capacity})")
+    print(f"Arrival weights: {config.arrival_weights}")
+    print(f"Total arrival rate: {config.base_arrival_rate:.2f} ({high_load_multiplier:.1f}x high load)")
+    print(f"Average load: {np.mean(layer_loads)*100:.1f}%")
     print(f"{'='*80}\n")
 
     return config
 
 
 def create_wrapped_env(config):
-    """创建包装后的环境"""
+    """Create wrapped environment"""
     base_env = ConfigurableEnvWrapper(config=config)
     wrapped_env = DictToBoxActionWrapperFixed(base_env)
     wrapped_env = ObservationWrapperFixed(wrapped_env)
@@ -100,32 +101,32 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
                        timesteps=100000, eval_episodes=50, seed=42,
                        high_load_multiplier=10.0):
     """
-    训练和评估单次实验
+    Train and evaluate single experiment
 
-    参数:
-    - algorithm_name: 'A2C' or 'PPO'
-    - config_type: 配置类型
-    - timesteps: 训练步数 (默认100K)
-    - eval_episodes: 评估回合数 (默认50)
-    - seed: 随机种子
-    - high_load_multiplier: 高负载倍数 (默认10x)
+    Args:
+        algorithm_name: 'A2C' or 'PPO'
+        config_type: Configuration type
+        timesteps: Training steps (default 100K)
+        eval_episodes: Evaluation episodes (default 50)
+        seed: Random seed
+        high_load_multiplier: High load multiplier (default 10x)
     """
 
     print(f"\n{'='*80}")
-    print(f"实验: {algorithm_name} + {config_type}")
+    print(f"Experiment: {algorithm_name} + {config_type}")
     print(f"Seed: {seed}")
     print(f"{'='*80}\n")
 
     config = create_config(config_type, high_load_multiplier)
     env = create_wrapped_env(config)
 
-    # 保存路径: Data/ablation_studies/supplementary_n3/{config_type}/{algorithm}_{seed}_results.json
+    # Save path: Data/ablation_studies/supplementary_n3/{config_type}/{algorithm}_{seed}_results.json
     save_dir = Path(project_root).parent / 'Data' / 'ablation_studies' / 'supplementary_n3' / config_type
     save_dir.mkdir(parents=True, exist_ok=True)
 
     start_time = time.time()
 
-    # 创建模型
+    # Create model
     if algorithm_name == 'A2C':
         model = A2C('MlpPolicy', env, learning_rate=0.0007, n_steps=32,
                    gamma=0.99, gae_lambda=0.95, ent_coef=0.01, vf_coef=0.5,
@@ -139,15 +140,15 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
     else:
         raise ValueError(f"Unknown algorithm: {algorithm_name}")
 
-    print(f"\n开始训练 ({timesteps} timesteps)...")
+    print(f"\nStarting training ({timesteps} timesteps)...")
     model.learn(total_timesteps=timesteps)
     training_time = time.time() - start_time
 
-    # 保存模型
+    # Save model
     model_path = save_dir / f'{algorithm_name}_seed{seed}_model.zip'
     model.save(str(model_path))
 
-    # 评估
+    # Evaluation
     print(f"\n评估 ({eval_episodes} 回合)...")
     eval_rewards = []
     eval_lengths = []

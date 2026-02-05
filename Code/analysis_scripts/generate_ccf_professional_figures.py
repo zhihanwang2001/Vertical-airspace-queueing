@@ -1,7 +1,8 @@
 """
-生成CCF高质量专业级图表
 Generate High-Quality Professional Figures for CCF Conference
-包含：外卖柜层级排队系统、PPO创新算法架构、排队论数学模型等
+
+Includes: Food delivery cabinet hierarchical queuing system, PPO innovative algorithm architecture,
+queuing theory mathematical models, etc.
 """
 
 import matplotlib.pyplot as plt
@@ -16,7 +17,7 @@ from matplotlib.patches import Polygon, Wedge
 import warnings
 warnings.filterwarnings('ignore')
 
-# 设置专业学术图表风格
+# Set professional academic figure style
 plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams.update({
     'font.family': 'serif',
@@ -39,14 +40,14 @@ plt.rcParams.update({
 })
 
 class CCFProfessionalFigures:
-    """CCF专业级图表生成器"""
-    
+    """CCF professional figure generator"""
+
     def __init__(self, output_dir="./ccf_professional_figures/"):
-        """初始化"""
+        """Initialize"""
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
-        
-        # 实验数据
+
+        # Experimental data
         self.main_results = {
             'VS-DRL (PPO)': 4399,
             'VS-DRL (TD3)': 4255,
@@ -54,100 +55,100 @@ class CCFProfessionalFigures:
             'FIFO': 850,
             'Random': 420
         }
-        
-        # 定义专业颜色方案
+
+        # Define professional color scheme
         self.colors = {
-            'primary': '#1f77b4',      # 蓝色 - 主算法
-            'secondary': '#ff7f0e',     # 橙色 - 对比算法
-            'accent': '#2ca02c',        # 绿色 - 基线
-            'neutral': '#d62728',       # 红色 - 传统方法
-            'light': '#9467bd',         # 紫色 - 辅助
-            'grid': '#cccccc',          # 网格线
-            'text': '#333333'           # 文本
+            'primary': '#1f77b4',      # Blue - main algorithm
+            'secondary': '#ff7f0e',     # Orange - comparison algorithm
+            'accent': '#2ca02c',        # Green - baseline
+            'neutral': '#d62728',       # Red - traditional method
+            'light': '#9467bd',         # Purple - auxiliary
+            'grid': '#cccccc',          # Grid lines
+            'text': '#333333'           # Text
         }
-        
-        print("🎨 CCF专业级图表生成器初始化完成")
-        
+
+        print("CCF professional figure generator initialized")
+
     def generate_all_ccf_figures(self):
-        """生成所有CCF专业图表"""
-        print("\n📊 开始生成CCF专业级图表...")
-        
-        # 1. 外卖柜层级排队系统架构图
+        """Generate all CCF professional figures"""
+        print("\nStarting to generate CCF professional figures...")
+
+        # 1. Food delivery cabinet hierarchical queuing system architecture
         self.plot_food_delivery_system_architecture()
-        
-        # 2. VS-DRL算法架构图（PPO包装）
-        self.plot_vsdrl_algorithm_architecture() 
-        
-        # 3. 排队论数学模型图
+
+        # 2. VS-DRL algorithm architecture (PPO wrapper)
+        self.plot_vsdrl_algorithm_architecture()
+
+        # 3. Queuing theory mathematical model
         self.plot_queueing_theory_model()
-        
-        # 4. 实验结果专业对比图
+
+        # 4. Professional experimental results comparison
         self.plot_professional_performance_comparison()
-        
-        # 5. 收敛性分析图
+
+        # 5. Convergence analysis
         self.plot_convergence_analysis()
-        
-        # 6. 消融实验专业分析图
+
+        # 6. Professional ablation study analysis
         self.plot_ablation_professional_analysis()
-        
-        # 7. 系统性能多维分析图
+
+        # 7. Multi-dimensional system performance analysis
         self.plot_multidimensional_analysis()
-        
-        print(f"\n🎉 所有CCF专业图表生成完成！保存至: {self.output_dir}")
-        
+
+        print(f"\nAll CCF professional figures generated! Saved to: {self.output_dir}")
+
     def plot_food_delivery_system_architecture(self):
-        """图1: 外卖柜层级排队系统架构图"""
-        print("📈 生成外卖柜层级排队系统架构图...")
-        
+        """Figure 1: Food delivery cabinet hierarchical queuing system architecture"""
+        print("Generating food delivery cabinet hierarchical queuing system architecture...")
+
         fig = plt.figure(figsize=(16, 12))
         ax = fig.add_subplot(111)
         ax.set_xlim(0, 20)
         ax.set_ylim(0, 15)
         ax.axis('off')
-        
-        # 绘制倒金字塔层级结构
+
+        # Draw inverted pyramid hierarchical structure
         layers = [
             {'name': 'Emergency Layer (L1)', 'y': 11, 'width': 3, 'capacity': 8, 'color': '#ff4444'},
             {'name': 'Express Layer (L2)', 'y': 9, 'width': 5, 'capacity': 16, 'color': '#ff8800'},
             {'name': 'Standard Layer (L3)', 'y': 7, 'width': 7, 'capacity': 32, 'color': '#44aa44'},
             {'name': 'Economy Layer (L4)', 'y': 5, 'width': 9, 'capacity': 64, 'color': '#4488ff'}
         ]
-        
-        # 绘制外卖柜层级
+
+        # Draw food delivery cabinet layers
         for i, layer in enumerate(layers):
             x_center = 5
-            # 主要存储区域
+            # Main storage area
             rect = FancyBboxPatch(
                 (x_center - layer['width']/2, layer['y']), layer['width'], 1.5,
-                boxstyle="round,pad=0.1", 
-                facecolor=layer['color'], 
+                boxstyle="round,pad=0.1",
+                facecolor=layer['color'],
                 alpha=0.7,
-                edgecolor='black', 
+                edgecolor='black',
                 linewidth=2
             )
             ax.add_patch(rect)
-            
-            # 层级标签
-            ax.text(x_center, layer['y'] + 0.75, layer['name'], 
+
+            # Layer labels
+            ax.text(x_center, layer['y'] + 0.75, layer['name'],
                    ha='center', va='center', fontsize=12, fontweight='bold', color='white')
-            ax.text(x_center, layer['y'] + 0.25, f'Capacity: {layer["capacity"]}', 
+            ax.text(x_center, layer['y'] + 0.25, f'Capacity: {layer["capacity"]}',
                    ha='center', va='center', fontsize=10, color='white')
-            
-            # 绘制队列
+
+            # Draw queues
             queue_x = x_center + layer['width']/2 + 1
-            for j in range(min(8, layer['capacity']//8)):  # 最多显示8个队列位置
-                queue_rect = Rectangle((queue_x + j*0.3, layer['y'] + 0.1), 0.25, 1.3, 
+            for j in range(min(8, layer['capacity']//8)):  # Show max 8 queue positions
+                queue_rect = Rectangle((queue_x + j*0.3, layer['y'] + 0.1), 0.25, 1.3,
                                      facecolor='lightblue', alpha=0.6, edgecolor='blue')
                 ax.add_patch(queue_rect)
-        
-        # 绘制UAV无人机
+
+        # Draw UAV drones
         uav_positions = [(12, 12), (14, 10), (16, 8), (18, 6)]
         for i, (x, y) in enumerate(uav_positions):
-            # 无人机主体
+            # Drone body
             uav_body = Circle((x, y), 0.4, facecolor='gray', alpha=0.8, edgecolor='black')
             ax.add_patch(uav_body)
-            
-            # 螺旋桨
+
+            # Propellers
             for angle in [0, 90, 180, 270]:
                 prop_x = x + 0.6 * np.cos(np.radians(angle))
                 prop_y = y + 0.6 * np.sin(np.radians(angle))

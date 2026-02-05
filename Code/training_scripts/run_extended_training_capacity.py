@@ -120,8 +120,8 @@ def run_experiment():
     total_runs = len(capacities) * len(algorithms) * len(seeds)
     current_run = 0
 
-    print(f"🚀 Starting Extended Training Capacity Paradox Experiment")
-    print(f"📊 Configuration:")
+    print(f"Starting Extended Training Capacity Paradox Experiment")
+    print(f"Configuration:")
     print(f"   - Capacities: {capacities}")
     print(f"   - Load: {load_multiplier}×")
     print(f"   - Timesteps: {timesteps:,}")
@@ -134,7 +134,7 @@ def run_experiment():
         cfg = make_config(K, load_multiplier)
         rl_env = wrap_for_rl(cfg)
 
-        print(f"📦 Capacity K={K}, uniform={cfg.layer_capacities}")
+        print(f"Capacity K={K}, uniform={cfg.layer_capacities}")
 
         for algo_name in algorithms:
             for seed in seeds:

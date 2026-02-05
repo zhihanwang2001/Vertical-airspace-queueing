@@ -56,7 +56,7 @@ class AblationExperimentRunner:
         Returns:
             Experiment results dictionary
         """
-        print(f"\n🎯 Running ablation experiment: {ablation_type}")
+        print(f"\nRunning ablation experiment: {ablation_type}")
         print(f"   Training timesteps: {timesteps:,}")
         print(f"   Evaluation episodes: {eval_episodes}")
         print("=" * 50)
@@ -68,11 +68,11 @@ class AblationExperimentRunner:
             baseline = SB3AblationBaseline(ablation_type)
 
             # Train model
-            print(f"🚀 Starting training...")
+            print(f"Starting training...")
             baseline.train(total_timesteps=timesteps)
 
             # Evaluate performance
-            print(f"📊 Starting evaluation...")
+            print(f"Starting evaluation...")
             results = baseline.evaluate(n_episodes=eval_episodes)
 
             # Add experiment metadata
@@ -85,12 +85,12 @@ class AblationExperimentRunner:
                 'success': True
             })
 
-            print(f"✅ {ablation_type} experiment completed!")
+            print(f"Completed: {ablation_type} experiment!")
             print(f"   Training time: {experiment_time:.1f}s")
             print(f"   Mean reward: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
-            
+
             return results
-            
+
         except Exception as e:
             error_result = {
                 'ablation_type': ablation_type,
@@ -99,8 +99,8 @@ class AblationExperimentRunner:
                 'success': False,
                 'timestamp': datetime.now().isoformat()
             }
-            
-            print(f"❌ {ablation_type} experiment failed: {str(e)}")
+
+            print(f"Failed: {ablation_type} experiment: {str(e)}")
             return error_result
 
     def run_all_experiments(self, timesteps: int = 100000, eval_episodes: int = 30) -> Dict[str, Any]:
@@ -125,7 +125,7 @@ class AblationExperimentRunner:
             'no_transfer'       # No transfer mechanism
         ]
 
-        print(f"🧪 Starting complete ablation study")
+        print(f"Starting complete ablation study")
         print(f"   Number of experiments: {len(ablation_types)}")
         print(f"   Training timesteps per experiment: {timesteps:,}")
         print(f"   Evaluation episodes per experiment: {eval_episodes}")
@@ -134,7 +134,7 @@ class AblationExperimentRunner:
 
         # Run each experiment
         for i, ablation_type in enumerate(ablation_types, 1):
-            print(f"\n📈 Progress: {i}/{len(ablation_types)} - {ablation_type}")
+            print(f"\nProgress: {i}/{len(ablation_types)} - {ablation_type}")
 
             # Run single experiment
             result = self.run_single_experiment(ablation_type, timesteps, eval_episodes)
@@ -273,122 +273,122 @@ class AblationExperimentRunner:
                 std_reward = result['std_reward']
                 
                 if ablation_type == 'full_system':
-                    change = "基准 (100%)"
+                    change = "Baseline (100%)"
                     status = "✅"
                 elif full_system_reward:
                     change_percent = (mean_reward - full_system_reward) / full_system_reward * 100
                     change = f"{change_percent:+.1f}%"
                     status = "✅" if change_percent > -5 else "📉"
                 else:
-                    change = "待定"
+                    change = "Pending"
                     status = "⏳"
                 
                 f.write(f"| {ablation_type} | {mean_reward:.2f} | {std_reward:.2f} | {change} | {removed_component} | {status} |\\n")
-            
-            # 详细实验信息
-            f.write("\\n## 🧪 详细实验信息\\n\\n")
-            
+
+            # Detailed experiment information
+            f.write("\\n## 🧪 Detailed Experiment Information\\n\\n")
+
             for ablation_type, result in self.results.items():
                 plan_info = experiment_plan.get(ablation_type, {})
                 f.write(f"### {plan_info.get('name', ablation_type)}\\n\\n")
-                f.write(f"**描述**: {plan_info.get('description', 'N/A')}  \\n")
-                
+                f.write(f"**Description**: {plan_info.get('description', 'N/A')}  \\n")
+
                 if 'removed_component' in plan_info:
-                    f.write(f"**移除组件**: {plan_info['removed_component']}  \\n")
-                
+                    f.write(f"**Removed Component**: {plan_info['removed_component']}  \\n")
+
                 if 'hypothesis' in plan_info:
-                    f.write(f"**假设**: {plan_info['hypothesis']}  \\n")
-                
+                    f.write(f"**Hypothesis**: {plan_info['hypothesis']}  \\n")
+
                 if result.get('success'):
-                    f.write(f"**实验结果**:  \\n")
-                    f.write(f"- 平均奖励: {result['mean_reward']:.2f} ± {result['std_reward']:.2f}  \\n")
-                    f.write(f"- 训练步数: {result['timesteps']:,}  \\n")
-                    f.write(f"- 评估回合: {result['eval_episodes']}  \\n")
-                    f.write(f"- 实验用时: {result['experiment_time']:.1f}s  \\n")
+                    f.write(f"**Experiment Results**:  \\n")
+                    f.write(f"- Mean reward: {result['mean_reward']:.2f} ± {result['std_reward']:.2f}  \\n")
+                    f.write(f"- Training timesteps: {result['timesteps']:,}  \\n")
+                    f.write(f"- Evaluation episodes: {result['eval_episodes']}  \\n")
+                    f.write(f"- Experiment time: {result['experiment_time']:.1f}s  \\n")
                 else:
-                    f.write(f"**实验失败**: {result.get('error', 'Unknown error')}  \\n")
-                
+                    f.write(f"**Experiment Failed**: {result.get('error', 'Unknown error')}  \\n")
+
                 f.write("\\n")
-            
-            # 结论和分析
-            f.write("## 🎯 结论与分析\\n\\n")
-            
+
+            # Conclusions and analysis
+            f.write("## 🎯 Conclusions and Analysis\\n\\n")
+
             if full_system_reward:
-                f.write("### 组件贡献度排序\\n\\n")
-                
+                f.write("### Component Contribution Ranking\\n\\n")
+
                 contributions = []
                 for ablation_type, result in self.results.items():
                     if ablation_type == 'full_system' or not result.get('success'):
                         continue
-                    
+
                     contribution = (full_system_reward - result['mean_reward']) / full_system_reward * 100
                     removed_component = experiment_plan.get(ablation_type, {}).get('removed_component', ablation_type)
                     contributions.append((removed_component, contribution, ablation_type))
-                
+
                 contributions.sort(key=lambda x: x[1], reverse=True)
-                
+
                 for i, (component, contribution, ablation_type) in enumerate(contributions, 1):
-                    f.write(f"{i}. **{component}**: 贡献 {contribution:.1f}% (移除后性能下降)\\n")
-                
+                    f.write(f"{i}. **{component}**: Contributes {contribution:.1f}% (performance drops when removed)\\n")
+
                 f.write("\\n")
-            
-            f.write("### 主要发现\\n\\n")
-            f.write("1. **系统完整性**: 每个组件都对整体性能有重要贡献\\n")
-            f.write("2. **组件协同**: 多个创新组件协同工作，产生最佳效果\\n")
-            f.write("3. **设计验证**: 消融实验验证了我们的系统设计的有效性\\n\\n")
-            
+
+            f.write("### Key Findings\\n\\n")
+            f.write("1. **System Integrity**: Each component makes important contributions to overall performance\\n")
+            f.write("2. **Component Synergy**: Multiple innovative components work together to produce optimal results\\n")
+            f.write("3. **Design Validation**: Ablation experiments validate the effectiveness of our system design\\n\\n")
+
             f.write("---\\n")
-            f.write("*报告由消融实验系统自动生成*\\n")
-    
+            f.write("*Report automatically generated by ablation experiment system*\\n")
+
     def quick_test(self):
-        """快速测试所有消融实验（用于调试）"""
-        print("🚀 快速测试模式")
-        print("   训练步数: 1,000")
-        print("   评估回合: 3")
+        """Quick test all ablation experiments (for debugging)"""
+        print("🚀 Quick test mode")
+        print("   Training timesteps: 1,000")
+        print("   Evaluation episodes: 3")
         print("=" * 40)
         
         return self.run_all_experiments(timesteps=1000, eval_episodes=3)
 
 
 def main():
-    """主函数"""
-    parser = argparse.ArgumentParser(description="消融实验运行器")
+    """Main function"""
+    parser = argparse.ArgumentParser(description="Ablation experiment runner")
     parser.add_argument('--experiment', type=str, choices=[
-        'full_system', 'no_high_priority', 'single_objective', 
+        'full_system', 'no_high_priority', 'single_objective',
         'traditional_pyramid', 'no_transfer', 'all'
-    ], default='all', help='要运行的消融实验类型')
-    
-    parser.add_argument('--timesteps', type=int, default=100000, 
-                       help='训练步数 (默认: 100,000)')
+    ], default='all', help='Ablation experiment type to run')
+
+    parser.add_argument('--timesteps', type=int, default=100000,
+                       help='Training timesteps (default: 100,000)')
     parser.add_argument('--eval-episodes', type=int, default=30,
-                       help='评估回合数 (默认: 30)')
+                       help='Evaluation episodes (default: 30)')
     parser.add_argument('--output-dir', type=str, default='./ablation_results/',
-                       help='输出目录 (默认: ./ablation_results/)')
+                       help='Output directory (default: ./ablation_results/)')
     parser.add_argument('--quick-test', action='store_true',
-                       help='快速测试模式 (1k步数, 3回合)')
-    
+                       help='Quick test mode (1k timesteps, 3 episodes)')
+
     args = parser.parse_args()
-    
-    # 创建实验运行器
+
+    # Create experiment runner
     runner = AblationExperimentRunner(output_dir=args.output_dir)
-    
-    print("🧪 消融实验研究系统")
+
+    print("🧪 Ablation Experiment Research System")
     print("=" * 50)
-    print(f"输出目录: {args.output_dir}")
-    
+    print(f"Output directory: {args.output_dir}")
+
     if args.quick_test:
-        # 快速测试
+        # Quick test
         results = runner.quick_test()
     elif args.experiment == 'all':
-        # 运行所有实验
+        # Run all experiments
         results = runner.run_all_experiments(args.timesteps, args.eval_episodes)
     else:
-        # 运行单个实验
+        # Run single experiment
         result = runner.run_single_experiment(args.experiment, args.timesteps, args.eval_episodes)
         results = {args.experiment: result}
-    
-    print(f"\\n🎉 实验完成! 结果保存至: {args.output_dir}")
-    
+
+    print(f"\\n🎉 Experiments complete! Results saved to: {args.output_dir}")
+
     return results
 
 
@@ -396,8 +396,8 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\\n\\n⚠️  实验被用户中断")
+        print("\\n\\n⚠️  Experiment interrupted by user")
         sys.exit(1)
     except Exception as e:
-        print(f"\\n\\n❌ 实验执行出错: {str(e)}")
+        print(f"\\n\\n❌ Experiment execution error: {str(e)}")
         sys.exit(1)

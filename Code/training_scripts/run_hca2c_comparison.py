@@ -132,7 +132,7 @@ def run_single_experiment(
     else:
         baseline.save(model_file + '.zip')
 
-    print(f"\n✅ Completed: {algorithm.upper()} | Load: {load_multiplier}x | Seed: {seed}")
+    print(f"\nCompleted: {algorithm.upper()} | Load: {load_multiplier}x | Seed: {seed}")
     print(f"   Mean Reward: {eval_results['mean_reward']:.2f} ± {eval_results['std_reward']:.2f}")
     print(f"   Crash Rate: {eval_results.get('crash_rate', 0):.1%}")
     print(f"   Training Time: {training_time:.1f}s")

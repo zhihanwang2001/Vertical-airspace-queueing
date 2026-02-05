@@ -36,7 +36,9 @@ def create_config(config_type='inverted_pyramid', high_load_multiplier=10.0):
     """
     Create high load configuration
 
-    high_load_multiplier: Load multiplier (relative to v3)
+    Args:
+        config_type: Type of capacity configuration
+        high_load_multiplier: Load multiplier (relative to v3 baseline)
     """
     config = VerticalQueueConfig()
 
@@ -183,7 +185,7 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
 
         if episode_terminated:
             eval_terminated_count += 1
-            crash_marker = " [CRASHED - System crash!]"
+            crash_marker = " [CRASHED - System failure!]"
         elif episode_truncated:
             eval_truncated_count += 1
             crash_marker = " [COMPLETED]"

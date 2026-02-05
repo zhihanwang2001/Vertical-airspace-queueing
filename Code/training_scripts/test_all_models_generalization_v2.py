@@ -1,6 +1,5 @@
 """
 Top 3 Models Cross-Region Generalization Test Script V2 - Enhanced
-Top 3 Models Cross-Region Generalization Test Script V2 - Enhanced
 
 Core Improvements:
 1. Not only cumulative reward, but also multi-dimensional system performance metrics

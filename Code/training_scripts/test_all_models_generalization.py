@@ -1,9 +1,8 @@
 """
 Top 3 Models Cross-Region Generalization Test Script
-Top 3 Models Cross-Region Generalization Test Script
 
-Core Objective: Verify the generalization ability of Top 3 models (A2C, PPO, TD7) across different heterogeneous regions
-Important: This is not a mock test, uses real environment execution and model inference!
+Core Objective: Verify the generalization ability of Top 3 models (A2C, PPO, TD7) across different heterogeneous regions.
+Important: This is not a mock test - it uses real environment execution and model inference!
 
 Test Logic:
 1. Load 3 trained models
@@ -152,11 +151,11 @@ def main():
 
     print("\n" + "="*80)
     print("Top 3 Models Cross-Region Generalization Test")
-    print("Cross-Region Generalization Test for Top 3 Models (A2C, PPO, TD7)")
+    print("Testing generalization performance of A2C, PPO, and TD7 across regions")
     print("="*80 + "\n")
 
-    # ========== Step 1: Load 3 trained models ==========
-    print("Step 1: Load 3 trained models")
+    # ========== Step 1: Load trained models ==========
+    print("Step 1: Load trained models")
     print("-"*80)
 
     models = {}
@@ -200,7 +199,7 @@ def main():
     models['TD7'] = td7
     print("TD7 model loaded successfully!")
 
-    print("\nAll 3 models loaded successfully!")
+    print("\nAll models loaded successfully!")
 
     # ========== Step 2: Create heterogeneous region configurations ==========
     print("\nStep 2: Create heterogeneous region configurations")
@@ -275,7 +274,7 @@ def main():
 
     # Print performance degradation percentage
     print("\n" + "="*80)
-    print("Performance Degradation Percentage (relative to Region A Baseline)")
+    print("Performance Degradation Percentage (relative to Standard Region Baseline)")
     print("="*80 + "\n")
 
     print(f"{'Region':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
@@ -373,7 +372,6 @@ def main():
     with open(generalization_file, 'w', encoding='utf-8') as f:
         f.write("="*80 + "\n")
         f.write("Cross-Region Generalization Performance Ranking\n")
-        f.write("Cross-Region Generalization Performance Ranking\n")
         f.write("="*80 + "\n\n")
 
         # Calculate average performance degradation
@@ -416,7 +414,7 @@ def main():
     print("="*80 + "\n")
 
     print("Key findings:")
-    print(f"   Baseline performance (Region A):")
+    print(f"   Baseline performance (Standard Region):")
     print(f"     - A2C: {baseline_rewards['A2C']:.2f}")
     print(f"     - PPO: {baseline_rewards['PPO']:.2f}")
     print(f"     - TD7: {baseline_rewards['TD7']:.2f}")
