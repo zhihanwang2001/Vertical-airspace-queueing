@@ -164,7 +164,6 @@ def measure_state_space(
     config.layer_capacities = capacity_config
     config.arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]
 
-    # 10x high load (relative to baseline 0.5)
     # Baseline = 0.5, so 10x baseline = 5.0
     config.base_arrival_rate = 5.0
 
@@ -310,7 +309,7 @@ def measure_state_space(
 
 def main():
     """
-    主函数：测量所有关键配置的状态空间
+    Main function: Measure state space for all key configurations
     """
 
     configurations = [
@@ -319,13 +318,13 @@ def main():
         ([8, 6, 4, 3, 2], "K=23 Inverted Pyramid"),
         ([5, 5, 5, 5, 5], "K=25 Uniform"),
         ([6, 6, 6, 6, 6], "K=30 Uniform"),
-        # ([8, 8, 8, 8, 8], "K=40 High Capacity"),  # 可选：如果时间充足
+        # ([8, 8, 8, 8, 8], "K=40 High Capacity"),  # Optional: if time permits
     ]
 
     print(f"\n{'#'*80}")
     print(f"# Major Revision Experiment 1.3: State Space Measurement")
-    print(f"# 配置数量: {len(configurations)}")
-    print(f"# 预计时间: ~{len(configurations) * 10} 分钟")
+    print(f"# Number of configurations: {len(configurations)}")
+    print(f"# Estimated time: ~{len(configurations) * 10} minutes")
     print(f"{'#'*80}\n")
 
     all_results = []
@@ -340,7 +339,7 @@ def main():
 
         all_results.append(result)
 
-    # 保存结果
+    # Save results
     output_file = Path("Results/major_revision_exp3/state_space_measurement.json")
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -348,14 +347,14 @@ def main():
         json.dump(all_results, f, indent=2)
 
     print(f"\n{'#'*80}")
-    print(f"# 所有测量完成！")
-    print(f"# 结果保存到: {output_file}")
+    print(f"# All measurements complete!")
+    print(f"# Results saved to: {output_file}")
     print(f"{'#'*80}\n")
 
-    # 汇总表格
-    print("\n汇总表格:")
+    # Summary table
+    print("\nSummary Table:")
     print("="*100)
-    print(f"{'配置':<25} {'K':>5} {'理论3^K':>20} {'实际唯一':>15} {'比率':>10}")
+    print(f"{'Configuration':<25} {'K':>5} {'Theoretical 3^K':>20} {'Actual Unique':>15} {'Ratio':>10}")
     print("="*100)
 
     for r in all_results:
@@ -373,25 +372,25 @@ def main():
 
     print("="*100)
 
-    # 关键发现
-    print("\n关键发现:")
+    # Key findings
+    print("\nKey Findings:")
     print("-" * 80)
 
     for r in all_results:
         ratio = r['empirical']['ratio_to_3K']
         if ratio > 0.5:
-            assessment = "✅ 理论估计准确（实际≈理论）"
+            assessment = "✅ Theoretical estimate accurate (actual ≈ theoretical)"
         elif ratio > 0.1:
-            assessment = "⚠️  理论是合理上界（实际为理论的10-50%）"
+            assessment = "⚠️  Theory is reasonable upper bound (actual is 10-50% of theory)"
         elif ratio > 0.01:
-            assessment = "⚠️  理论高估较多（实际<10%理论）"
+            assessment = "⚠️  Theory overestimates significantly (actual <10% of theory)"
         else:
-            assessment = "❌ 理论严重高估（实际<<1%理论）"
+            assessment = "❌ Theory severely overestimates (actual <<1% of theory)"
 
         print(f"{r['config_name']}: {assessment}")
 
     print("-" * 80)
-    print("\n分析完成！请用此数据修订论文的状态空间假说部分。")
+    print("\nAnalysis complete! Use this data to revise the state space hypothesis section in the paper.")
 
 
 if __name__ == "__main__":

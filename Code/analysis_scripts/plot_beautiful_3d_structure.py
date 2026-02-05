@@ -32,33 +32,33 @@ for i, layer in enumerate(layers):
     z = layer['height']
     capacity = layer['capacity']
 
-    # 根据容量计算层的大小（倒金字塔：容量大→面积大）
-    size = capacity * 1.5  # 缩放因子
+    # Calculate layer size based on capacity (inverted pyramid: larger capacity → larger area)
+    size = capacity * 1.5  # Scaling factor
 
-    # 定义层的四个角点
+    # Define four corner points of the layer
     x_range = [-size, size, size, -size, -size]
     y_range = [-size, -size, size, size, -size]
     z_range = [z, z, z, z, z]
 
-    # 绘制层的底面
+    # Draw layer base
     verts = [list(zip(x_range[:-1], y_range[:-1], z_range[:-1]))]
     poly = Poly3DCollection(verts, alpha=layer['alpha'],
                            facecolor=layer['color'],
                            edgecolor='#2C3E50', linewidth=2.5)
     ax.add_collection3d(poly)
 
-    # 绘制层的边框（加粗）
+    # Draw layer border (thickened)
     ax.plot(x_range, y_range, z_range, color='#2C3E50', linewidth=3, alpha=0.9)
 
-    # 添加层标签
+    # Add layer label
     ax.text(size + 2, 0, z,
             f'{layer["name"]}\n{z}m\nC={capacity}',
             fontsize=13, fontweight='bold', color='#2C3E50',
             bbox=dict(boxstyle='round,pad=0.5', facecolor='white',
                      edgecolor=layer['color'], linewidth=2.5, alpha=0.95))
 
-    # 在层中心绘制UAV示意（小球）
-    num_uavs = min(capacity // 2 + 1, 4)  # 示意性显示UAV数量
+    # Draw UAV representation in layer center (small spheres)
+    num_uavs = min(capacity // 2 + 1, 4)  # Illustrative UAV count
     for j in range(num_uavs):
         theta = 2 * np.pi * j / num_uavs
         r = size * 0.5
@@ -68,16 +68,16 @@ for i, layer in enumerate(layers):
                   c=layer['color'], s=300, marker='o',
                   edgecolors='#2C3E50', linewidths=2, alpha=0.9)
 
-# 绘制层间传输箭头
+# Draw inter-layer transfer arrows
 for i in range(len(layers) - 1):
     z_from = layers[i]['height']
     z_to = layers[i + 1]['height']
 
-    # 向上传输箭头
+    # Upward transfer arrow
     ax.quiver(8, 8, z_from + 1, 0, 0, z_to - z_from - 2,
              color='#27AE60', arrow_length_ratio=0.15, linewidth=3, alpha=0.8)
 
-    # 向下传输箭头
+    # Downward transfer arrow
     ax.quiver(-8, -8, z_to - 1, 0, 0, -(z_to - z_from - 2),
              color='#E67E22', arrow_length_ratio=0.15, linewidth=3, alpha=0.8)
 
