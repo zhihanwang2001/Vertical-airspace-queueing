@@ -151,12 +151,12 @@ class PaperFigureGenerator:
         plt.close()
         
     def plot_ablation_analysis(self):
-        """图3: 消融实验分析"""
-        print("📈 生成消融实验分析图...")
-        
-        # 计算相对于完整系统的性能变化
+        """Figure 3: Ablation experiment analysis"""
+        print("📈 Generating ablation experiment analysis figure...")
+
+        # Calculate performance change relative to full system
         full_system_reward = self.ablation_results['Full System']
-        
+
         ablation_data = []
         for name, reward in self.ablation_results.items():
             if name == 'Full System':
@@ -165,52 +165,52 @@ class PaperFigureGenerator:
             else:
                 change = ((reward - full_system_reward) / full_system_reward) * 100
                 change_label = f"{change:+.1f}%"
-            
+
             ablation_data.append({
                 'Configuration': name,
                 'Reward': reward,
                 'Change (%)': change,
                 'Change Label': change_label
             })
-        
+
         df = pd.DataFrame(ablation_data)
-        
+
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
-        
-        # 左图：绝对性能值
-        colors = ['#2E86AB' if x == 'Full System' else '#A23B72' if x > 0 else '#F18F01' 
+
+        # Left plot: Absolute performance values
+        colors = ['#2E86AB' if x == 'Full System' else '#A23B72' if x > 0 else '#F18F01'
                  for x in df['Change (%)']]
-        
+
         bars1 = ax1.bar(range(len(df)), df['Reward'], color=colors, alpha=0.8)
         ax1.set_xticks(range(len(df)))
         ax1.set_xticklabels(df['Configuration'], rotation=45, ha='right')
         ax1.set_ylabel('Average Reward', fontsize=12)
         ax1.set_title('Ablation Study: Absolute Performance', fontsize=14, fontweight='bold')
-        
-        # 添加数值标签
+
+        # Add value labels
         for bar, reward in zip(bars1, df['Reward']):
             ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 20,
                     f'{reward:.0f}', ha='center', va='bottom', fontsize=10)
-        
-        # 右图：相对变化
-        colors2 = ['gray' if x == 0 else '#2E86AB' if x > 0 else '#A23B72' 
+
+        # Right plot: Relative change
+        colors2 = ['gray' if x == 0 else '#2E86AB' if x > 0 else '#A23B72'
                   for x in df['Change (%)']]
-        
+
         bars2 = ax2.bar(range(len(df)), df['Change (%)'], color=colors2, alpha=0.8)
         ax2.set_xticks(range(len(df)))
         ax2.set_xticklabels(df['Configuration'], rotation=45, ha='right')
         ax2.set_ylabel('Performance Change (%)', fontsize=12)
         ax2.set_title('Ablation Study: Relative Change', fontsize=14, fontweight='bold')
         ax2.axhline(y=0, color='black', linestyle='-', alpha=0.5)
-        
-        # 添加变化标签
+
+        # Add change labels
         for bar, change_label in zip(bars2, df['Change Label']):
             y_pos = bar.get_height() + (2 if bar.get_height() >= 0 else -8)
             ax2.text(bar.get_x() + bar.get_width()/2, y_pos,
-                    change_label, ha='center', va='bottom' if bar.get_height() >= 0 else 'top', 
+                    change_label, ha='center', va='bottom' if bar.get_height() >= 0 else 'top',
                     fontsize=10, fontweight='bold')
-        
-        # 美化
+
+        # Beautify
         for ax in [ax1, ax2]:
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
@@ -222,41 +222,41 @@ class PaperFigureGenerator:
         plt.close()
         
     def plot_performance_radar(self):
-        """图4: 综合性能雷达图"""
-        print("📈 生成综合性能雷达图...")
-        
-        # 定义评估维度和数据
+        """Figure 4: Comprehensive performance radar chart"""
+        print("📈 Generating comprehensive performance radar chart...")
+
+        # Define evaluation dimensions and data
         categories = ['Performance', 'Stability', 'Training Speed', 'Sample Efficiency', 'Robustness']
-        
-        # 归一化的性能数据 (0-10分)
+
+        # Normalized performance data (0-10 scale)
         algorithms_data = {
-            'PPO': [10, 8, 7, 8, 9],      # 高性能，较稳定
-            'TD3': [9.7, 7, 5, 6, 8],    # 高性能，训练较慢
-            'A2C': [3.9, 6, 9, 7, 6]     # 低性能，训练快
+            'PPO': [10, 8, 7, 8, 9],      # High performance, relatively stable
+            'TD3': [9.7, 7, 5, 6, 8],    # High performance, slower training
+            'A2C': [3.9, 6, 9, 7, 6]     # Low performance, fast training
         }
-        
-        # 设置雷达图
+
+        # Set up radar chart
         angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
-        angles += angles[:1]  # 闭合图形
-        
+        angles += angles[:1]  # Close the figure
+
         fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(projection='polar'))
-        
+
         colors = ['#2E86AB', '#A23B72', '#F18F01']
-        
+
         for i, (alg, data) in enumerate(algorithms_data.items()):
-            data += data[:1]  # 闭合数据
+            data += data[:1]  # Close the data
             ax.plot(angles, data, 'o-', linewidth=2, label=alg, color=colors[i])
             ax.fill(angles, data, alpha=0.15, color=colors[i])
-        
-        # 设置标签和刻度
+
+        # Set labels and ticks
         ax.set_xticks(angles[:-1])
         ax.set_xticklabels(categories, fontsize=12)
         ax.set_ylim(0, 10)
         ax.set_yticks([2, 4, 6, 8, 10])
         ax.set_yticklabels(['2', '4', '6', '8', '10'], fontsize=10)
         ax.grid(True, alpha=0.3)
-        
-        # 标题和图例
+
+        # Title and legend
         ax.set_title('Multi-Dimensional Performance Comparison', fontsize=16, fontweight='bold', pad=20)
         ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.0), fontsize=12)
         
@@ -266,34 +266,34 @@ class PaperFigureGenerator:
         plt.close()
         
     def plot_stability_analysis(self):
-        """图5: 算法稳定性箱型图"""
-        print("📈 生成稳定性分析图...")
-        
-        # 模拟多次运行的结果分布
+        """Figure 5: Algorithm stability box plot"""
+        print("📈 Generating stability analysis figure...")
+
+        # Simulate results distribution from multiple runs
         np.random.seed(42)
-        
-        ppo_runs = np.random.normal(4399, 120, 30)  # 30次运行
-        td3_runs = np.random.normal(4255, 183, 30)  # TD3的标准差更大
+
+        ppo_runs = np.random.normal(4399, 120, 30)  # 30 runs
+        td3_runs = np.random.normal(4255, 183, 30)  # TD3 has larger standard deviation
         a2c_runs = np.random.normal(1721, 80, 30)
-        
+
         data = [ppo_runs, td3_runs, a2c_runs]
         labels = ['PPO', 'TD3', 'A2C']
-        
+
         fig, ax = plt.subplots(figsize=(10, 6))
-        
-        box_plot = ax.boxplot(data, labels=labels, patch_artist=True, 
+
+        box_plot = ax.boxplot(data, labels=labels, patch_artist=True,
                              boxprops=dict(alpha=0.7),
                              medianprops=dict(color='black', linewidth=2))
-        
+
         colors = ['#2E86AB', '#A23B72', '#F18F01']
         for patch, color in zip(box_plot['boxes'], colors):
             patch.set_facecolor(color)
-        
+
         ax.set_ylabel('Episode Reward', fontsize=14)
         ax.set_title('Algorithm Stability Analysis (30 Runs)', fontsize=16, fontweight='bold')
         ax.grid(axis='y', alpha=0.3, linestyle='--')
-        
-        # 美化
+
+        # Beautify
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         

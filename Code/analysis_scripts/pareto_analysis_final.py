@@ -189,7 +189,7 @@ class ParetoAnalyzer:
         else:
             efficiency_obj = 0.0
 
-        # 4. 转移Efficiency objective
+        # 4. Transfer efficiency objective
         transfer_obj = 0.0
         for i in range(4):
             if transfer_counts[i] > 0:
@@ -493,11 +493,11 @@ class ParetoAnalyzer:
         plt.savefig(save_path.replace('.png', '_conflicts.png'), dpi=300, bbox_inches='tight')
         plt.close()
         
-        # 3. 3DPareto front（前3个最重要目标）
+        # 3. 3D Pareto front (first 3 most important objectives)
         fig = plt.figure(figsize=(12, 10))
         ax = fig.add_subplot(111, projection='3d')
-        
-        # All solutions（采样以提高性能）
+
+        # All solutions (sample to improve performance)
         n_sample = min(1000, len(self.objective_values))
         sample_idx = np.random.choice(len(self.objective_values), n_sample, replace=False)
         
