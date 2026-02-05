@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Reward Function Sensitivity Analysis}
+\label{tab:reward-sensitivity}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Weight Config} & \textbf{$w_{\text{crash}}$} & \textbf{$w_{\text{throughput}}$} & \textbf{$w_{\text{balance}}$} & \textbf{Structural Ranking} \\
+\midrule
+Balanced & $10^4$ & 1.0 & 0.5 & Inverted $>$ Normal \\
+Crash-Heavy & $10^5$ & 1.0 & 0.5 & Inverted $>$ Normal \\
+Throughput-Heavy & $10^4$ & 2.0 & 0.3 & Inverted $>$ Normal \\
+Balance-Heavy & $10^4$ & 0.5 & 1.0 & Inverted $>$ Normal \\
+\midrule
+\multicolumn{4}{l}{Cross-config variance} & \textbf{0.0} \\
+\bottomrule
+\end{tabular}
+\vspace{0.1cm}
+
+\small\textit{Note: Identical structural rankings across all weight configurations (variance = 0) confirm that the inverted pyramid advantage is a fundamental system property, not a reward engineering artifact.}
+\end{table}

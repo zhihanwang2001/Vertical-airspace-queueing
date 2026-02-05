@@ -1,280 +1,280 @@
-# 垂直分层队列环境 (Vertical Stratified Queue Environment)
+# Vertical Stratified Queue Environment
 
-## 📖 概述
+## 📖 Overview
 
-本环境实现了基于MCRPS/D/K理论的垂直分层队列系统，用于无人机配送系统的深度强化学习优化研究。
+This environment implements a vertical stratified queue system based on MCRPS/D/K theory for deep reinforcement learning optimization research in UAV delivery systems.
 
-提示：本仓库包含两个环境实现供研究与训练使用：
-- DRL固定版（用于训练与实验，Dict观测，29维）：`env.drl_optimized_env_fixed.DRLOptimizedQueueEnvFixed`
-- 理论版（用于机制研究与可视化，向量观测，高维）：`env.vertical_queue_env.VerticalQueueEnv`
-本文档描述的观测/动作空间与训练脚本默认对应“DRL固定版”。
+Note: This repository contains two environment implementations for research and training:
+- DRL Fixed Version (for training and experiments, Dict observation, 29-dim): `env.drl_optimized_env_fixed.DRLOptimizedQueueEnvFixed`
+- Theoretical Version (for mechanism research and visualization, vector observation, high-dim): `env.vertical_queue_env.VerticalQueueEnv`
+This document describes the observation/action space corresponding to the "DRL Fixed Version" used by default in training scripts.
 
-**核心特性**:
-- 🏗️ **5层垂直分层结构**: 高度分层 [100m, 80m, 60m, 40m, 20m]
-- 📊 **倒金字塔容量**: 容量配置 [8, 6, 4, 3, 2] 
-- 🧠 **29维观测空间**: 完整的系统状态表示
-- 🎮 **11维混合动作**: 连续控制 + 离散决策
-- 🎯 **多目标优化**: 6个优化目标的平衡
+**Core Features**:
+- 🏗️ **5-Layer Vertical Structure**: Altitude stratification [100m, 80m, 60m, 40m, 20m]
+- 📊 **Inverted Pyramid Capacity**: Capacity configuration [8, 6, 4, 3, 2]
+- 🧠 **29-Dimensional Observation Space**: Complete system state representation
+- 🎮 **11-Dimensional Hybrid Actions**: Continuous control + discrete decisions
+- 🎯 **Multi-Objective Optimization**: Balancing 6 optimization objectives
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 基础使用
+### Basic Usage
 
 ```python
 from env.drl_optimized_env_fixed import DRLOptimizedQueueEnvFixed
 
-# 创建环境
+# Create environment
 env = DRLOptimizedQueueEnvFixed()
 
-# 重置环境
+# Reset environment
 obs, info = env.reset()
 
-# 随机动作测试
+# Random action testing
 for step in range(100):
     action = env.action_space.sample()
     obs, reward, terminated, truncated, info = env.step(action)
-    
+
     if terminated or truncated:
         obs, info = env.reset()
 ```
 
-### 与DRL框架集成
+### Integration with DRL Frameworks
 
 ```python
 from baselines.space_utils import SB3DictWrapper
 from stable_baselines3 import PPO
 
-# 环境包装 (适配Stable-Baselines3)
+# Environment wrapping (adapted for Stable-Baselines3)
 env = DRLOptimizedQueueEnvFixed()
 wrapped_env = SB3DictWrapper(env)
 
-# 训练模型
+# Train model
 model = PPO("MultiInputPolicy", wrapped_env, verbose=1)
 model.learn(total_timesteps=100000)
 ```
 
-## 🏗️ 系统架构
+## 🏗️ System Architecture
 
-### 垂直分层结构
+### Vertical Stratification Structure
 
-| 层级 | 高度 | 容量 | 服务率 | 到达权重 |
-|------|------|------|--------|----------|
+| Layer | Altitude | Capacity | Service Rate | Arrival Weight |
+|-------|----------|----------|--------------|----------------|
 | L1 | 100m | 8 | 1.2 | 0.30 |
 | L2 | 80m | 6 | 1.0 | 0.25 |
 | L3 | 60m | 4 | 0.8 | 0.20 |
 | L4 | 40m | 3 | 0.6 | 0.15 |
 | L5 | 20m | 2 | 0.4 | 0.10 |
 
-**设计理念**:
-- **倒金字塔容量**: 反映真实空域物理约束
-- **上升服务优先**: 高层快速处理(μ5=1.5)，低层精细服务(μ1=0.8)
-- **差异化到达**: 高层承担更多流量负载
+**Design Philosophy**:
+- **Inverted Pyramid Capacity**: Reflects real airspace physical constraints
+- **Ascending Service Priority**: Upper layers fast processing (μ5=1.5), lower layers refined service (μ1=0.8)
+- **Differentiated Arrivals**: Upper layers bear more traffic load
 
-## 📊 观测空间 (29维)
+## 📊 Observation Space (29-Dimensional)
 
-观测空间为Dict格式，包含7个主要组件：
+Observation space is in Dict format, containing 7 main components:
 
 ```python
 observation_space = spaces.Dict({
-    'queue_lengths':     Box(shape=(5,)),  # 各层队列长度 [0, max_capacity]
-    'utilization_rates': Box(shape=(5,)),  # 各层利用率 [0.0, 1.0]
-    'queue_changes':     Box(shape=(5,)),  # 队列变化趋势 [-1.0, 1.0]
-    'load_rates':        Box(shape=(5,)),  # 实际负载率 [0.0, 5.0]
-    'service_rates':     Box(shape=(5,)),  # 当前服务率 [0.0, 10.0]
-    'prev_reward':       Box(shape=(1,)),  # 历史奖励 [-100.0, 100.0]
-    'system_metrics':    Box(shape=(3,)),  # 系统指标 [0.0, 10.0]
+    'queue_lengths':     Box(shape=(5,)),  # Queue length per layer [0, max_capacity]
+    'utilization_rates': Box(shape=(5,)),  # Utilization rate per layer [0.0, 1.0]
+    'queue_changes':     Box(shape=(5,)),  # Queue change trend [-1.0, 1.0]
+    'load_rates':        Box(shape=(5,)),  # Actual load rate [0.0, 5.0]
+    'service_rates':     Box(shape=(5,)),  # Current service rate [0.0, 10.0]
+    'prev_reward':       Box(shape=(1,)),  # Historical reward [-100.0, 100.0]
+    'system_metrics':    Box(shape=(3,)),  # System metrics [0.0, 10.0]
 })
 ```
 
-**维度详解**:
-- **queue_lengths** (5维): 当前各层队列中的UAV数量
-- **utilization_rates** (5维): 各层容量利用率 = queue_length / capacity
-- **queue_changes** (5维): 相对上一步的队列长度变化
-- **load_rates** (5维): 负载系数 ρ = λ_eff / (μ × capacity)
-- **service_rates** (5维): 动态调整后的实际服务率
-- **prev_reward** (1维): 上一步的奖励值，用于奖励趋势学习
-- **system_metrics** (3维): [总负载, 总利用率, 稳定性指标]
+**Dimension Details**:
+- **queue_lengths** (5-dim): Current number of UAVs in each layer's queue
+- **utilization_rates** (5-dim): Capacity utilization per layer = queue_length / capacity
+- **queue_changes** (5-dim): Queue length change relative to previous step
+- **load_rates** (5-dim): Load coefficient ρ = λ_eff / (μ × capacity)
+- **service_rates** (5-dim): Dynamically adjusted actual service rates
+- **prev_reward** (1-dim): Previous step's reward value for reward trend learning
+- **system_metrics** (3-dim): [total load, total utilization, stability indicator]
 
-**总计**: 5+5+5+5+5+1+3 = **29维**
+**Total**: 5+5+5+5+5+1+3 = **29 dimensions**
 
-## 🎮 动作空间 (11维混合)
+## 🎮 Action Space (11-Dimensional Hybrid)
 
-动作空间为Dict格式，包含连续控制和离散决策：
+Action space is in Dict format, containing continuous control and discrete decisions:
 
 ```python
 action_space = spaces.Dict({
-    'service_intensities': Box([0.1, 2.0], shape=(5,)),  # 连续: 服务强度调节
-    'arrival_multiplier':  Box([0.5, 5.0], shape=(1,)),  # 连续: 全局到达倍数
-    'emergency_transfers': MultiBinary(5)                # 离散: 紧急转移决策
+    'service_intensities': Box([0.1, 2.0], shape=(5,)),  # Continuous: service intensity adjustment
+    'arrival_multiplier':  Box([0.5, 5.0], shape=(1,)),  # Continuous: global arrival multiplier
+    'emergency_transfers': MultiBinary(5)                # Discrete: emergency transfer decisions
 })
 ```
 
-**动作详解**:
-- **service_intensities** (5维连续): 各层服务强度调节倍数 [0.1, 2.0]
-  - 控制各层的服务处理速度
-  - 值>1.0表示加速服务，<1.0表示减缓服务
-- **arrival_multiplier** (1维连续): 全局到达率调节 [0.5, 5.0]
-  - 控制整体系统的任务到达强度
-  - 用于动态负载管理
-- **emergency_transfers** (5维离散): 紧急转移触发 {0, 1}
-  - 每层一个二进制开关
-  - 1表示触发该层的紧急下沉转移
+**Action Details**:
+- **service_intensities** (5-dim continuous): Service intensity adjustment multiplier per layer [0.1, 2.0]
+  - Controls service processing speed for each layer
+  - Value >1.0 indicates accelerated service, <1.0 indicates decelerated service
+- **arrival_multiplier** (1-dim continuous): Global arrival rate adjustment [0.5, 5.0]
+  - Controls overall system task arrival intensity
+  - Used for dynamic load management
+- **emergency_transfers** (5-dim discrete): Emergency transfer trigger {0, 1}
+  - One binary switch per layer
+  - 1 indicates triggering emergency downward transfer for that layer
 
-**总计**: 5+1+5 = **11维**
+**Total**: 5+1+5 = **11 dimensions**
 
-## 🎯 奖励函数 (6目标优化)
+## 🎯 Reward Function (6-Objective Optimization)
 
-系统采用多目标奖励函数，平衡6个关键指标：
+The system employs a multi-objective reward function balancing 6 key metrics:
 
-### 奖励组件
+### Reward Components
 
 ```python
 def _calculate_reward_fixed(self, action) -> float:
-    # 1. 吞吐量奖励 (主要目标)
+    # 1. Throughput reward (primary objective)
     R_throughput = 10.0 * np.sum(service_counts)
-    
-    # 2. 基尼系数负载均衡 (公平性)
+
+    # 2. Gini coefficient load balancing (fairness)
     gini = self._calculate_gini_coefficient(utilization_rates)
     R_balance = 5.0 * (1.0 - gini)
-    
-    # 3. 能效优化 (效率)
+
+    # 3. Energy efficiency optimization (efficiency)
     R_efficiency = 3.0 * total_service / total_energy
-    
-    # 4. 拥堵惩罚 (稳定性)
+
+    # 4. Congestion penalty (stability)
     P_congestion = -20.0 * np.sum(congestion_levels)
-    
-    # 5. 系统稳定性 (鲁棒性)
+
+    # 5. System stability (robustness)
     P_instability = -15.0 * instability_penalty
-    
-    # 6. 紧急转移成本 (控制复杂度)
+
+    # 6. Emergency transfer cost (control complexity)
     P_transfer = -5.0 * np.sum(emergency_transfers)
-    
+
     return R_throughput + R_balance + R_efficiency + P_congestion + P_instability + P_transfer
 ```
 
-### 目标权重
+### Objective Weights
 
-| 目标 | 权重 | 说明 |
-|------|------|------|
-| 吞吐量最大化 | 10.0 | 系统处理能力 |
-| 负载均衡 | 5.0 | 基尼系数公平性 |
-| 能效优化 | 3.0 | 服务/能耗比 |
-| 拥堵惩罚 | -20.0 | 防止系统过载 |
-| 稳定性惩罚 | -15.0 | 保持系统稳定 |
-| 转移成本 | -5.0 | 控制动作复杂度 |
+| Objective | Weight | Description |
+|-----------|--------|-------------|
+| Throughput maximization | 10.0 | System processing capacity |
+| Load balancing | 5.0 | Gini coefficient fairness |
+| Energy efficiency | 3.0 | Service/energy ratio |
+| Congestion penalty | -20.0 | Prevent system overload |
+| Stability penalty | -15.0 | Maintain system stability |
+| Transfer cost | -5.0 | Control action complexity |
 
-## ⚙️ 系统参数
+## ⚙️ System Parameters
 
-### 核心配置
+### Core Configuration
 ```python
-# 物理结构
+# Physical structure
 n_layers = 5
-heights = [100, 80, 60, 40, 20]  # 米
-capacities = [8, 6, 4, 3, 2]     # 倒金字塔容量
+heights = [100, 80, 60, 40, 20]  # meters
+capacities = [8, 6, 4, 3, 2]     # Inverted pyramid capacity
 
-# 到达过程
+# Arrival process
 base_arrival_rate = 0.3                    # λ₀ = 0.3/step
 arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]  # α_i
 
-# 服务过程  
+# Service process
 base_service_rates = [1.2, 1.0, 0.8, 0.6, 0.4]  # μ_i
 
-# 环境参数
-max_episode_steps = 200  # 回合时间限制
+# Environment parameters
+max_episode_steps = 200  # Episode time limit
 render_modes = ["human"]
 ```
 
-### 动力学模型
+### Dynamics Model
 
-**到达过程**: 泊松到达 + 多项式分流
+**Arrival Process**: Poisson arrivals + multinomial splitting
 ```
 λ_total(t) = base_arrival_rate × arrival_multiplier(t)
 λ_i(t) = λ_total(t) × arrival_weights[i]
 ```
 
-**服务过程**: 状态依赖服务率
+**Service Process**: State-dependent service rates
 ```
 μ_i(t) = base_service_rates[i] × service_intensities[i](t)
 ```
 
-**转移动力学**: 压力触发 + 紧急转移
+**Transfer Dynamics**: Pressure-triggered + emergency transfers
 ```
 transfer_rate_i = f(queue_length_i, utilization_i, emergency_transfers[i])
 ```
 
-## 🔬 MCRPS/D/K 理论基础
+## 🔬 MCRPS/D/K Theoretical Foundation
 
-本环境实现了全新的排队网络类型：**MCRPS/D/K**，这是基于深度强化学习的垂直分层排队优化理论的核心创新。
+This environment implements a novel queueing network type: **MCRPS/D/K**, which is the core innovation of the deep reinforcement learning-based vertical stratified queueing optimization theory.
 
-### 理论分类
-- **MC**: Multi-layer Correlated arrivals (多层相关到达)
-- **R**: Random batch service (随机批量服务)
-- **P**: Poisson splitting (泊松分流)
-- **S**: State-dependent (状态依赖)
-- **D**: Dynamic transfer (动态转移)
-- **K**: Finite capacity (有限容量)
+### Theoretical Classification
+- **MC**: Multi-layer Correlated arrivals
+- **R**: Random batch service
+- **P**: Poisson splitting
+- **S**: State-dependent
+- **D**: Dynamic transfer
+- **K**: Finite capacity
 
-### 创新系统动力学
+### Innovative System Dynamics
 
-#### 1. 相关到达过程 (MC + P)
+#### 1. Correlated Arrival Process (MC + P)
 ```mathematical
-Nₜ ~ Poisson(λ₀μₜ)                    # 总到达泊松分布
-(N₁ₜ, ..., N₅ₜ) ~ Multinomial(Nₜ, w)  # 多项式分流
-实际到达：min(Nᵢₜ, cᵢ - qᵢₜ)          # 容量约束到达
+Nₜ ~ Poisson(λ₀μₜ)                    # Total arrivals follow Poisson distribution
+(N₁ₜ, ..., N₅ₜ) ~ Multinomial(Nₜ, w)  # Multinomial splitting
+Actual arrivals: min(Nᵢₜ, cᵢ - qᵢₜ)   # Capacity-constrained arrivals
 ```
-**创新特征**: 层间相关到达 vs 传统独立到达
+**Innovative Feature**: Inter-layer correlated arrivals vs traditional independent arrivals
 
-#### 2. 批量服务过程 (R)
+#### 2. Batch Service Process (R)
 ```mathematical
 Dᵢₜ = min(max(1, Poisson(s₀ᵢαᵢₜ)), qᵢₜ)
 ```
-**创新特征**: 非零批量服务保证 vs 传统单体服务
+**Innovative Feature**: Non-zero batch service guarantee vs traditional single-entity service
 
-#### 3. 动态转移机制 (D)
+#### 3. Dynamic Transfer Mechanism (D)
 ```mathematical
-当τᵢₜ = 1且i < 5时：
-压力系数：pᵢ = qᵢₜ/cᵢ
-转移数量：Tᵢₜ = min(⌊qᵢₜ × min(0.8, pᵢ)⌋, cᵢ₊₁ - qᵢ₊₁ₜ)
+When τᵢₜ = 1 and i < 5:
+Pressure coefficient: pᵢ = qᵢₜ/cᵢ
+Transfer quantity: Tᵢₜ = min(⌊qᵢₜ × min(0.8, pᵢ)⌋, cᵢ₊₁ - qᵢ₊₁ₜ)
 ```
-**创新特征**: 压力触发跨层转移 vs 传统静态网络
+**Innovative Feature**: Pressure-triggered cross-layer transfers vs traditional static networks
 
-### 与经典排队理论对比
+### Comparison with Classical Queueing Theory
 
-| 特征 | 经典排队论 | MCRPS/D/K |
-|------|------------|-----------|
-| **空间结构** | 抽象节点 | 物理垂直分层 |
-| **到达过程** | 独立泊松 | 相关+分流 |
-| **服务机制** | 单体指数 | 批量+非零保证 |
-| **网络拓扑** | 静态连接 | 动态转移 |
-| **容量设计** | 均匀/递增 | 倒金字塔 |
-| **控制方式** | 参数固定 | DRL实时优化 |
+| Feature | Classical Queueing | MCRPS/D/K |
+|---------|-------------------|-----------|
+| **Spatial Structure** | Abstract nodes | Physical vertical stratification |
+| **Arrival Process** | Independent Poisson | Correlated + splitting |
+| **Service Mechanism** | Single exponential | Batch + non-zero guarantee |
+| **Network Topology** | Static connections | Dynamic transfers |
+| **Capacity Design** | Uniform/increasing | Inverted pyramid |
+| **Control Method** | Fixed parameters | DRL real-time optimization |
 
-### 理论创新价值
+### Theoretical Innovation Value
 
-1. **垂直分层排队**: 首创物理空间分层的排队网络，填补空域管理理论空白
-2. **倒金字塔容量**: 反映真实空域约束的容量设计，高层容量大但受物理限制递减
-3. **压力触发转移**: 基于拥塞压力的跨层动态转移，实现智能负载均衡
-4. **多目标平衡**: 6目标权衡的智能调度策略，兼顾效率、公平性、稳定性
-5. **理论突破**: 创造全新排队系统类型，无经典解析解，需要仿真分析
+1. **Vertical Stratified Queueing**: First physical space-stratified queueing network, filling the theoretical gap in airspace management
+2. **Inverted Pyramid Capacity**: Capacity design reflecting real airspace constraints, upper layers have larger capacity but decrease due to physical limitations
+3. **Pressure-Triggered Transfers**: Cross-layer dynamic transfers based on congestion pressure, achieving intelligent load balancing
+4. **Multi-Objective Balancing**: Intelligent scheduling strategy balancing 6 objectives, considering efficiency, fairness, and stability
+5. **Theoretical Breakthrough**: Creates a novel queueing system type with no classical analytical solution, requiring simulation analysis
 
-### 文献理论支撑
+### Literature Theoretical Support
 
-基于《排队论与空域管理文献综述》分析，现有研究存在以下局限：
+Based on "Queueing Theory and Airspace Management Literature Review" analysis, existing research has the following limitations:
 
-- **[4] Vertiport容量评估**: 仅考虑单层M/M/1和M/M/c，缺乏垂直分层
-- **[11] 空域网络设计**: 3D走廊分段建模，但无动态层间转移
-- **[5] 空中交通流管理**: MILP优化缺乏实时学习能力
+- **[4] Vertiport Capacity Assessment**: Only considers single-layer M/M/1 and M/M/c, lacks vertical stratification
+- **[11] Airspace Network Design**: 3D corridor segmented modeling, but no dynamic inter-layer transfers
+- **[5] Air Traffic Flow Management**: MILP optimization lacks real-time learning capability
 
-**我们的突破**: MCRPS/D/K理论填补了垂直分层动态排队的理论空白，实现了从静态网络设计到智能实时调度的跃进。
+**Our Breakthrough**: MCRPS/D/K theory fills the theoretical gap in vertical stratified dynamic queueing, achieving a leap from static network design to intelligent real-time scheduling.
 
-## 🏛️ 系统环境架构总结
+## 🏛️ System Environment Architecture Summary
 
-### 整体架构设计
+### Overall Architecture Design
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                DRLOptimizedQueueEnvFixed                    │
-│                 (29维状态 + 11维混合动作)                    │
+│              (29-dim state + 11-dim hybrid action)          │
 ├─────────────────────────────────────────────────────────────┤
 │  Layer 1 (100m) │ Capacity: 8 │ Service: 1.2 │ Weight: 0.30│
 │  Layer 2 (80m)  │ Capacity: 6 │ Service: 1.0 │ Weight: 0.25│
@@ -282,164 +282,164 @@ Dᵢₜ = min(max(1, Poisson(s₀ᵢαᵢₜ)), qᵢₜ)
 │  Layer 4 (40m)  │ Capacity: 3 │ Service: 0.6 │ Weight: 0.15│
 │  Layer 5 (20m)  │ Capacity: 2 │ Service: 0.4 │ Weight: 0.10│
 ├─────────────────┬───────────────┬───────────────┬─────────────┤
-│   泊松到达      │   多项式分流   │   批量服务     │  压力转移   │
-│ Poisson(0.3μₜ)  │ Multinomial   │ max(1,Pois.) │ 触发跨层    │
+│ Poisson Arrival │ Multinomial   │ Batch Service │ Pressure    │
+│ Poisson(0.3μₜ)  │ Splitting     │ max(1,Pois.) │ Transfer    │
 └─────────────────┴───────────────┴───────────────┴─────────────┘
 ```
 
-### 核心组件架构
+### Core Component Architecture
 
-#### 1. 状态管理子系统 (StateManager)
-- **功能**: 29维状态空间构建和更新
-- **组件**: 队列状态、利用率、负载率、系统指标
-- **特点**: 实时状态标准化和历史记录
+#### 1. State Management Subsystem (StateManager)
+- **Function**: 29-dimensional state space construction and updating
+- **Components**: Queue state, utilization rate, load rate, system metrics
+- **Features**: Real-time state normalization and historical recording
 
-#### 2. 队列动力学子系统 (QueueDynamics) 
-- **功能**: MCRPS/D/K理论的核心实现
-- **组件**: 相关到达、批量服务、动态转移
-- **特点**: 非标准排队过程的数学建模
+#### 2. Queue Dynamics Subsystem (QueueDynamics)
+- **Function**: Core implementation of MCRPS/D/K theory
+- **Components**: Correlated arrivals, batch service, dynamic transfers
+- **Features**: Mathematical modeling of non-standard queueing processes
 
-#### 3. 奖励优化子系统 (RewardFunction)
-- **功能**: 6目标多权衡优化
-- **组件**: 吞吐量、公平性、效率、稳定性
-- **特点**: 数学严谨的基尼系数负载均衡
+#### 3. Reward Optimization Subsystem (RewardFunction)
+- **Function**: 6-objective multi-trade-off optimization
+- **Components**: Throughput, fairness, efficiency, stability
+- **Features**: Mathematically rigorous Gini coefficient load balancing
 
-#### 4. 动作控制子系统 (ActionProcessor)
-- **功能**: 11维混合动作空间处理
-- **组件**: 连续服务控制 + 离散转移决策
-- **特点**: 实时参数调节和紧急响应
+#### 4. Action Control Subsystem (ActionProcessor)
+- **Function**: 11-dimensional hybrid action space processing
+- **Components**: Continuous service control + discrete transfer decisions
+- **Features**: Real-time parameter adjustment and emergency response
 
-### 系统集成特性
+### System Integration Features
 
-#### 📊 数据流架构
+#### 📊 Data Flow Architecture
 ```
-环境状态 → StateManager → 29维观测向量
+Environment State → StateManager → 29-dim observation vector
      ↓
-DRL智能体 → 策略网络 → 11维混合动作
+DRL Agent → Policy Network → 11-dim hybrid action
      ↓
-ActionProcessor → 参数解析 → 系统控制信号
+ActionProcessor → Parameter parsing → System control signals
      ↓
-QueueDynamics → MCRPS/D/K → 状态更新
+QueueDynamics → MCRPS/D/K → State update
      ↓
-RewardFunction → 6目标评估 → 奖励反馈
+RewardFunction → 6-objective evaluation → Reward feedback
 ```
 
-#### 🔄 控制循环设计
-1. **观测阶段**: 提取29维系统状态
-2. **决策阶段**: DRL生成11维混合动作
-3. **执行阶段**: 动作解析为系统参数调整
-4. **更新阶段**: MCRPS/D/K动力学状态转移
-5. **评估阶段**: 多目标奖励计算和反馈
+#### 🔄 Control Loop Design
+1. **Observation Phase**: Extract 29-dimensional system state
+2. **Decision Phase**: DRL generates 11-dimensional hybrid action
+3. **Execution Phase**: Action parsed into system parameter adjustments
+4. **Update Phase**: MCRPS/D/K dynamics state transition
+5. **Evaluation Phase**: Multi-objective reward calculation and feedback
 
-#### ⚡ 实时响应机制
-- **正常模式**: 基于DRL策略的智能调度
-- **紧急模式**: 压力触发的跨层快速转移
-- **稳定保证**: 数学约束确保系统不崩溃
-- **性能监控**: 实时负载率和稳定性检测
+#### ⚡ Real-Time Response Mechanism
+- **Normal Mode**: Intelligent scheduling based on DRL policy
+- **Emergency Mode**: Pressure-triggered rapid cross-layer transfers
+- **Stability Guarantee**: Mathematical constraints ensure system doesn't crash
+- **Performance Monitoring**: Real-time load rate and stability detection
 
-### 技术创新总结
+### Technical Innovation Summary
 
-#### 🧠 理论层面
-- **原创理论**: MCRPS/D/K垂直分层排队网络
-- **数学严谨**: 基于仿真的新型排队系统分析
-- **空白填补**: 垂直空域管理的理论基础
+#### 🧠 Theoretical Level
+- **Original Theory**: MCRPS/D/K vertical stratified queueing network
+- **Mathematical Rigor**: Simulation-based novel queueing system analysis
+- **Gap Filling**: Theoretical foundation for vertical airspace management
 
-#### 🛠️ 工程层面  
-- **模块化设计**: 高内聚低耦合的系统架构
-- **混合动作**: 连续+离散的复杂控制空间
-- **实时优化**: DRL驱动的动态参数调节
+#### 🛠️ Engineering Level
+- **Modular Design**: High cohesion, low coupling system architecture
+- **Hybrid Actions**: Continuous + discrete complex control space
+- **Real-Time Optimization**: DRL-driven dynamic parameter adjustment
 
-#### 📈 性能层面
-- **收敛稳定**: 15种算法验证的环境稳定性
-- **性能突破**: DRL相比传统方法提升50%+
-- **鲁棒性强**: 多种负载条件下的稳定表现
+#### 📈 Performance Level
+- **Convergence Stability**: Environment stability validated by 15 algorithms
+- **Performance Breakthrough**: DRL improves 50%+ over traditional methods
+- **Strong Robustness**: Stable performance under various load conditions
 
-### 与现有系统对比
+### Comparison with Existing Systems
 
-| 维度 | 传统排队系统 | 现有UAV管理 | MCRPS/D/K环境 |
-|------|-------------|-------------|---------------|
-| **空间模型** | 抽象网络 | 几何规划 | 物理垂直分层 |
-| **调度方式** | 静态规则 | 启发式算法 | DRL实时学习 |
-| **状态维度** | 简单指标 | 位置速度 | 29维系统状态 |
-| **控制精度** | 参数固定 | 路径控制 | 11维混合动作 |
-| **理论基础** | 经典排队 | 运筹优化 | MCRPS/D/K理论 |
-| **适应能力** | 静态配置 | 半动态 | 完全自适应 |
+| Dimension | Traditional Queueing | Existing UAV Management | MCRPS/D/K Environment |
+|-----------|---------------------|------------------------|----------------------|
+| **Spatial Model** | Abstract network | Geometric planning | Physical vertical stratification |
+| **Scheduling Method** | Static rules | Heuristic algorithms | DRL real-time learning |
+| **State Dimension** | Simple metrics | Position velocity | 29-dim system state |
+| **Control Precision** | Fixed parameters | Path control | 11-dim hybrid actions |
+| **Theoretical Foundation** | Classical queueing | Operations research | MCRPS/D/K theory |
+| **Adaptability** | Static configuration | Semi-dynamic | Fully adaptive |
 
-这种架构设计实现了从理论创新到工程实现的完整链路，为垂直空域管理提供了全新的技术范式。
+This architectural design achieves a complete chain from theoretical innovation to engineering implementation, providing a new technical paradigm for vertical airspace management.
 
-## 📈 性能基准
+## 📈 Performance Benchmarks
 
-### 实验验证结果
+### Experimental Validation Results
 
-基于500k timesteps的大规模实验：
+Based on large-scale experiments with 500k timesteps:
 
-| 算法 | 平均奖励 | 标准差 | 训练时间 | 收敛性 |
-|------|----------|--------|----------|--------|
+| Algorithm | Avg Reward | Std Dev | Training Time | Convergence |
+|-----------|------------|---------|---------------|-------------|
 | **PPO** | **4419.98** | 135.71 | 30.8min | ⭐⭐⭐⭐⭐ |
 | **TD7** | **4392.52** | 84.60 | 382.4min | ⭐⭐⭐⭐⭐ |
 | **R2D2** | **4289.22** | 82.23 | 115.7min | ⭐⭐⭐⭐ |
 | SAC v2 | 4282.94 | 80.70 | 287.0min | ⭐⭐⭐⭐ |
 | Heuristic | 2860.69 | 87.96 | 1.1min | ⭐⭐⭐ |
 
-**关键发现**:
-- DRL算法相比启发式提升 **50%+**
-- 最佳算法实现 **>4400** 平均奖励
-- 标准差控制在 **<200**，证明环境稳定性
+**Key Findings**:
+- DRL algorithms improve **50%+** over heuristics
+- Best algorithm achieves **>4400** average reward
+- Standard deviation controlled at **<200**, proving environment stability
 
-## 🛠️ 开发指南
+## 🛠️ Development Guide
 
-### 扩展环境
+### Extending the Environment
 
 ```python
 class CustomVerticalQueueEnv(DRLOptimizedQueueEnvFixed):
     def __init__(self, custom_config):
         super().__init__()
-        # 自定义配置
+        # Custom configuration
         self.custom_param = custom_config
-    
+
     def _calculate_reward_fixed(self, action):
-        # 自定义奖励函数
+        # Custom reward function
         base_reward = super()._calculate_reward_fixed(action)
         custom_bonus = self._calculate_custom_bonus()
         return base_reward + custom_bonus
 ```
 
-### 添加新观测
+### Adding New Observations
 
 ```python
 def _get_enhanced_observation(self):
     base_obs = self._get_observation()
-    
-    # 添加新的观测维度
+
+    # Add new observation dimensions
     enhanced_obs = base_obs.copy()
     enhanced_obs['custom_metrics'] = self._calculate_custom_metrics()
-    
+
     return enhanced_obs
 ```
 
-### 调试工具
+### Debugging Tools
 
 ```python
-# 启用详细输出
+# Enable verbose output
 env = DRLOptimizedQueueEnvFixed(render_mode="human")
 
-# 状态检查
+# State inspection
 print(f"Current state: {env._get_observation()}")
 print(f"Queue lengths: {env.queue_lengths}")
 print(f"Utilization: {env.queue_lengths / env.capacities}")
 ```
 
-## 📚 相关文档
+## 📚 Related Documentation
 
-- **理论基础**: `docs/垂直分层排队理论_最终版.md`
-- **实验指南**: `docs/README_EXPERIMENT.md`
-- **代码架构**: `docs/RP1项目核心代码架构分析.md`
-- **创新分析**: `docs/创新点分析报告.md`
+- **Theoretical Foundation**: `docs/Vertical_Stratified_Queueing_Theory_Final.md`
+- **Experiment Guide**: `docs/README_EXPERIMENT.md`
+- **Code Architecture**: `docs/RP1_Project_Core_Code_Architecture_Analysis.md`
+- **Innovation Analysis**: `docs/Innovation_Analysis_Report.md`
 
-## 🤝 支持与贡献
+## 🤝 Support and Contribution
 
-如有问题或建议，请参考项目文档或联系开发团队。
+For questions or suggestions, please refer to project documentation or contact the development team.
 
-**版本**: v1.0.0  
-**更新时间**: 2025-09-29  
-**项目状态**: Production Ready ✅
+**Version**: v1.0.0
+**Last Updated**: 2025-09-29
+**Project Status**: Production Ready ✅
