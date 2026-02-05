@@ -1,6 +1,5 @@
 """
 Comprehensive Fix for All File Path References
-Fix All File Path References
 
 This script fixes:
 1. Model file paths (./models/ → ../../Models/)
