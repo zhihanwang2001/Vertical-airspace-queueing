@@ -1,8 +1,8 @@
 """
 Statistical Power Analysis for Major Revision
-计算post-hoc power和所需样本量
+Calculate post-hoc power and required sample sizes
 
-基于现有数据：
+Based on existing data:
 - Inverted pyramid [8,6,4,3,2]:
   - A2C: 9864 (n=5), PPO: 7823 (n=5)
   - Avg: 8844, std估计约600-800 (基于方差分析)
@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 
 def cohens_d(mean1, mean2, std1, std2, n1, n2):
     """
-    计算Cohen's d effect size
+    Calculate Cohen's d effect size
     """
     pooled_std = np.sqrt(((n1 - 1) * std1**2 + (n2 - 1) * std2**2) / (n1 + n2 - 2))
     d = (mean1 - mean2) / pooled_std
@@ -26,7 +26,7 @@ def cohens_d(mean1, mean2, std1, std2, n1, n2):
 
 def post_hoc_power(effect_size, n1, n2, alpha=0.05):
     """
-    计算post-hoc statistical power (two-sample t-test, two-tailed)
+    Calculate post-hoc statistical power (two-sample t-test, two-tailed) (two-sample t-test, two-tailed)
 
     Parameters:
     - effect_size: Cohen's d
@@ -51,13 +51,13 @@ def post_hoc_power(effect_size, n1, n2, alpha=0.05):
 
 def required_sample_size(effect_size, power=0.80, alpha=0.05, ratio=1):
     """
-    计算达到目标power所需的样本量
+    Calculate required sample size to achieve target power
 
     Parameters:
     - effect_size: Cohen's d
     - power: desired statistical power
     - alpha: significance level
-    - ratio: n2/n1 (默认1:1均等分配)
+    - ratio: n2/n1 (default 1:1 equal allocation)
 
     Returns:
     - n1, n2: required sample sizes

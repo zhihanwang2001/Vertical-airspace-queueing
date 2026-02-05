@@ -1,46 +1,46 @@
 #!/bin/bash
-# 实验完成后的清理脚本
-# 使用方法: ./cleanup_after_completion.sh
+# Cleanup script after experiment completion
+# Usage: ./cleanup_after_completion.sh
 
-echo "=== 实验完成后清理脚本 ==="
+echo "=== Post-experiment cleanup script ==="
 echo ""
 
-# 检查是否所有实验都完成
-echo "1. 检查实验完整性..."
+# Check if all experiments are complete
+echo "1. Checking experiment integrity..."
 python verify_experiments.py > /dev/null 2>&1
 
 if [ $? -eq 0 ]; then
-    echo "✓ 实验验证通过"
+    echo "✓ Experiment verification passed"
 else
-    echo "⚠️  请先确保所有实验完成"
+    echo "⚠️  Please ensure all experiments are complete first"
     exit 1
 fi
 
 echo ""
-echo "2. 准备清理临时文件..."
+echo "2. Preparing to clean temporary files..."
 echo ""
 
-# 显示将要删除的内容
-echo "将要删除的文件夹:"
+# Show content to be deleted
+echo "Folders to be deleted:"
 echo "  - server_backup_20260128/ (108MB)"
 echo ""
 
-# 显示保留的内容
-echo "保留的数据:"
-echo "  - Data/hca2c_final_comparison/ (所有45个实验)"
-echo "  - Data/hca2c_final_comparison_local/ (本地实验结果)"
+# Show content to be kept
+echo "Data to keep:"
+echo "  - Data/hca2c_final_comparison/ (all 45 experiments)"
+echo "  - Data/hca2c_final_comparison_local/ (local experiment results)"
 echo ""
 
-read -p "确认删除 server_backup_20260128/? (y/N): " confirm
+read -p "Confirm deletion of server_backup_20260128/? (y/N): " confirm
 
 if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
     echo ""
-    echo "正在删除..."
+    echo "Deleting..."
     rm -rf server_backup_20260128/
-    echo "✓ 清理完成"
+    echo "✓ Cleanup complete"
     echo ""
-    echo "剩余数据:"
+    echo "Remaining data:"
     du -sh Data/hca2c_final_comparison*
 else
-    echo "取消清理"
+    echo "Cleanup cancelled"
 fi

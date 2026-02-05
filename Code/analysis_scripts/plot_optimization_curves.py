@@ -1,5 +1,5 @@
 """
-绘制优化算法训练曲线对比图
+Plot Training Curves for Optimized Algorithms
 Plot Training Curves for Optimized Algorithms
 """
 
@@ -8,19 +8,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 
-# 设置中文字体
+# Set Chinese font
 plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'STHeiti']
 plt.rcParams['axes.unicode_minus'] = False
 
-# 读取CSV数据
+# Read CSV data
 def load_training_data(csv_path):
-    """读取训练数据"""
+    """Read training data"""
     df = pd.read_csv(csv_path)
     return df['Step'].values, df['Value'].values
 
-# 平滑曲线
+# Smoothed curve
 def smooth_curve(values, weight=0.9):
-    """指数移动平均平滑"""
+    """Exponential moving average smoothing"""
     smoothed = []
     last = values[0]
     for point in values:
@@ -29,89 +29,89 @@ def smooth_curve(values, weight=0.9):
         last = smoothed_val
     return np.array(smoothed)
 
-# 创建图表
+# Create figure
 fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-fig.suptitle('优化算法训练曲线对比 (Optimized Algorithms Training Curves)',
+fig.suptitle('Optimized Algorithms Training Curves Comparison (Optimized Algorithms Training Curves)',
              fontsize=16, fontweight='bold')
 
 # ================================
-# 子图1: A2C v3 延迟余弦退火 (邪修秘法)
+# Subplot 1: A2C v3 Delayed Cosine Annealing (Unorthodox Method)
 # ================================
 ax1 = axes[0, 0]
 steps, rewards = load_training_data('result_excel/SB3_A2C.csv')
 rewards_smooth = smooth_curve(rewards, weight=0.95)
 
-ax1.plot(steps, rewards, alpha=0.2, color='#FF6B6B', linewidth=0.5, label='原始数据')
-ax1.plot(steps, rewards_smooth, color='#FF6B6B', linewidth=2.5, label='平滑曲线')
+ax1.plot(steps, rewards, alpha=0.2, color='#FF6B6B', linewidth=0.5, label='Raw data')
+ax1.plot(steps, rewards_smooth, color='#FF6B6B', linewidth=2.5, label='Smoothed curve')
 
-# 标注300k步分界线（延迟余弦退火启动点）
+# Mark 300k step boundary (delayed cosine annealing start point)
 ax1.axvline(x=300000, color='green', linestyle='--', linewidth=2, alpha=0.7,
-            label='余弦退火启动 (300k步)')
+            label='Cosine annealing starts (300ksteps)')
 
-# 添加文本注释
-ax1.text(150000, 4000, '前300k步:\n固定lr=7e-4\n充分探索',
+# Add text annotations
+ax1.text(150000, 4000, 'First 300k steps:\nFixed lr=7e-4\nFull exploration',
          fontsize=10, bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-ax1.text(400000, 4000, '后200k步:\n余弦退火至1e-5\n稳定收敛',
+ax1.text(400000, 4000, 'Last 200k steps:\nCosine annealing to1e-5\nStable convergence',
          fontsize=10, bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.5))
 
-ax1.set_xlabel('训练步数 (Training Steps)', fontsize=12)
-ax1.set_ylabel('平均奖励 (Average Reward)', fontsize=12)
-ax1.set_title('A2C v3 - 延迟余弦退火 🔥\n最终: 4437.86±128.41 (第1名)',
+ax1.set_xlabel('Training Steps (Training Steps)', fontsize=12)
+ax1.set_ylabel('Average Reward (Average Reward)', fontsize=12)
+ax1.set_title('A2C v3 - Delayed Cosine Annealing 🔥\nFinal: 4437.86±128.41 (Rank 1)',
               fontsize=13, fontweight='bold')
 ax1.legend(loc='lower right', fontsize=10)
 ax1.grid(True, alpha=0.3)
 ax1.set_ylim([-100, 5000])
 
 # ================================
-# 子图2: Rainbow DQN v2 稳定性优化
+# Subplot 2: Rainbow DQN v2 Stability Optimization
 # ================================
 ax2 = axes[0, 1]
 steps, rewards = load_training_data('result_excel/Rainbow_DQN.csv')
 rewards_smooth = smooth_curve(rewards, weight=0.95)
 
-ax2.plot(steps, rewards, alpha=0.2, color='#4ECDC4', linewidth=0.5, label='原始数据')
-ax2.plot(steps, rewards_smooth, color='#4ECDC4', linewidth=2.5, label='平滑曲线')
+ax2.plot(steps, rewards, alpha=0.2, color='#4ECDC4', linewidth=0.5, label='Raw data')
+ax2.plot(steps, rewards_smooth, color='#4ECDC4', linewidth=2.5, label='Smoothed curve')
 
-# 添加性能区间带
-ax2.axhspan(2337, 2498, alpha=0.2, color='green', label='稳定区间 (2337-2498)')
+# Add performance interval band
+ax2.axhspan(2337, 2498, alpha=0.2, color='green', label='Stable interval (2337-2498)')
 
-ax2.text(250000, 3500, '优化策略:\n• lr: 1e-4→6.25e-5\n• 目标网络: 8000→2000步\n• 缓冲区: 1M→200k\n• 多步: 3→10',
+ax2.text(250000, 3500, 'Optimization strategy:\n• lr: 1e-4→6.25e-5\n• Target network: 8000→2000steps\n• Buffer: 1M→200k\n• 多steps: 3→10',
          fontsize=9, bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
 
-ax2.set_xlabel('训练步数 (Training Steps)', fontsize=12)
-ax2.set_ylabel('平均奖励 (Average Reward)', fontsize=12)
-ax2.set_title('Rainbow DQN v2 - 稳定性优化\n最终: 2360.53±45.50 (方差-73%)',
+ax2.set_xlabel('Training Steps (Training Steps)', fontsize=12)
+ax2.set_ylabel('Average Reward (Average Reward)', fontsize=12)
+ax2.set_title('Rainbow DQN v2 - Stability Optimization\nFinal: 2360.53±45.50 (Variance-73%)',
               fontsize=13, fontweight='bold')
 ax2.legend(loc='upper left', fontsize=10)
 ax2.grid(True, alpha=0.3)
 ax2.set_ylim([0, 4500])
 
 # ================================
-# 子图3: IMPALA v2 保守V-trace
+# Subplot 3: IMPALA v2 Conservative V-trace
 # ================================
 ax3 = axes[1, 0]
 steps, rewards = load_training_data('result_excel/IMPALA.csv')
 rewards_smooth = smooth_curve(rewards, weight=0.95)
 
-ax3.plot(steps, rewards, alpha=0.2, color='#95E1D3', linewidth=0.5, label='原始数据')
-ax3.plot(steps, rewards_smooth, color='#95E1D3', linewidth=2.5, label='平滑曲线')
+ax3.plot(steps, rewards, alpha=0.2, color='#95E1D3', linewidth=0.5, label='Raw data')
+ax3.plot(steps, rewards_smooth, color='#95E1D3', linewidth=2.5, label='Smoothed curve')
 
-# 标注稳定收敛区域
-ax3.axhspan(1600, 1800, alpha=0.2, color='green', label='稳定区间')
+# 标注Stable convergence区域
+ax3.axhspan(1600, 1800, alpha=0.2, color='green', label='Stable interval')
 
-ax3.text(250000, 2500, '保守优化 v2:\n• lr: 5e-5→3e-5\n• V-trace ρ/c: 0.9→0.7\n• 缓冲区: 50k→30k\n• 序列长度: 20→10',
+ax3.text(250000, 2500, 'Conservative optimization v2:\n• lr: 5e-5→3e-5\n• V-trace ρ/c: 0.9→0.7\n• Buffer: 50k→30k\n• Sequence length: 20→10',
          fontsize=9, bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
 
-ax3.set_xlabel('训练步数 (Training Steps)', fontsize=12)
-ax3.set_ylabel('平均奖励 (Average Reward)', fontsize=12)
-ax3.set_title('IMPALA v2 - 保守V-trace策略\n最终: 1682.19±73.85 (消除崩溃)',
+ax3.set_xlabel('Training Steps (Training Steps)', fontsize=12)
+ax3.set_ylabel('Average Reward (Average Reward)', fontsize=12)
+ax3.set_title('IMPALA v2 - Conservative V-trace Strategy\nFinal: 1682.19±73.85 (Eliminate crashes)',
               fontsize=13, fontweight='bold')
 ax3.legend(loc='upper left', fontsize=10)
 ax3.grid(True, alpha=0.3)
 ax3.set_ylim([0, 3500])
 
 # ================================
-# 子图4: 三算法对比
+# Subplot 4: Three Algorithm Comparison
 # ================================
 ax4 = axes[1, 1]
 
@@ -133,13 +133,13 @@ rewards_impala_smooth = smooth_curve(rewards_impala, weight=0.95)
 ax4.plot(steps_impala, rewards_impala_smooth, color='#95E1D3', linewidth=2.5,
          label='IMPALA v2 (1682.19)', marker='^', markersize=3, markevery=10000)
 
-# 标注300k步分界线
+# 标注300ksteps分界线
 ax4.axvline(x=300000, color='green', linestyle='--', linewidth=1.5, alpha=0.5)
-ax4.text(300000, 4500, '← A2C余弦退火启动', fontsize=9, color='green')
+ax4.text(300000, 4500, '← A2CCosine annealing starts', fontsize=9, color='green')
 
-ax4.set_xlabel('训练步数 (Training Steps)', fontsize=12)
-ax4.set_ylabel('平均奖励 (Average Reward)', fontsize=12)
-ax4.set_title('优化算法性能对比 (Comparison)',
+ax4.set_xlabel('Training Steps (Training Steps)', fontsize=12)
+ax4.set_ylabel('Average Reward (Average Reward)', fontsize=12)
+ax4.set_title('Optimized算法性能Comparison (Comparison)',
               fontsize=13, fontweight='bold')
 ax4.legend(loc='lower right', fontsize=11)
 ax4.grid(True, alpha=0.3)
@@ -147,35 +147,35 @@ ax4.set_ylim([-100, 5000])
 
 plt.tight_layout()
 plt.savefig('../../Figures/analysis/optimization_training_curves.png', dpi=300, bbox_inches='tight')
-print("✅ 训练曲线图已保存: optimization_training_curves.png")
+print("✅ Training curve plot saved: optimization_training_curves.png")
 
 # ================================
-# 额外：绘制A2C v3详细分析图（学习率变化）
+# Extra: Plot A2C v3 detailed analysis (learning rate change)
 # ================================
 fig2, (ax_reward, ax_lr) = plt.subplots(2, 1, figsize=(14, 10), sharex=True)
-fig2.suptitle('A2C v3 延迟余弦退火详细分析 (Delayed Cosine Annealing Analysis)',
+fig2.suptitle('A2C v3 Delayed Cosine Annealing详细分析 (Delayed Cosine Annealing Analysis)',
               fontsize=16, fontweight='bold')
 
-# 上图：奖励曲线
+# Top: Reward curve
 steps, rewards = load_training_data('result_excel/SB3_A2C.csv')
 rewards_smooth = smooth_curve(rewards, weight=0.95)
 
-ax_reward.plot(steps, rewards, alpha=0.15, color='gray', linewidth=0.5, label='原始数据')
-ax_reward.plot(steps, rewards_smooth, color='#FF6B6B', linewidth=3, label='平滑曲线')
+ax_reward.plot(steps, rewards, alpha=0.15, color='gray', linewidth=0.5, label='Raw data')
+ax_reward.plot(steps, rewards_smooth, color='#FF6B6B', linewidth=3, label='Smoothed curve')
 ax_reward.axvline(x=300000, color='green', linestyle='--', linewidth=2, alpha=0.7)
-ax_reward.fill_between([0, 300000], -100, 5000, alpha=0.1, color='orange', label='固定lr阶段')
-ax_reward.fill_between([300000, 500000], -100, 5000, alpha=0.1, color='blue', label='余弦退火阶段')
-ax_reward.set_ylabel('平均奖励 (Reward)', fontsize=12)
-ax_reward.set_title('训练奖励变化', fontsize=13)
+ax_reward.fill_between([0, 300000], -100, 5000, alpha=0.1, color='orange', label='Fixed lr阶段')
+ax_reward.fill_between([300000, 500000], -100, 5000, alpha=0.1, color='blue', label='Cosine annealing phase')
+ax_reward.set_ylabel('Average Reward (Reward)', fontsize=12)
+ax_reward.set_title('Training Reward Change', fontsize=13)
 ax_reward.legend(loc='lower right', fontsize=11)
 ax_reward.grid(True, alpha=0.3)
 ax_reward.set_ylim([-100, 5000])
 
-# 下图：学习率变化
+# Bottom: Learning rate change
 import math
 
 def delayed_cosine_annealing(step, warmup=300000, total=500000, initial=7e-4, minimum=1e-5):
-    """计算延迟余弦退火学习率"""
+    """计算Delayed Cosine AnnealingLearning Rate"""
     if step < warmup:
         return initial
     progress = (step - warmup) / (total - warmup)
@@ -184,16 +184,16 @@ def delayed_cosine_annealing(step, warmup=300000, total=500000, initial=7e-4, mi
 
 lr_values = [delayed_cosine_annealing(s) for s in steps]
 
-ax_lr.plot(steps, lr_values, color='#4ECDC4', linewidth=3, label='学习率调度')
-ax_lr.axvline(x=300000, color='green', linestyle='--', linewidth=2, alpha=0.7, label='退火启动点')
-ax_lr.axhline(y=7e-4, color='orange', linestyle=':', linewidth=1.5, alpha=0.7, label='初始lr (7e-4)')
-ax_lr.axhline(y=1e-5, color='blue', linestyle=':', linewidth=1.5, alpha=0.7, label='最终lr (1e-5)')
+ax_lr.plot(steps, lr_values, color='#4ECDC4', linewidth=3, label='Learning rate schedule')
+ax_lr.axvline(x=300000, color='green', linestyle='--', linewidth=2, alpha=0.7, label='Annealing start point')
+ax_lr.axhline(y=7e-4, color='orange', linestyle=':', linewidth=1.5, alpha=0.7, label='Initial lr (7e-4)')
+ax_lr.axhline(y=1e-5, color='blue', linestyle=':', linewidth=1.5, alpha=0.7, label='Finallr (1e-5)')
 ax_lr.fill_between([0, 300000], 0, 8e-4, alpha=0.1, color='orange')
 ax_lr.fill_between([300000, 500000], 0, 8e-4, alpha=0.1, color='blue')
 
-ax_lr.set_xlabel('训练步数 (Training Steps)', fontsize=12)
-ax_lr.set_ylabel('学习率 (Learning Rate)', fontsize=12)
-ax_lr.set_title('学习率调度策略', fontsize=13)
+ax_lr.set_xlabel('Training Steps (Training Steps)', fontsize=12)
+ax_lr.set_ylabel('Learning Rate (Learning Rate)', fontsize=12)
+ax_lr.set_title('Learning rate schedule策略', fontsize=13)
 ax_lr.legend(loc='upper right', fontsize=11)
 ax_lr.grid(True, alpha=0.3)
 ax_lr.set_ylim([0, 8e-4])
@@ -201,8 +201,8 @@ ax_lr.ticklabel_format(axis='y', style='scientific', scilimits=(0,0))
 
 plt.tight_layout()
 plt.savefig('../../Figures/analysis/a2c_v3_detailed_analysis.png', dpi=300, bbox_inches='tight')
-print("✅ A2C v3详细分析图已保存: a2c_v3_detailed_analysis.png")
+print("✅ A2C v3Detailed analysis plot saved: a2c_v3_detailed_analysis.png")
 
-print("\n📊 图表已生成:")
-print("  1. optimization_training_curves.png - 四算法对比图")
-print("  2. a2c_v3_detailed_analysis.png - A2C v3学习率分析图")
+print("\n📊 Plots generated:")
+print("  1. optimization_training_curves.png - 四算法Comparison图")
+print("  2. a2c_v3_detailed_analysis.png - A2C v3Learning Rate分析图")

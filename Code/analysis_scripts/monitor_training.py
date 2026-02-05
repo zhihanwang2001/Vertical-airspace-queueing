@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-训练监控脚本
+Training Monitor Script
 Training Monitor Script
 """
 
@@ -11,7 +11,7 @@ import glob
 from datetime import datetime
 
 def check_tensorboard():
-    """检查TensorBoard是否运行"""
+    """Check if TensorBoard is running"""
     try:
         result = subprocess.run(['pgrep', '-f', 'tensorboard'], 
                               capture_output=True, text=True)
@@ -20,7 +20,7 @@ def check_tensorboard():
         return False
 
 def check_training_processes():
-    """检查训练进程"""
+    """Check training processes"""
     try:
         result = subprocess.run(['pgrep', '-f', 'run_baseline_comparison'], 
                               capture_output=True, text=True)
@@ -30,12 +30,12 @@ def check_training_processes():
         return 0
 
 def get_log_files():
-    """获取日志文件"""
+    """Get log files"""
     logs = glob.glob('*.log')
     return logs
 
 def monitor_training():
-    """监控训练状态"""
+    """Monitor training status"""
     print("=" * 60)
     print(f"Training Monitor - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
@@ -44,17 +44,17 @@ def monitor_training():
     tb_running = check_tensorboard()
     print(f"TensorBoard Status: {'🟢 Running' if tb_running else '🔴 Not Running'}")
     
-    # 检查训练进程
+    # Check training processes
     training_count = check_training_processes()
     print(f"Training Processes: {training_count} running")
     
-    # 检查日志文件
+    # 检查Log Files
     log_files = get_log_files()
     print(f"Log Files: {len(log_files)} found")
     
     if log_files:
         print("\nRecent Log Activity:")
-        for log_file in log_files[:5]:  # 只显示前5个
+        for log_file in log_files[:5]:  # Only show first 5
             try:
                 stat = os.stat(log_file)
                 size = stat.st_size / 1024  # KB
@@ -63,7 +63,7 @@ def monitor_training():
             except:
                 pass
     
-    # 检查TensorBoard日志
+    # Check TensorBoard logs
     tb_dirs = glob.glob('tensorboard_logs/*')
     print(f"\nTensorBoard Logs: {len(tb_dirs)} directories")
     
