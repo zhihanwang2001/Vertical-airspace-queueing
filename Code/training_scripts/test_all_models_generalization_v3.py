@@ -1,6 +1,5 @@
 """
 Top 3 Models Cross-Region Generalization Test Script V3 - Reward Decomposition
-Top 3 Models Cross-Region Generalization Test Script V3 - Reward Decomposition
 
 Core Improvements (V2 → V3):
 1. Retain all multi-dimensional system metrics from V2
@@ -303,7 +302,6 @@ def main():
 
     print("\n" + "="*80)
     print("Top 3 Models Cross-Region Generalization Test V3 - Reward Component Decomposition")
-    print("Cross-Region Generalization Test V3 - Reward Component Decomposition")
     print("="*80 + "\n")
 
     print("V3 Core Improvements:")

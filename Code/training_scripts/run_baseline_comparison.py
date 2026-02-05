@@ -1,5 +1,4 @@
 """
-运行基线算法比较实验
 Run baseline algorithm comparison experiments
 """
 
@@ -14,7 +13,7 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser(description='Run baseline algorithm comparison')
-    parser.add_argument('--algorithms', nargs='+', 
+    parser.add_argument('--algorithms', nargs='+',
                        default=['SB3_PPO', 'SB3_SAC', 'SB3_TD3', 'A2C', 'Heuristic'],
                        help='Algorithms to compare')
     parser.add_argument('--timesteps', type=int, default=1000000,
@@ -27,25 +26,25 @@ def main():
                        help='Directory to save results')
     parser.add_argument('--eval-freq', type=int, default=100000,
                        help='Evaluation frequency for long training')
-    
+
     args = parser.parse_args()
-    
+
     print("Initializing environment...")
-    
-    # 创建环境
+
+    # Create environment
     env = DRLOptimizedQueueEnvFixed()
-    
+
     print(f"Environment initialized")
     print(f"Observation space: {env.observation_space}")
     print(f"Action space: {env.action_space}")
-    
-    # 创建比较运行器
+
+    # Create comparison runner
     runner = ComparisonRunner(env, save_dir=args.save_dir)
-    
-    # 运行比较实验
+
+    # Run comparison experiments
     print(f"\\nStarting comparison with algorithms: {args.algorithms}")
     print(f"Using optimized configurations for better convergence...")
-    
+
     results = runner.run_comparison(
         algorithms=args.algorithms,
         total_timesteps=args.timesteps,
@@ -53,10 +52,10 @@ def main():
         n_runs=args.runs,
         eval_freq=args.eval_freq
     )
-    
-    # 保存数据
+
+    # Save data
     runner.save_comparison_data()
-    
+
     print(f"\\nComparison completed! Results saved to: {args.save_dir}")
     print(f"Check the following files:")
     print(f"  - comparison_report.txt: Detailed text report")

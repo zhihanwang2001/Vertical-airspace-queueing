@@ -1,6 +1,5 @@
 """
 Final Ablation Study: CCF-B Journal Version - TD7 Algorithm
-Final Ablation Study: CCF-B Journal Version - TD7 Algorithm
 
 Key Parameters:
 1. Algorithm: TD7 (self-developed advanced algorithm)
@@ -40,11 +39,13 @@ def create_config(config_type='capacity_4x5', high_load_multiplier=10.0):
     """
     Create high load configuration
 
-    high_load_multiplier: Load multiplier (relative to v3)
+    Args:
+        config_type: Configuration type
+        high_load_multiplier: Load multiplier (relative to v3)
     """
     config = VerticalQueueConfig()
 
-    # Set capacity
+    # Set capacity configuration
     if config_type == 'capacity_4x5':
         config.layer_capacities = [4, 4, 4, 4, 4]  # Total 20
     elif config_type == 'capacity_6x5':
@@ -55,11 +56,11 @@ def create_config(config_type='capacity_4x5', high_load_multiplier=10.0):
     # Fixed real UAM traffic pattern
     config.arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]
 
-    # Key: Significantly increase arrival rate
+    # Significantly increase arrival rate for high load testing
     total_capacity = sum(config.layer_capacities)
     avg_service_rate = np.mean(config.layer_service_rates)
 
-    # Base arrival rate × high load multiplier
+    # Base arrival rate multiplied by high load factor
     base_rate_v3 = 0.75 * total_capacity * avg_service_rate / 5
     config.base_arrival_rate = base_rate_v3 * high_load_multiplier
 
@@ -84,27 +85,27 @@ def create_config(config_type='capacity_4x5', high_load_multiplier=10.0):
     print(f"Average load: {np.mean(layer_loads)*100:.1f}%")
     print(f"Maximum load: {np.max(layer_loads)*100:.1f}% (Layer {np.argmax(layer_loads)})")
 
-    # Predict crash
+    # Predict system stability
     if any(load >= 1.0 for load in layer_loads):
-        print(f"Warning: System crash expected (layers with ρ>=1.0 exist)")
+        print(f"Warning: System crash expected (layers with load >=1.0 exist)")
     else:
-        print(f"System stability expected (all layers ρ<1.0)")
+        print(f"System stability expected (all layers load <1.0)")
     print(f"{'='*80}\n")
 
     return config
 
 
 def create_wrapped_env(config):
-    """Create wrapped environment"""
+    """Create wrapped environment for TD7 training"""
     base_env = ConfigurableEnvWrapper(config=config)
-    # TD7 needs SB3DictWrapper to handle observation
+    # TD7 requires SB3DictWrapper to handle observation space
     wrapped_env = SB3DictWrapper(base_env)
     return wrapped_env
 
 
 def train_and_evaluate(config_type='capacity_4x5',
                        timesteps=100000, eval_episodes=50, high_load_multiplier=10.0):
-    """Train and evaluate TD7"""
+    """Train and evaluate TD7 algorithm"""
 
     print(f"\n{'='*80}")
     print(f"Experiment: TD7 + {config_type}")
@@ -120,7 +121,7 @@ def train_and_evaluate(config_type='capacity_4x5',
 
     start_time = time.time()
 
-    # Create TD7 agent (using TD7 recommended configuration)
+    # Create TD7 agent with recommended configuration
     td7_config = {
         'embedding_dim': 256,
         'hidden_dim': 256,
@@ -207,12 +208,12 @@ def train_and_evaluate(config_type='capacity_4x5',
     model_path = save_dir / 'TD7_model.pt'
     agent.save(str(model_path))
 
-    # Evaluation
+    # Evaluation phase
     print(f"\nEvaluation ({eval_episodes} episodes)...")
     eval_rewards = []
     eval_lengths = []
-    eval_terminated_count = 0  # Real crashes
-    eval_truncated_count = 0   # Normal truncation
+    eval_terminated_count = 0  # System crashes
+    eval_truncated_count = 0   # Normal episode completion
     eval_waiting_times = []
     eval_utilizations = []
 
@@ -227,7 +228,7 @@ def train_and_evaluate(config_type='capacity_4x5',
         episode_truncated = False
 
         while not done:
-            action = agent.act(obs, training=False)  # Deterministic policy
+            action = agent.act(obs, training=False)  # Use deterministic policy for evaluation
             obs, reward, term, trunc, info = env.step(action)
             done = term or trunc
             ep_reward += reward
@@ -247,7 +248,7 @@ def train_and_evaluate(config_type='capacity_4x5',
 
         if episode_terminated:
             eval_terminated_count += 1
-            crash_marker = " [CRASHED - System crash!]"
+            crash_marker = " [CRASHED - System failure]"
         elif episode_truncated:
             eval_truncated_count += 1
             crash_marker = " [COMPLETED]"

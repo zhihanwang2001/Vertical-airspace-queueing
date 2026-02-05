@@ -1,6 +1,5 @@
 """
 Final Ablation Study: CCF-B Journal Version - TD7 Algorithm
-Final Ablation Study: CCF-B Journal Version - TD7 Algorithm
 
 Key Parameters:
 1. Algorithm: TD7 (self-developed advanced algorithm)

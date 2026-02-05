@@ -1,6 +1,5 @@
 """
 Final Ablation Study: CCF-B Journal Version
-Final Ablation Study: CCF-B Journal Version
 
 Key Parameters:
 1. Algorithms: A2C, PPO (SB3 implementation)

@@ -1,6 +1,5 @@
 """
 Train Top 3 Models for Cross-Region Generalization Testing
-Train Top 3 Models for Cross-Region Generalization Testing
 
 Train and save:
 - A2C (Rank 1): 4437.86
@@ -152,7 +151,6 @@ def main():
     """Main function: Train Top 3 models"""
     print("\n" + "="*80)
     print("Train Top 3 Models for Cross-Region Generalization Testing")
-    print("Train Top 3 Models for Cross-Region Generalization")
     print("="*80 + "\n")
 
     print("RP1 Algorithm Rankings (500k steps):")

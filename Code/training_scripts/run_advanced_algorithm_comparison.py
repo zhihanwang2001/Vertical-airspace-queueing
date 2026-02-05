@@ -1,6 +1,5 @@
 """
 Advanced DRL Algorithm Comparison Experiments
-Advanced DRL Algorithm Comparison Experiments
 
 Run comparison of latest algorithms like Rainbow DQN, IMPALA, R2D2, SAC v2, TD7 with existing baselines
 For large-scale experimental validation in CCF B journal paper
@@ -28,23 +27,23 @@ from advanced_algorithms import (
 
 class AdvancedAlgorithmComparisonRunner:
     """Advanced algorithm comparison experiment runner"""
-    
+
     def __init__(self, save_dir: str = "../../Results/comparison/"):
         self.save_dir = save_dir
         os.makedirs(save_dir, exist_ok=True)
-        
+
         # Available advanced algorithms
         self.advanced_algorithms = get_available_algorithms()
-        
-        # Existing baseline algorithms (for comparison)
+
+        # Existing baseline algorithms for comparison
         self.baseline_algorithms = [
             'SB3_PPO',   # 4399
-            'SB3_TD3',   # 4255  
+            'SB3_TD3',   # 4255
             'SB3_A2C',   # 1721
             'SB3_SAC',   # baseline
             'SB3_DDPG'   # baseline
         ]
-        
+
         print(f"Advanced Algorithm Comparison Runner initialized")
         print(f"   Save directory: {save_dir}")
         
@@ -55,7 +54,7 @@ class AdvancedAlgorithmComparisonRunner:
                                          n_runs: int = 1) -> Dict:
         """
         Run advanced algorithm comparison experiment
-        
+
         Args:
             algorithms: List of algorithms to test
             total_timesteps: Training steps per algorithm
@@ -63,8 +62,8 @@ class AdvancedAlgorithmComparisonRunner:
             n_runs: Number of runs per algorithm
         """
         if algorithms is None:
-            # Only test implemented algorithms
-            algorithms = [name for name, info in self.advanced_algorithms.items() 
+            # Test only implemented algorithms
+            algorithms = [name for name, info in self.advanced_algorithms.items()
                          if info['status'] == 'implemented']
         
         print(f"\nStarting Advanced DRL Algorithm Comparison")
@@ -88,16 +87,16 @@ class AdvancedAlgorithmComparisonRunner:
                 try:
                     # Create algorithm baseline
                     baseline = create_algorithm_baseline(algorithm_name)
-                    
+
                     # Train
                     train_start = time.time()
                     train_results = baseline.train(
                         total_timesteps=total_timesteps,
-                        eval_freq=total_timesteps // 10,  # 10 evaluations
-                        save_freq=total_timesteps // 4    # 4 saves
+                        eval_freq=total_timesteps // 10,  # 10 evaluation checkpoints
+                        save_freq=total_timesteps // 4    # 4 save checkpoints
                     )
                     train_time = time.time() - train_start
-                    
+
                     # Evaluate
                     eval_results = baseline.evaluate(
                         n_episodes=n_eval_episodes,
@@ -167,15 +166,15 @@ class AdvancedAlgorithmComparisonRunner:
                                    include_baselines: bool = True) -> Dict:
         """
         Run comprehensive comparison experiment including baseline algorithms
-        
+
         Args:
             total_timesteps: Training steps
             n_eval_episodes: Number of evaluation episodes
             include_baselines: Whether to include existing baseline algorithms
         """
         print(f"\nRunning Comprehensive Algorithm Comparison")
-        
-        # Advanced algorithm results
+
+        # Run advanced algorithm experiments
         advanced_results = self.run_advanced_algorithms_comparison(
             algorithms=None,  # All implemented algorithms
             total_timesteps=total_timesteps,
@@ -188,14 +187,14 @@ class AdvancedAlgorithmComparisonRunner:
             'baseline_algorithms': {}
         }
         
-        # If including baseline algorithms, run existing comparison experiments
+        # Include baseline algorithms if requested
         if include_baselines:
             print(f"\nRunning baseline algorithms for comparison...")
-            
+
             # Create environment
             env = DRLOptimizedQueueEnvFixed()
             baseline_runner = ComparisonRunner(env, save_dir=f"{self.save_dir}/baselines/")
-            
+
             try:
                 baseline_results = baseline_runner.run_comparison(
                     algorithms=self.baseline_algorithms,
@@ -204,7 +203,7 @@ class AdvancedAlgorithmComparisonRunner:
                     n_runs=1
                 )
                 comprehensive_results['baseline_algorithms'] = baseline_results
-                
+
             except Exception as e:
                 print(f"Warning: Baseline comparison failed: {str(e)}")
                 comprehensive_results['baseline_algorithms'] = {}
@@ -215,41 +214,40 @@ class AdvancedAlgorithmComparisonRunner:
         return comprehensive_results
     
     def _save_comparison_results(self, results: Dict, total_time: float, config: Dict):
-        """Save comparison results"""
+        """Save comparison results to JSON file"""
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        
-        # JSON results
+
+        # Prepare JSON results
         result_data = {
             'results': results,
             'total_time': total_time,
             'config': config,
             'timestamp': timestamp
         }
-        
+
         json_path = f"{self.save_dir}/advanced_comparison_{timestamp}.json"
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(result_data, f, indent=2, default=str, ensure_ascii=False)
-        
+
         print(f"Results saved to: {json_path}")
     
     def _generate_comparison_report(self, results: Dict):
-        """Generate comparison report"""
+        """Generate comparison report in markdown format"""
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         report_path = f"{self.save_dir}/advanced_comparison_report_{timestamp}.md"
-        
+
         with open(report_path, 'w', encoding='utf-8') as f:
-            f.write("# Advanced DRL Algorithm Comparison Report\n")
             f.write("# Advanced DRL Algorithm Comparison Report\n\n")
             
             f.write(f"**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"**Number of algorithms tested**: {len(results)}\n\n")
             
-            # Results summary table
+            # Performance comparison table
             f.write("## Algorithm Performance Comparison\n\n")
             f.write("| Algorithm | Mean Reward | Std Dev | Training Time(s) | Status |\n")
             f.write("|-----------|-------------|---------|------------------|--------|\n")
-            
-            # Collect all results for sorting
+
+            # Collect results for sorting
             algorithm_summaries = []
             
             for algorithm_name, algorithm_results in results.items():
@@ -307,20 +305,19 @@ class AdvancedAlgorithmComparisonRunner:
         print(f"Report generated: {report_path}")
     
     def _generate_comprehensive_report(self, results: Dict):
-        """Generate comprehensive comparison report (including baseline algorithms)"""
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S') 
+        """Generate comprehensive comparison report including baseline algorithms"""
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         report_path = f"{self.save_dir}/comprehensive_report_{timestamp}.md"
-        
+
         with open(report_path, 'w', encoding='utf-8') as f:
-            f.write("# Advanced vs Baseline Algorithms Comprehensive Report\n")
             f.write("# Advanced vs Baseline Algorithms Comprehensive Report\n\n")
             
             f.write(f"**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
             
-            # Get performance data for all algorithms
+            # Collect performance data for all algorithms
             all_algorithms = []
-            
-            # Advanced algorithms
+
+            # Process advanced algorithms
             for name, algorithm_results in results.get('advanced_algorithms', {}).items():
                 if algorithm_results:
                     mean_rewards = [r['eval_results']['mean_reward'] for r in algorithm_results]
@@ -330,11 +327,11 @@ class AdvancedAlgorithmComparisonRunner:
                         'reward': np.mean(mean_rewards),
                         'std': np.std(mean_rewards)
                     })
-            
-            # Baseline algorithms (from existing results)
+
+            # Baseline algorithm performance from previous experiments
             baseline_performance = {
                 'SB3_PPO': 4399,
-                'SB3_TD3': 4255, 
+                'SB3_TD3': 4255,
                 'SB3_A2C': 1721
             }
             
