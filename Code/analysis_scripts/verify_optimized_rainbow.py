@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-验证优化后的Rainbow DQN是否会被run_advanced_algorithm_comparison.py正确调用
+Verify that optimized Rainbow DQN will be correctly called by run_advanced_algorithm_comparison.py
 """
 
 import sys
@@ -10,45 +10,45 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from advanced_algorithms import create_algorithm_baseline
 
 def verify_optimized_rainbow():
-    """验证优化后的Rainbow DQN配置"""
-    print("🔍 验证优化后的Rainbow DQN是否会被正确调用...")
-    
-    # 模拟run_advanced_algorithm_comparison.py的调用方式
-    print("\n1️⃣ 模拟脚本调用: create_algorithm_baseline('rainbow_dqn')")
+    """Verify optimized Rainbow DQN configuration"""
+    print("🔍 Verifying if optimized Rainbow DQN will be correctly called...")
+
+    # Simulate run_advanced_algorithm_comparison.py call method
+    print("\n1️⃣ Simulating script call: create_algorithm_baseline('rainbow_dqn')")
     baseline = create_algorithm_baseline("rainbow_dqn")
-    
-    # 检查配置
+
+    # Check configuration
     config = baseline.config
-    print(f"\n📋 获取到的配置:")
-    
-    # 检查关键优化参数
+    print(f"\n📋 Retrieved configuration:")
+
+    # Check key optimization parameters
     optimizations = {
-        "学习率": (config['learning_rate'], 1e-4, "6.25e-5 → 1e-4"),
-        "目标网络更新": (config['target_update_freq'], 2000, "8000 → 2000"),
-        "学习启动": (config['learning_starts'], 5000, "50000 → 5000"),
+        "Learning rate": (config['learning_rate'], 1e-4, "6.25e-5 → 1e-4"),
+        "Target network update": (config['target_update_freq'], 2000, "8000 → 2000"),
+        "Learning starts": (config['learning_starts'], 5000, "50000 → 5000"),
         "Multi-step": (config['n_step'], 10, "3 → 10"),
-        "缓冲区大小": (config['buffer_size'], 200000, "1M → 200k")
+        "Buffer size": (config['buffer_size'], 200000, "1M → 200k")
     }
-    
+
     all_correct = True
     for param_name, (actual, expected, change) in optimizations.items():
         status = "✅" if actual == expected else "❌"
         if actual != expected:
             all_correct = False
-        print(f"   {status} {param_name}: {actual} (期望: {expected}) - {change}")
-    
-    print(f"\n2️⃣ 验证结果:")
+        print(f"   {status} {param_name}: {actual} (expected: {expected}) - {change}")
+
+    print(f"\n2️⃣ Verification result:")
     if all_correct:
-        print("✅ 所有优化参数都正确！")
-        print("✅ run_advanced_algorithm_comparison.py 会使用优化后的配置")
+        print("✅ All optimization parameters are correct!")
+        print("✅ run_advanced_algorithm_comparison.py will use optimized configuration")
     else:
-        print("❌ 配置不正确，需要检查")
+        print("❌ Configuration incorrect, needs checking")
         return False
-    
-    print(f"\n3️⃣ 训练命令验证:")
-    print("命令: python run_advanced_algorithm_comparison.py --algorithms rainbow_dqn --timesteps 500000 --eval-episodes 5")
-    print("✅ 该命令会自动使用优化后的Rainbow DQN配置")
-    
+
+    print(f"\n3️⃣ Training command verification:")
+    print("Command: python run_advanced_algorithm_comparison.py --algorithms rainbow_dqn --timesteps 500000 --eval-episodes 5")
+    print("✅ This command will automatically use optimized Rainbow DQN configuration")
+
     return True
 
 if __name__ == "__main__":

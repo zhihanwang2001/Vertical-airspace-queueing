@@ -200,8 +200,8 @@ ax_lr.ticklabel_format(axis='y', style='scientific', scilimits=(0,0))
 
 plt.tight_layout()
 plt.savefig('../../Figures/analysis/a2c_v3_detailed_analysis.png', dpi=300, bbox_inches='tight')
-print("✅ A2C v3Detailed analysis plot saved: a2c_v3_detailed_analysis.png")
+print("✅ A2C v3 detailed analysis plot saved: a2c_v3_detailed_analysis.png")
 
 print("\n📊 Plots generated:")
-print("  1. optimization_training_curves.png - 四算法Comparison图")
-print("  2. a2c_v3_detailed_analysis.png - A2C v3Learning Rate分析图")
+print("  1. optimization_training_curves.png - Four algorithms comparison")
+print("  2. a2c_v3_detailed_analysis.png - A2C v3 learning rate analysis")

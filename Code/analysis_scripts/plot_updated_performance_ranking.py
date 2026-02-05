@@ -151,10 +151,10 @@ ax.legend(handles=legend_elements, loc='lower right', fontsize=11, framealpha=0.
 
 plt.tight_layout()
 plt.savefig('../../Figures/analysis/figure1_performance_ranking.png', dpi=300, bbox_inches='tight')
-print("✅ 性能排名图已Update保存: figure1_performance_ranking.png")
+print("✅ Performance ranking figure updated and saved: figure1_performance_ranking.png")
 
 # ================================
-# 额外：绘制Top tieralgorithms详细对比图
+# Extra: Plot Top tier algorithms detailed comparison
 # ================================
 fig2, ax2 = plt.subplots(figsize=(12, 8))
 
@@ -171,8 +171,8 @@ bars = ax2.bar(x_pos, top_means, yerr=top_stds, color=top_colors,
 # Set labels
 ax2.set_xticks(x_pos)
 ax2.set_xticklabels(top_algorithms, fontsize=13, fontweight='bold')
-ax2.set_ylabel('Average Reward (Average Reward)', fontsize=14, fontweight='bold')
-ax2.set_title('Top tieralgorithms详细对比 (Top-Tier Algorithms Comparison)\nA2C-v3 vs PPO vs TD7 vs R2D2 vs SAC-v2',
+ax2.set_ylabel('Average Reward', fontsize=14, fontweight='bold')
+ax2.set_title('Top Tier Algorithms Detailed Comparison\nA2C-v3 vs PPO vs TD7 vs R2D2 vs SAC-v2',
               fontsize=15, fontweight='bold', pad=20)
 
 # Add value labels
@@ -197,8 +197,8 @@ for i, time in enumerate(train_times):
 
 plt.tight_layout()
 plt.savefig('../../Figures/analysis/figure1_top_tier_comparison.png', dpi=300, bbox_inches='tight')
-print("✅ Top tier对比图已保存: figure1_top_tier_comparison.png")
+print("✅ Top tier comparison figure saved: figure1_top_tier_comparison.png")
 
 print("\n📊 Plots generated:")
-print("  1. figure1_performance_ranking.png - Complete performance ranking (15algorithms)")
-print("  2. figure1_top_tier_comparison.png - Top tier详细对比 (5algorithms)")
+print("  1. figure1_performance_ranking.png - Complete performance ranking (15 algorithms)")
+print("  2. figure1_top_tier_comparison.png - Top tier detailed comparison (5 algorithms)")
