@@ -1,15 +1,14 @@
 """
-TD7跨区域泛化性测试脚本
 TD7 Cross-Region Generalization Test Script
 
-🎯 核心目标：验证TD7模型在不同异质性区域的泛化能力
-⚠️  重要：这不是mock测试，使用真实的环境运行和模型推理！
+Core Objective: Verify TD7 model's generalization ability across different heterogeneous regions
+Important: This is not a mock test - it uses real environment execution and model inference!
 
-测试逻辑：
-1. 加载已训练的TD7模型（./models/td7/td7_model_500000.pt）
-2. 在5个不同的heterogeneous region中测试
-3. 每个region运行10个episode获取真实性能数据
-4. 记录详细的性能指标和环境配置
+Test Logic:
+1. Load trained TD7 model (./models/td7/td7_model_500000.pt)
+2. Test in 5 different heterogeneous regions
+3. Run 10 episodes per region to obtain real performance data
+4. Record detailed performance metrics and environment configurations
 """
 
 import sys
@@ -23,14 +22,14 @@ from pathlib import Path
 from typing import Dict, List
 import time
 
-# 导入基线算法
+# Import baseline algorithms
 from algorithms.advanced.td7.td7_baseline import TD7Baseline
 
-# 导入环境和配置
+# Import environment and configuration
 from env.configurable_env_wrapper import ConfigurableEnvWrapper
 from algorithms.baselines.space_utils import SB3DictWrapper
 
-# 导入异质性配置生成器
+# Import heterogeneous configuration generator
 import importlib.util
 spec = importlib.util.spec_from_file_location(
     "heterogeneous_configs",
@@ -44,58 +43,58 @@ HeterogeneousRegionConfigs = heterogeneous_configs.HeterogeneousRegionConfigs
 
 def test_td7_in_region(td7_baseline, config, region_name: str, n_episodes: int = 10, verbose: bool = True):
     """
-    在指定区域测试TD7模型
+    Test TD7 model in specified region
 
     Args:
-        td7_baseline: 已加载模型的TD7Baseline实例
-        config: VerticalQueueConfig配置
-        region_name: 区域名称
-        n_episodes: 测试episode数量
-        verbose: 是否打印详细信息
+        td7_baseline: TD7Baseline instance with loaded model
+        config: VerticalQueueConfig configuration
+        region_name: Region name
+        n_episodes: Number of test episodes
+        verbose: Whether to print detailed information
 
     Returns:
-        dict: 测试结果
+        dict: Test results
     """
     if verbose:
         print(f"\n{'='*80}")
-        print(f"测试区域: {region_name}")
+        print(f"Testing region: {region_name}")
         print(f"{'='*80}")
 
-    # 创建该区域的环境
+    # Create environment for this region
     base_env = ConfigurableEnvWrapper(config)
     eval_env = SB3DictWrapper(base_env)
 
-    # 记录结果
+    # Record results
     episode_rewards = []
     episode_lengths = []
     episode_details = []
 
-    # 运行n_episodes个episode
+    # Run n_episodes episodes
     for episode in range(n_episodes):
         obs, info = eval_env.reset()
         episode_reward = 0
         episode_length = 0
         done = False
 
-        # 运行一个完整的episode
+        # Run a complete episode
         while not done:
-            # 使用TD7模型预测动作（确定性策略）
+            # Use TD7 model to predict action (deterministic policy)
             action = td7_baseline.agent.act(obs, training=False)
 
-            # 执行动作
+            # Execute action
             obs, reward, terminated, truncated, info = eval_env.step(action)
             done = terminated or truncated
 
             episode_reward += reward
             episode_length += 1
 
-            # 防止无限循环
+            # Prevent infinite loop
             if episode_length >= 1000:
                 if verbose:
-                    print(f"  ⚠️  Episode {episode+1} 达到最大步数限制 (1000)")
+                    print(f"  Warning: Episode {episode+1} reached maximum step limit (1000)")
                 break
 
-        # 记录结果
+        # Record results
         episode_rewards.append(episode_reward)
         episode_lengths.append(episode_length)
         episode_details.append({
@@ -107,7 +106,7 @@ def test_td7_in_region(td7_baseline, config, region_name: str, n_episodes: int =
         if verbose:
             print(f"  Episode {episode+1}/{n_episodes}: Reward = {episode_reward:.2f}, Length = {episode_length}")
 
-    # 计算统计结果
+    # Calculate statistics
     mean_reward = np.mean(episode_rewards)
     std_reward = np.std(episode_rewards)
     mean_length = np.mean(episode_lengths)
@@ -125,61 +124,60 @@ def test_td7_in_region(td7_baseline, config, region_name: str, n_episodes: int =
     }
 
     if verbose:
-        print(f"\n📊 {region_name} 测试结果:")
-        print(f"   平均奖励: {mean_reward:.2f} ± {std_reward:.2f}")
-        print(f"   平均长度: {mean_length:.1f}")
-        print(f"   配置摘要: 到达率={results['config_summary']['base_arrival_rate']:.3f}, "
-              f"容量={results['config_summary']['total_capacity']}")
+        print(f"\nTest results for {region_name}:")
+        print(f"   Mean reward: {mean_reward:.2f} ± {std_reward:.2f}")
+        print(f"   Mean length: {mean_length:.1f}")
+        print(f"   Config summary: arrival_rate={results['config_summary']['base_arrival_rate']:.3f}, "
+              f"capacity={results['config_summary']['total_capacity']}")
 
-    # 清理环境
+    # Clean up environment
     eval_env.close()
 
     return results
 
 
 def main():
-    """主函数：测试TD7在所有异质性区域的泛化性能"""
+    """Main function: Test TD7 generalization performance across all heterogeneous regions"""
 
     print("\n" + "="*80)
-    print("TD7 跨区域泛化性测试")
-    print("Cross-Region Generalization Test for TD7")
+    print("TD7 Cross-Region Generalization Test")
     print("="*80 + "\n")
 
-    # ========== 第1步：加载训练好的TD7模型 ==========
-    print("第1步：加载训练好的TD7模型")
+    # ========== Step 1: Load trained TD7 model ==========
+    print("Step 1: Load trained TD7 model")
     print("-"*80)
 
     model_path = "../../Models/td7/td7_model_500000.pt"
 
     if not os.path.exists(model_path):
-        print(f"❌ 错误：找不到TD7模型文件 {model_path}")
-        print("   请先训练TD7模型！")
+        print(f"❌ Error: TD7 model file not found {model_path}")
+        print("   Please train TD7 model first!")
         return
 
-    print(f"📂 加载模型: {model_path}")
-    print(f"   文件大小: {os.path.getsize(model_path) / (1024*1024):.1f} MB")
+    print(f"📂 Loading model: {model_path}")
+    print(f"   File size: {os.path.getsize(model_path) / (1024*1024):.1f} MB")
 
-    # 创建TD7 baseline并加载模型
+    # Create TD7 baseline and load model
     td7 = TD7Baseline()
     td7.load(model_path)
 
-    print("✅ TD7模型加载成功！")
+    print("✅ TD7 model loaded successfully!")
 
-    # ========== 第2步：创建异质性区域配置 ==========
-    print("\n第2步：创建异质性区域配置")
+    # ========== Step 2: Create heterogeneous region configurations ==========
+    print("\nStep 2: Create heterogeneous region configurations")
     print("-"*80)
 
     config_generator = HeterogeneousRegionConfigs()
     all_configs = config_generator.get_all_configs()
 
-    print(f"✅ 已创建 {len(all_configs)} 个区域配置:")
+    print(f"✅ Created {len(all_configs)} region configurations:")
     for region_name in all_configs.keys():
         print(f"   - {region_name}")
 
-    # ========== 第3步：在每个区域运行测试 ==========
-    print("\n第3步：在每个区域运行泛化测试")
+    # ========== Step 3: Run tests in each region ==========
+    print("\nStep 3: Run generalization tests in each region")
     print("-"*80)
-    print("⚠️  这是真实测试，不是mock数据！每个区域将运行10个完整episode")
+    print("⚠️  This is a real test, not mock data! Each region will run 10 complete episodes")
 
     all_results = {}
     n_episodes_per_region = 10
@@ -198,12 +196,12 @@ def main():
 
     total_time = time.time() - start_time
 
-    # ========== 第4步：汇总结果 ==========
+    # ========== Step 4: Summarize results ==========
     print("\n" + "="*80)
-    print("测试完成！汇总结果")
+    print("Testing completed! Summary of results")
     print("="*80 + "\n")
 
-    print(f"{'区域':<30} {'平均奖励':<20} {'标准差':<15} {'平均长度':<15}")
+    print(f"{'Region':<30} {'Mean Reward':<20} {'Std Dev':<15} {'Mean Length':<15}")
     print("-"*80)
 
     baseline_reward = None
@@ -212,11 +210,11 @@ def main():
         std_reward = results['std_reward']
         mean_length = results['mean_length']
 
-        # 记录baseline（Region A）的性能
+        # Record baseline (Region A) performance
         if 'Standard' in region_name:
             baseline_reward = mean_reward
 
-        # 计算与baseline的差异百分比
+        # Calculate difference percentage from baseline
         if baseline_reward is not None and 'Standard' not in region_name:
             diff_pct = ((mean_reward - baseline_reward) / baseline_reward) * 100
             diff_str = f"({diff_pct:+.1f}%)"
@@ -226,18 +224,18 @@ def main():
         print(f"{region_name:<30} {mean_reward:<20.2f} {std_reward:<15.2f} {mean_length:<15.1f} {diff_str}")
 
     print("\n" + "-"*80)
-    print(f"总测试时间: {total_time:.1f}秒")
-    print(f"总episode数: {len(all_configs) * n_episodes_per_region}")
+    print(f"Total test time: {total_time:.1f} seconds")
+    print(f"Total episodes: {len(all_configs) * n_episodes_per_region}")
 
-    # ========== 第5步：保存结果 ==========
-    print("\n第5步：保存测试结果")
+    # ========== Step 5: Save results ==========
+    print("\nStep 5: Save test results")
     print("-"*80)
 
-    # 创建保存目录
+    # Create save directory
     save_dir = Path("../../Results/generalization")
     save_dir.mkdir(exist_ok=True)
 
-    # 保存详细结果
+    # Save detailed results
     results_file = save_dir / "td7_generalization_results.json"
 
     full_results = {
@@ -251,9 +249,9 @@ def main():
     with open(results_file, 'w', encoding='utf-8') as f:
         json.dump(full_results, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ 详细结果已保存到: {results_file}")
+    print(f"✅ Detailed results saved to: {results_file}")
 
-    # 保存汇总表格（CSV格式）
+    # Save summary table (CSV format)
     summary_file = save_dir / "td7_generalization_summary.csv"
     import csv
 
@@ -275,13 +273,13 @@ def main():
                 f"{diff_pct:+.1f}%"
             ])
 
-    print(f"✅ 汇总表格已保存到: {summary_file}")
+    print(f"✅ Summary table saved to: {summary_file}")
 
     print("\n" + "="*80)
-    print("✅ TD7 泛化性测试全部完成！")
+    print("✅ TD7 generalization testing completed!")
     print("="*80 + "\n")
 
-    print("📌 关键发现:")
+    print("📌 Key findings:")
     print(f"   1. Region A (Baseline): {all_results['Region_A_Standard']['mean_reward']:.2f} ± {all_results['Region_A_Standard']['std_reward']:.2f}")
 
     if baseline_reward:
@@ -290,10 +288,10 @@ def main():
                 diff_pct = ((results['mean_reward'] - baseline_reward) / baseline_reward) * 100
                 print(f"   - {region_name}: {results['mean_reward']:.2f} ({diff_pct:+.1f}%)")
 
-    print("\n💡 下一步：")
-    print("   1. 查看详细结果: cat generalization_results/td7_generalization_results.json")
-    print("   2. 对比A2C和PPO的泛化性能")
-    print("   3. 绘制可视化图表")
+    print("\n💡 Next steps:")
+    print("   1. View detailed results: cat generalization_results/td7_generalization_results.json")
+    print("   2. Compare A2C and PPO generalization performance")
+    print("   3. Create visualization charts")
 
 
 if __name__ == "__main__":

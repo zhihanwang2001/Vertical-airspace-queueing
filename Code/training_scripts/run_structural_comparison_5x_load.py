@@ -1,30 +1,29 @@
 """
-实验A: 5× 负载结构对比实验 (CRITICAL)
 Experiment A: Structural Comparison at 5× Load (CRITICAL)
 
-问题背景：
-- 补充实验(n=3) @ 10×负载全部崩溃 (crash_rate=100%)
-- 原因: 10×负载过于极端，倒金字塔底层 ρ=345%，DRL无法学习有效策略
-- 影响: 无法验证"倒金字塔优于正金字塔"的核心claim
+Background:
+- Supplementary experiments (n=3) @ 10× load all crashed (crash_rate=100%)
+- Reason: 10× load too extreme, inverted pyramid bottom layer ρ=345%, DRL cannot learn effective policy
+- Impact: Cannot verify core claim "inverted pyramid superior to normal pyramid"
 
-解决方案：
-- 降低负载至5×倍 (ρ≈172% - 具有挑战性但可学习)
-- 只运行结构对比实验 (不含容量悖论)
-- 保持其他参数与原实验一致
+Solution:
+- Reduce load to 5× (ρ≈172% - challenging but learnable)
+- Only run structural comparison experiments (no capacity paradox)
+- Keep other parameters consistent with original experiments
 
-实验设计：
+Experimental Design:
 - Config 1: Inverted Pyramid [8,6,4,3,2] @ 5× load
 - Config 2: Normal Pyramid [2,3,4,6,8] @ 5× load
 - Algorithms: A2C, PPO
 - Seeds: 42 (existing), 123, 456 (new)
 
-总计: 12 training runs
-- 2 configs × 2 algorithms × 3 seeds = 12
+Default total: 12 training runs (can be extended via --seeds / --n-seeds)
+- 2 configs × 2 algorithms × N seeds
 
-预期结果：
-- 倒金字塔应显著优于正金字塔
-- Crash rate < 50% (可接受的训练稳定性)
-- 提供n=3统计显著性检验
+Expected Results:
+- Inverted pyramid should significantly outperform normal pyramid
+- Crash rate < 50% (acceptable training stability)
+- Provide n=3 statistical significance test
 """
 
 import sys
@@ -48,38 +47,40 @@ from env.drl_wrapper_fixed import DictToBoxActionWrapperFixed, ObservationWrappe
 
 def create_config(config_type='inverted_pyramid', high_load_multiplier=5.0):
     """
-    创建高负载配置
+    Create high load configuration
 
-    config_type: 配置类型
-    - inverted_pyramid: [8,6,4,3,2] 倒金字塔
-    - normal_pyramid: [2,3,4,6,8] 正金字塔
-    - low_capacity: [2,2,2,2,2] K=10
-    - capacity_30: [6,6,6,6,6] K=30
+    Args:
+        config_type: Configuration type
+            - inverted_pyramid: [8,6,4,3,2] Inverted pyramid
+            - normal_pyramid: [2,3,4,6,8] Normal pyramid
+            - low_capacity: [2,2,2,2,2] K=10
+            - capacity_30: [6,6,6,6,6] K=30
+        high_load_multiplier: Load multiplier (default 5.0)
     """
     config = VerticalQueueConfig()
 
-    # 设置容量
+    # Set capacity
     if config_type == 'inverted_pyramid':
-        config.layer_capacities = [8, 6, 4, 3, 2]  # 总23
+        config.layer_capacities = [8, 6, 4, 3, 2]  # Total 23
     elif config_type == 'normal_pyramid':
-        config.layer_capacities = [2, 3, 4, 6, 8]  # 总23
+        config.layer_capacities = [2, 3, 4, 6, 8]  # Total 23
     elif config_type == 'low_capacity':
-        config.layer_capacities = [2, 2, 2, 2, 2]  # 总10 (K=10)
+        config.layer_capacities = [2, 2, 2, 2, 2]  # Total 10 (K=10)
     elif config_type == 'capacity_30':
-        config.layer_capacities = [6, 6, 6, 6, 6]  # 总30 (K=30)
+        config.layer_capacities = [6, 6, 6, 6, 6]  # Total 30 (K=30)
     else:
         raise ValueError(f"Unknown config type: {config_type}")
 
-    # 固定真实UAM流量模式
+    # Fixed real UAM traffic pattern
     config.arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]
 
-    # 高负载设置 (5x - 降低自10x以改善训练稳定性)
+    # High load setting (5x - reduced from 10x to improve training stability)
     total_capacity = sum(config.layer_capacities)
     avg_service_rate = np.mean(config.layer_service_rates)
     base_rate_v3 = 0.75 * total_capacity * avg_service_rate / 5
-    config.base_arrival_rate = base_rate_v3 * high_load_multiplier  # 默认5.0×
+    config.base_arrival_rate = base_rate_v3 * high_load_multiplier  # Default 5.0×
 
-    # 计算每层的理论负载
+    # Calculate theoretical load per layer
     layer_loads = []
     for i, (w, c) in enumerate(zip(config.arrival_weights, config.layer_capacities)):
         layer_arrival = config.base_arrival_rate * w
@@ -88,18 +89,18 @@ def create_config(config_type='inverted_pyramid', high_load_multiplier=5.0):
         layer_loads.append(layer_load)
 
     print(f"\n{'='*80}")
-    print(f"配置: {config_type}")
-    print(f"容量: {config.layer_capacities} (总计: {total_capacity})")
-    print(f"到达权重: {config.arrival_weights}")
-    print(f"总到达率: {config.base_arrival_rate:.2f} ({high_load_multiplier:.1f}x高负载)")
-    print(f"平均负载: {np.mean(layer_loads)*100:.1f}%")
+    print(f"Configuration: {config_type}")
+    print(f"Capacity: {config.layer_capacities} (Total: {total_capacity})")
+    print(f"Arrival weights: {config.arrival_weights}")
+    print(f"Total arrival rate: {config.base_arrival_rate:.2f} ({high_load_multiplier:.1f}x high load)")
+    print(f"Average load: {np.mean(layer_loads)*100:.1f}%")
     print(f"{'='*80}\n")
 
     return config
 
 
 def create_wrapped_env(config):
-    """创建包装后的环境"""
+    """Create wrapped environment"""
     base_env = ConfigurableEnvWrapper(config=config)
     wrapped_env = DictToBoxActionWrapperFixed(base_env)
     wrapped_env = ObservationWrapperFixed(wrapped_env)
@@ -110,32 +111,32 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
                        timesteps=100000, eval_episodes=50, seed=42,
                        high_load_multiplier=5.0):
     """
-    训练和评估单次实验 @ 5× 负载
+    Train and evaluate single experiment at 5× load
 
-    参数:
-    - algorithm_name: 'A2C' or 'PPO'
-    - config_type: 配置类型 (inverted_pyramid 或 normal_pyramid)
-    - timesteps: 训练步数 (默认100K)
-    - eval_episodes: 评估回合数 (默认50)
-    - seed: 随机种子
-    - high_load_multiplier: 高负载倍数 (默认5x - 降低自10x)
+    Args:
+        algorithm_name: 'A2C' or 'PPO'
+        config_type: Configuration type (inverted_pyramid or normal_pyramid)
+        timesteps: Training steps (default 100K)
+        eval_episodes: Evaluation episodes (default 50)
+        seed: Random seed
+        high_load_multiplier: High load multiplier (default 5x - reduced from 10x)
     """
 
     print(f"\n{'='*80}")
-    print(f"实验: {algorithm_name} + {config_type}")
+    print(f"Experiment: {algorithm_name} + {config_type}")
     print(f"Seed: {seed}")
     print(f"{'='*80}\n")
 
     config = create_config(config_type, high_load_multiplier)
     env = create_wrapped_env(config)
 
-    # 保存路径: Data/ablation_studies/structural_5x_load/{config_type}/{algorithm}_{seed}_results.json
+    # Save path: Data/ablation_studies/structural_5x_load/{config_type}/{algorithm}_{seed}_results.json
     save_dir = Path(project_root).parent / 'Data' / 'ablation_studies' / 'structural_5x_load' / config_type
     save_dir.mkdir(parents=True, exist_ok=True)
 
     start_time = time.time()
 
-    # 创建模型
+    # Create model
     if algorithm_name == 'A2C':
         model = A2C('MlpPolicy', env, learning_rate=0.0007, n_steps=32,
                    gamma=0.99, gae_lambda=0.95, ent_coef=0.01, vf_coef=0.5,
@@ -149,22 +150,28 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
     else:
         raise ValueError(f"Unknown algorithm: {algorithm_name}")
 
-    print(f"\n开始训练 ({timesteps} timesteps)...")
+    print(f"\nStarting training ({timesteps} timesteps)...")
     model.learn(total_timesteps=timesteps)
     training_time = time.time() - start_time
 
-    # 保存模型
+    # Save model
     model_path = save_dir / f'{algorithm_name}_seed{seed}_model.zip'
     model.save(str(model_path))
 
-    # 评估
-    print(f"\n评估 ({eval_episodes} 回合)...")
+    # Evaluation
+    print(f"\nEvaluation ({eval_episodes} episodes)...")
     eval_rewards = []
     eval_lengths = []
-    eval_terminated_count = 0  # 真实崩溃
-    eval_truncated_count = 0   # 正常截断
+    eval_terminated_count = 0  # Real crashes
+    eval_truncated_count = 0   # Normal truncation
     eval_waiting_times = []
     eval_utilizations = []
+    # Stability proxy metrics (mean per episode)
+    ep_means_lyapunov = []
+    ep_means_lyapunov_drift = []
+    ep_means_drift_l1 = []
+    ep_safe_ratios = []
+    ep_means_max_load = []
 
     for ep in range(eval_episodes):
         obs, info = env.reset()
@@ -191,16 +198,29 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
                 ep_waiting.append(info['avg_waiting_time'])
             if 'utilization_rates' in info:
                 ep_utils.append(np.mean(info['utilization_rates']))
+            # Collect stability proxy metrics
+            if isinstance(info, dict):
+                if 'lyapunov' in info:
+                    ep_means_lyapunov.append(info['lyapunov'])
+                if 'lyapunov_drift' in info:
+                    ep_means_lyapunov_drift.append(info['lyapunov_drift'])
+                if 'drift_l1' in info:
+                    ep_means_drift_l1.append(info['drift_l1'])
+                if 'is_safe' in info:
+                    # Average boolean as safety ratio contribution
+                    ep_safe_ratios.append(1.0 if info['is_safe'] else 0.0)
+                if 'max_load_rate' in info:
+                    ep_means_max_load.append(info['max_load_rate'])
 
         eval_rewards.append(ep_reward)
         eval_lengths.append(ep_len)
 
         if episode_terminated:
             eval_terminated_count += 1
-            crash_marker = " 🔴[CRASHED]"
+            crash_marker = " [CRASHED]"
         elif episode_truncated:
             eval_truncated_count += 1
-            crash_marker = " ✅[完成]"
+            crash_marker = " [COMPLETED]"
         else:
             crash_marker = ""
 
@@ -210,9 +230,9 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
             eval_utilizations.append(np.mean(ep_utils))
 
         if (ep + 1) % 10 == 0:
-            print(f"  Episode {ep+1}: {ep_reward:.2f} (长度{ep_len}){crash_marker}")
+            print(f"  Episode {ep+1}: {ep_reward:.2f} (length {ep_len}){crash_marker}")
 
-    # 统计结果
+    # Statistical results
     mean_reward = np.mean(eval_rewards)
     std_reward = np.std(eval_rewards)
     terminated_rate = eval_terminated_count / eval_episodes
@@ -221,17 +241,28 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
     mean_util = np.mean(eval_utilizations) if eval_utilizations else 0
     mean_length = np.mean(eval_lengths)
 
+    # Calculate stability proxy means (if exist)
+    def _safe_mean(arr):
+        return float(np.mean(arr)) if len(arr) > 0 else 0.0
+    stability_metrics = {
+        'mean_lyapunov': _safe_mean(ep_means_lyapunov),
+        'mean_lyapunov_drift': _safe_mean(ep_means_lyapunov_drift),
+        'mean_drift_l1': _safe_mean(ep_means_drift_l1),
+        'mean_safe_ratio': _safe_mean(ep_safe_ratios),
+        'mean_max_load_rate': _safe_mean(ep_means_max_load)
+    }
+
     print(f"\n{'='*80}")
-    print(f"评估结果:")
-    print(f"  平均奖励: {mean_reward:.2f} ± {std_reward:.2f}")
-    print(f"  最佳奖励: {np.max(eval_rewards):.2f}")
-    print(f"  🔴 崩溃率: {terminated_rate*100:.1f}% ({eval_terminated_count}/{eval_episodes})")
-    print(f"  ✅ 完成率: {truncated_rate*100:.1f}% ({eval_truncated_count}/{eval_episodes})")
-    print(f"  平均回合长度: {mean_length:.1f}")
-    print(f"  训练时间: {training_time/60:.2f}分钟")
+    print(f"Evaluation Results:")
+    print(f"  Mean reward: {mean_reward:.2f} +/- {std_reward:.2f}")
+    print(f"  Best reward: {np.max(eval_rewards):.2f}")
+    print(f"  Crash rate: {terminated_rate*100:.1f}% ({eval_terminated_count}/{eval_episodes})")
+    print(f"  Completion rate: {truncated_rate*100:.1f}% ({eval_truncated_count}/{eval_episodes})")
+    print(f"  Mean episode length: {mean_length:.1f}")
+    print(f"  Training time: {training_time/60:.2f} minutes")
     print(f"{'='*80}")
 
-    # 保存结果
+    # Save results
     results = {
         'config_type': config_type,
         'algorithm': algorithm_name,
@@ -257,46 +288,66 @@ def train_and_evaluate(algorithm_name='A2C', config_type='inverted_pyramid',
         'eval_lengths': [int(l) for l in eval_lengths],
         'timestamp': datetime.now().isoformat()
     }
+    results.update(stability_metrics)
 
     results_path = save_dir / f'{algorithm_name}_seed{seed}_results.json'
     with open(results_path, 'w') as f:
         json.dump(results, f, indent=2)
 
-    print(f"\n✅ 结果已保存至: {results_path}\n")
+    print(f"\nResults saved to: {results_path}\n")
 
     env.close()
     return results
 
 
-def run_all_supplementary_experiments():
+def _parse_seeds(seeds_arg: str = None, n_seeds: int = None) -> list:
+    """Parse seeds from CLI: comma-separated list or generate range starting at 42."""
+    if seeds_arg:
+        try:
+            return [int(s.strip()) for s in seeds_arg.split(',') if s.strip()]
+        except Exception:
+            print(f"Warning: Cannot parse --seeds={seeds_arg}, using default [42,123,456]")
+            return [42, 123, 456]
+    if n_seeds and n_seeds > 0:
+        return list(range(42, 42 + n_seeds))
+    return [42, 123, 456]
+
+
+def run_all_supplementary_experiments(seeds: list = None,
+                                      timesteps: int = 100000,
+                                      eval_episodes: int = 50,
+                                      high_load_multiplier: float = 5.0):
     """
-    运行实验A: 5× 负载结构对比 (12 runs)
+    Run Experiment A: 5× Load Structural Comparison (12 runs)
 
-    目标: 修复10×负载下的100%崩溃问题
+    Goal: Fix 100% crash issue at 10× load
 
-    实验矩阵:
+    Experiment Matrix:
     - Inverted Pyramid [8,6,4,3,2] vs Normal Pyramid [2,3,4,6,8]
     - Algorithms: A2C, PPO
     - Seeds: 42 (existing baseline), 123, 456 (new runs for n=3)
-    - Load: 5× (降低自10×以改善训练稳定性)
+    - Load: 5× (reduced from 10× to improve training stability)
     """
 
-    # 定义实验矩阵 - 只含结构对比
+    # Define experiment matrix - structural comparison only
+    if seeds is None:
+        seeds = [42, 123, 456]
+
     experiments = [
-        {'config': 'inverted_pyramid', 'algo': 'A2C', 'seeds': [42, 123, 456]},
-        {'config': 'inverted_pyramid', 'algo': 'PPO', 'seeds': [42, 123, 456]},
-        {'config': 'normal_pyramid', 'algo': 'A2C', 'seeds': [42, 123, 456]},
-        {'config': 'normal_pyramid', 'algo': 'PPO', 'seeds': [42, 123, 456]},
+        {'config': 'inverted_pyramid', 'algo': 'A2C', 'seeds': seeds},
+        {'config': 'inverted_pyramid', 'algo': 'PPO', 'seeds': seeds},
+        {'config': 'normal_pyramid', 'algo': 'A2C', 'seeds': seeds},
+        {'config': 'normal_pyramid', 'algo': 'PPO', 'seeds': seeds},
     ]
 
     total_experiments = sum(len(exp['seeds']) for exp in experiments)
     print(f"\n{'='*80}")
-    print(f"实验A: 5× 负载结构对比")
-    print(f"总计: {total_experiments} 次训练 (2 configs × 2 algos × 3 seeds)")
-    print(f"负载倍数: 5× (降低自10×以改善训练稳定性)")
+    print(f"Experiment A: 5× Load Structural Comparison")
+    print(f"Total: {total_experiments} training runs (2 configs × 2 algos × 3 seeds)")
+    print(f"Load multiplier: 5× (reduced from 10× to improve training stability)")
     print(f"{'='*80}")
 
-    # 运行实验
+    # Run experiments
     all_results = []
     completed = 0
 
@@ -308,28 +359,28 @@ def run_all_supplementary_experiments():
         for seed in seeds:
             completed += 1
             print(f"\n\n{'#'*80}")
-            print(f"进度: [{completed}/{total_experiments}] {config_type} + {algorithm} (seed={seed})")
+            print(f"Progress: [{completed}/{total_experiments}] {config_type} + {algorithm} (seed={seed})")
             print(f"{'#'*80}")
 
             try:
                 result = train_and_evaluate(
                     algorithm_name=algorithm,
                     config_type=config_type,
-                    timesteps=100000,
-                    eval_episodes=50,
+                    timesteps=timesteps,
+                    eval_episodes=eval_episodes,
                     seed=seed,
-                    high_load_multiplier=5.0  # 5× load
+                    high_load_multiplier=high_load_multiplier
                 )
                 all_results.append(result)
-                print(f"\n✅ [{completed}/{total_experiments}] 完成: {result['mean_reward']:.2f} ± {result['std_reward']:.2f}")
+                print(f"\n[{completed}/{total_experiments}] Completed: {result['mean_reward']:.2f} +/- {result['std_reward']:.2f}")
 
             except Exception as e:
-                print(f"\n❌ [{completed}/{total_experiments}] 失败: {config_type} + {algorithm} (seed={seed})")
-                print(f"错误: {e}")
+                print(f"\n[{completed}/{total_experiments}] Failed: {config_type} + {algorithm} (seed={seed})")
+                print(f"Error: {e}")
                 import traceback
                 traceback.print_exc()
 
-    # 保存总结
+    # Save summary
     summary = {
         'total_experiments': total_experiments,
         'completed': len(all_results),
@@ -343,17 +394,17 @@ def run_all_supplementary_experiments():
         json.dump(summary, f, indent=2)
 
     print(f"\n\n{'='*80}")
-    print(f"实验A完成! (5× 负载结构对比)")
-    print(f"成功: {len(all_results)}/{total_experiments}")
-    print(f"总结已保存至: {summary_path}")
+    print(f"Experiment A completed! (5× Load Structural Comparison)")
+    print(f"Success: {len(all_results)}/{total_experiments}")
+    print(f"Summary saved to: {summary_path}")
     print(f"{'='*80}\n")
 
-    # 显示关键结果对比
+    # Display key results comparison
     if len(all_results) > 0:
-        print("\n关键结果预览:")
+        print("\nKey Results Preview:")
         print("="*80)
         for r in all_results:
-            crash_indicator = "🔴" if r['crash_rate'] > 0.5 else "✅"
+            crash_indicator = "CRASHED" if r['crash_rate'] > 0.5 else "OK"
             print(f"{crash_indicator} {r['config_type']:<20} {r['algorithm']:<5} seed={r['seed']:<4} "
                   f"reward={r['mean_reward']:>8.1f} crash={r['crash_rate']*100:>5.1f}%")
         print("="*80)
@@ -364,35 +415,45 @@ def run_all_supplementary_experiments():
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='实验A: 5× 负载结构对比')
+    parser = argparse.ArgumentParser(description='Experiment A: 5× Load Structural Comparison')
     parser.add_argument('--mode', choices=['single', 'all'], default='all',
-                       help='运行模式: single (单次实验) 或 all (全部12次)')
+                       help='Run mode: single (single experiment) or all (all 12 runs)')
     parser.add_argument('--algorithm', choices=['A2C', 'PPO'],
-                       help='算法 (仅single模式)')
+                       help='Algorithm (single mode only)')
     parser.add_argument('--config',
-                       choices=['inverted_pyramid', 'normal_pyramid'],
-                       help='配置类型 (仅single模式)')
+                       choices=['inverted_pyramid', 'normal_pyramid', 'low_capacity', 'capacity_30'],
+                       help='Configuration type (single mode only)')
     parser.add_argument('--seed', type=int, default=42,
-                       help='随机种子 (仅single模式, 默认42)')
+                       help='Random seed (single mode only, default 42)')
     parser.add_argument('--timesteps', type=int, default=100000,
-                       help='训练步数')
+                       help='Training timesteps')
     parser.add_argument('--eval-episodes', type=int, default=50,
-                       help='评估回合数')
+                       help='Evaluation episodes')
     parser.add_argument('--load-multiplier', type=float, default=5.0,
-                       help='负载倍数 (默认5.0)')
+                       help='Load multiplier (default 5.0)')
+    parser.add_argument('--seeds', type=str, default=None,
+                       help='Comma-separated list of random seeds, e.g. 42,123,456')
+    parser.add_argument('--n-seeds', type=int, default=None,
+                       help='Number of seeds to auto-generate (starting from 42)')
 
     args = parser.parse_args()
 
     if args.mode == 'all':
-        print("\n🚀 开始运行实验A: 5× 负载结构对比 (12次训练)...\n")
-        run_all_supplementary_experiments()
+        seeds = _parse_seeds(args.seeds, args.n_seeds)
+        print(f"\nStarting Experiment A: 5× Load Structural Comparison ({len(seeds)*4} training runs)...\n")
+        run_all_supplementary_experiments(
+            seeds=seeds,
+            timesteps=args.timesteps,
+            eval_episodes=args.eval_episodes,
+            high_load_multiplier=args.load_multiplier
+        )
 
     elif args.mode == 'single':
         if not args.algorithm or not args.config:
-            print("❌ 错误: single模式需要指定 --algorithm 和 --config")
+            print("Error: single mode requires --algorithm and --config")
             parser.print_help()
         else:
-            print(f"\n🚀 运行单次实验: {args.algorithm} + {args.config} (seed={args.seed}) @ {args.load_multiplier}× load\n")
+            print(f"\nRunning single experiment: {args.algorithm} + {args.config} (seed={args.seed}) @ {args.load_multiplier}× load\n")
             result = train_and_evaluate(
                 algorithm_name=args.algorithm,
                 config_type=args.config,
@@ -401,4 +462,4 @@ if __name__ == '__main__':
                 seed=args.seed,
                 high_load_multiplier=args.load_multiplier
             )
-            print(f"\n✅ 完成: {result['mean_reward']:.2f} ± {result['std_reward']:.2f}, crash={result['crash_rate']*100:.1f}%")
+            print(f"\nCompleted: {result['mean_reward']:.2f} +/- {result['std_reward']:.2f}, crash={result['crash_rate']*100:.1f}%")

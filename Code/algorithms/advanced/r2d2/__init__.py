@@ -1,6 +1,6 @@
 """
 R2D2 Algorithm Implementation
-R2D2算法实现，包含循环神经网络和序列化经验回放
+R2D2 algorithm implementation with recurrent neural networks and sequence replay
 """
 
 from .r2d2_agent import R2D2Agent

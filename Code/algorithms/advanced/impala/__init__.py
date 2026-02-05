@@ -1,6 +1,6 @@
 """
 IMPALA Module
-IMPALA (Importance Weighted Actor-Learner Architecture) 算法模块
+IMPALA (Importance Weighted Actor-Learner Architecture) algorithm module
 """
 
 from .impala_agent import IMPALAAgent

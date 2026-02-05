@@ -1,8 +1,7 @@
 """
-可配置环境包装器
 Configurable Environment Wrapper
 
-用于跨区域泛化测试：支持动态修改环境参数以适配不同的heterogeneous configs
+For cross-region generalization testing: supports dynamic modification of environment parameters to adapt to different heterogeneous configs
 """
 
 import sys
@@ -23,29 +22,29 @@ from env.config import VerticalQueueConfig
 
 class ConfigurableEnvWrapper(gym.Wrapper):
     """
-    可配置环境包装器
+    Configurable Environment Wrapper
 
-    接受VerticalQueueConfig并动态修改DRLOptimizedQueueEnvFixed的内部参数
-    用于跨区域泛化性测试
+    Accepts VerticalQueueConfig and dynamically modifies internal parameters of DRLOptimizedQueueEnvFixed
+    Used for cross-region generalization testing
     """
 
     def __init__(self, config: VerticalQueueConfig = None):
         """
-        初始化可配置环境
+        Initialize configurable environment
 
         Args:
-            config: VerticalQueueConfig实例（如果为None，使用默认配置）
+            config: VerticalQueueConfig instance (if None, use default configuration)
         """
-        # 创建基础环境
+        # Create base environment
         base_env = DRLOptimizedQueueEnvFixed()
         super().__init__(base_env)
 
-        # 如果提供了config，应用配置
+        # If config is provided, apply configuration
         if config is not None:
             self._apply_config(config)
             self.config = config
         else:
-            # 使用默认配置
+            # Use default configuration
             self.config = VerticalQueueConfig()
 
         print(f"✅ ConfigurableEnvWrapper initialized")
@@ -55,25 +54,25 @@ class ConfigurableEnvWrapper(gym.Wrapper):
 
     def _apply_config(self, config: VerticalQueueConfig):
         """
-        将VerticalQueueConfig的参数应用到环境
+        Apply VerticalQueueConfig parameters to environment
 
-        这是核心方法：修改self.env的内部参数以匹配config
+        This is the core method: modifies self.env's internal parameters to match config
         """
-        # 修改到达率
+        # Modify arrival rate
         self.env.base_arrival_rate = config.base_arrival_rate
         self.env.arrival_weights = np.array(config.arrival_weights, dtype=np.float32)
 
-        # 修改容量
+        # Modify capacity
         self.env.capacities = np.array(config.layer_capacities, dtype=np.int32)
 
-        # 修改服务率
+        # Modify service rate
         self.env.base_service_rates = np.array(config.layer_service_rates, dtype=np.float32)
 
-        # 修改随机种子
+        # Modify random seed
         if hasattr(config, 'random_seed'):
             np.random.seed(config.random_seed)
 
-        # 更新观测空间（因为容量可能改变了）
+        # Update observation space (because capacity may have changed)
         self.env.observation_space = spaces.Dict({
             'queue_lengths': spaces.Box(
                 low=0, high=max(self.env.capacities), shape=(self.env.n_layers,), dtype=np.float32
@@ -104,19 +103,19 @@ class ConfigurableEnvWrapper(gym.Wrapper):
         print(f"   Service rates: {self.env.base_service_rates}")
 
     def reset(self, seed=None, options=None):
-        """重置环境"""
+        """Reset environment"""
         return self.env.reset(seed=seed, options=options)
 
     def step(self, action):
-        """执行一步"""
+        """Execute one step"""
         return self.env.step(action)
 
     def get_config_summary(self) -> dict:
         """
-        获取当前配置摘要
+        Get current configuration summary
 
         Returns:
-            dict: 配置摘要字典
+            dict: Configuration summary dictionary
         """
         return {
             'base_arrival_rate': float(self.env.base_arrival_rate),
@@ -128,37 +127,37 @@ class ConfigurableEnvWrapper(gym.Wrapper):
 
 
 if __name__ == "__main__":
-    """测试可配置环境包装器"""
+    """Test configurable environment wrapper"""
     print("\n" + "="*80)
-    print("测试ConfigurableEnvWrapper")
+    print("Testing ConfigurableEnvWrapper")
     print("="*80 + "\n")
 
-    # 测试1: 使用默认配置
-    print("1. 测试默认配置:")
+    # Test 1: Use default configuration
+    print("1. Testing default configuration:")
     env_default = ConfigurableEnvWrapper()
     obs, info = env_default.reset()
-    print(f"   ✅ 默认环境创建成功")
-    print(f"   观测空间: {obs.keys()}")
+    print(f"   ✅ Default environment created successfully")
+    print(f"   Observation space: {obs.keys()}")
 
-    # 测试2: 使用自定义配置
-    print("\n2. 测试自定义配置 (Region B - Weather):")
+    # Test 2: Use custom configuration
+    print("\n2. Testing custom configuration (Region B - Weather):")
     from env.config import VerticalQueueConfig
     custom_config = VerticalQueueConfig()
-    # 模拟Region B: 服务率降低20%
+    # Simulate Region B: Service rate reduced by 20%
     custom_config.layer_service_rates = [rate * 0.8 for rate in custom_config.layer_service_rates]
 
     env_custom = ConfigurableEnvWrapper(custom_config)
     obs, info = env_custom.reset()
-    print(f"   ✅ 自定义环境创建成功")
-    print(f"   配置摘要: {env_custom.get_config_summary()}")
+    print(f"   ✅ Custom environment created successfully")
+    print(f"   Configuration summary: {env_custom.get_config_summary()}")
 
-    # 测试3: 运行几步
-    print("\n3. 测试环境运行:")
+    # Test 3: Run a few steps
+    print("\n3. Testing environment execution:")
     for step in range(5):
         action = env_custom.action_space.sample()
         obs, reward, terminated, truncated, info = env_custom.step(action)
         print(f"   Step {step+1}: Reward = {reward:.2f}")
 
     print("\n" + "="*80)
-    print("✅ ConfigurableEnvWrapper测试完成！")
+    print("✅ ConfigurableEnvWrapper testing complete!")
     print("="*80 + "\n")

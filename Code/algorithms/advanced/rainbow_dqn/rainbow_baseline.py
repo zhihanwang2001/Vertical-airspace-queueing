@@ -1,6 +1,6 @@
 """
 Rainbow DQN Baseline for Vertical Stratified Queue System
-整合到现有基线算法框架中的Rainbow DQN实现
+Rainbow DQN implementation integrated into existing baseline algorithm framework
 """
 
 import sys
@@ -19,46 +19,46 @@ from .rainbow_agent import RainbowDQNAgent
 
 
 class RainbowDQNBaseline:
-    """Rainbow DQN基线算法，兼容现有框架"""
+    """Rainbow DQN baseline algorithm, compatible with existing framework"""
     
     def __init__(self, config: Dict[str, Any] = None):
         """
-        初始化Rainbow DQN基线
+        Initialize Rainbow DQN baseline
         
         Args:
-            config: 配置参数字典
+            config: Configuration parameter dictionary
         """
-        # 优化后配置 - 修复灾难性遗忘问题
+        # Optimized configuration - fixes catastrophic forgetting issue
         default_config = {
-            # 网络配置
+            # Network configuration
             'hidden_dim': 512,
             'num_atoms': 51,
-            'v_min': -15.0,  # 适应垂直分层队列的奖励范围
+            'v_min': -15.0,  # Adapted to reward range of vertical stratified queue
             'v_max': 15.0,
             'noisy_std': 0.5,
             
-            # 学习参数 - 🔧 关键修复
-            'learning_rate': 1e-4,  # 修复: 6.25e-5 → 1e-4 (标准Rainbow学习率)
+            # Learning parameters - 🔧 Critical fixes
+            'learning_rate': 1e-4,  # Fix: 6.25e-5 → 1e-4 (standard Rainbow learning rate)
             'gamma': 0.99,
-            'target_update_freq': 2000,  # 修复: 8000 → 2000 (标准更新频率)
+            'target_update_freq': 2000,  # Fix: 8000 → 2000 (standard update frequency)
             'gradient_clip': 10.0,
             
-            # 优先级回放 - 🔧 优化经验回放
-            'buffer_size': 200000,  # 修复: 1M → 200k (减少过时经验)
+            # Prioritized replay - 🔧 Optimized experience replay
+            'buffer_size': 200000,  # Fix: 1M → 200k (reduce stale experiences)
             'alpha': 0.5,
             'beta': 0.4,
             'beta_increment': 0.001,
             'epsilon': 1e-6,
             
-            # 多步学习 - 🔧 增强长期依赖
-            'n_step': 10,  # 修复: 3 → 10 (捕获长期依赖)
+            # Multi-step learning - 🔧 Enhanced long-term dependencies
+            'n_step': 10,  # Fix: 3 → 10 (capture long-term dependencies)
             
-            # 训练参数 - 🔧 早期学习
+            # Training parameters - 🔧 Early learning
             'batch_size': 32,
-            'learning_starts': 5000,  # 修复: 50000 → 5000 (早期开始学习)
+            'learning_starts': 5000,  # Fix: 50000 → 5000 (start learning early)
             'train_freq': 4,
             
-            # TensorBoard日志
+            # TensorBoard logging
             'tensorboard_log': "./tensorboard_logs/",
             'verbose': 1,
             'seed': 42
@@ -81,7 +81,7 @@ class RainbowDQNBaseline:
         print("🌈 Rainbow DQN Baseline initialized")
         
     def setup_env(self):
-        """设置环境"""
+        """Setup environment"""
         base_env = DRLOptimizedQueueEnvFixed()
         self.env = SB3DictWrapper(base_env)
         
@@ -92,7 +92,7 @@ class RainbowDQNBaseline:
         return self.env
     
     def create_agent(self):
-        """创建Rainbow DQN智能体"""
+        """Create Rainbow DQN agent"""
         if self.env is None:
             self.setup_env()
         
@@ -107,24 +107,24 @@ class RainbowDQNBaseline:
     
     def train(self, total_timesteps: int, eval_freq: int = 10000, save_freq: int = 50000):
         """
-        训练Rainbow DQN模型
+        Train Rainbow DQN model
         
         Args:
-            total_timesteps: 总训练步数
-            eval_freq: 评估频率
-            save_freq: 保存频率
+            total_timesteps: Total training timesteps
+            eval_freq: Evaluation frequency
+            save_freq: Save frequency
             
         Returns:
-            训练历史字典
+            Training history dictionary
         """
         if self.agent is None:
             self.create_agent()
         
-        # 创建TensorBoard writer
+        # Create TensorBoard writer
         tb_log_name = f"Rainbow_DQN_{int(time.time())}"
         tb_log_dir = os.path.join(self.config['tensorboard_log'], tb_log_name)
 
-        # 确保TensorBoard日志目录存在
+        # Ensure TensorBoard log directory exists
         os.makedirs(tb_log_dir, exist_ok=True)
 
         writer = SummaryWriter(log_dir=tb_log_dir)
@@ -132,69 +132,69 @@ class RainbowDQNBaseline:
         print(f"🚀 Starting Rainbow DQN training for {total_timesteps:,} timesteps...")
         print(f"   TensorBoard log: {tb_log_name}")
         
-        # 训练变量
+        # Training variables
         episode = 0
         timestep = 0
         episode_reward = 0.0
         episode_length = 0
         
-        # 重置环境
+        # Reset environment
         state, _ = self.env.reset()
         
         start_time = time.time()
         
         while timestep < total_timesteps:
-            # 选择动作
+            # Select action
             action = self.agent.act(state, training=True)
             
-            # 执行动作
+            # Execute action
             try:
                 step_result = self.env.step(action)
-                if len(step_result) == 5:  # Gymnasium格式
+                if len(step_result) == 5:  # Gymnasium format
                     next_state, reward, terminated, truncated, info = step_result
                     done = terminated or truncated
-                else:  # Gym格式
+                else:  # Gym format
                     next_state, reward, done, info = step_result
             except Exception as e:
                 print(f"❌ Environment step error: {e}")
                 break
             
-            # 存储经验
+            # Store experience
             self.agent.store_transition(state, action, reward, next_state, done)
             
-            # 更新统计
+            # Update statistics
             episode_reward += reward
             episode_length += 1
             timestep += 1
             
-            # 训练智能体
+            # Train agent
             if timestep >= self.config['learning_starts']:
                 train_info = self.agent.train()
                 
                 if train_info and timestep % 1000 == 0:
-                    # 记录训练信息
+                    # Log training information
                     writer.add_scalar('train/loss', train_info['loss'], timestep)
                     writer.add_scalar('train/td_error', train_info['td_error_mean'], timestep)
                     writer.add_scalar('train/beta', train_info['beta'], timestep)
                     writer.add_scalar('train/buffer_size', train_info['buffer_size'], timestep)
             
-            # 检查是否episode结束
+            # Check if episode ended
             if done:
-                # 记录episode信息
+                # Log episode information
                 self.training_history['episode_rewards'].append(episode_reward)
                 self.training_history['episode_lengths'].append(episode_length)
                 
-                # TensorBoard记录
+                # TensorBoard logging
                 writer.add_scalar('train/episode_reward', episode_reward, episode)
                 writer.add_scalar('train/episode_length', episode_length, episode)
                 
-                # 计算滑动平均
+                # Calculate moving average
                 if len(self.training_history['episode_rewards']) >= 100:
                     avg_reward = np.mean(self.training_history['episode_rewards'][-100:])
                     self.training_history['avg_rewards'].append(avg_reward)
                     writer.add_scalar('train/avg_reward_100', avg_reward, episode)
                 
-                # 打印进度
+                # Print progress
                 if self.config['verbose'] and episode % 100 == 0:
                     elapsed_time = time.time() - start_time
                     print(f"Episode {episode:5d} | "
@@ -203,7 +203,7 @@ class RainbowDQNBaseline:
                           f"Length: {episode_length:4d} | "
                           f"Time: {elapsed_time:.1f}s")
                 
-                # 重置episode
+                # Reset episode
                 episode += 1
                 episode_reward = 0.0
                 episode_length = 0
@@ -211,7 +211,7 @@ class RainbowDQNBaseline:
             else:
                 state = next_state
             
-            # 评估
+            # Evaluation
             if eval_freq > 0 and timestep % eval_freq == 0 and timestep > 0:
                 eval_results = self.evaluate(n_episodes=5, deterministic=True, verbose=False)
                 writer.add_scalar('eval/mean_reward', eval_results['mean_reward'], timestep)
@@ -220,14 +220,14 @@ class RainbowDQNBaseline:
                 print(f"📊 Evaluation at step {timestep}: "
                       f"Mean reward: {eval_results['mean_reward']:.2f} ± {eval_results['std_reward']:.2f}")
             
-            # 保存模型
+            # Save model
             if save_freq > 0 and timestep % save_freq == 0 and timestep > 0:
                 save_path = f"../../../../Models/rainbow_dqn_step_{timestep}.pt"
                 os.makedirs(os.path.dirname(save_path), exist_ok=True)
                 self.agent.save(save_path)
                 print(f"💾 Model saved at step {timestep}: {save_path}")
         
-        # 训练完成
+        # Training completed
         total_time = time.time() - start_time
         writer.close()
         
@@ -236,7 +236,7 @@ class RainbowDQNBaseline:
         print(f"   Total time: {total_time:.2f}s")
         print(f"   Average reward (last 100): {np.mean(self.training_history['episode_rewards'][-100:]):.2f}")
         
-        # 保存最终模型
+        # Save final model
         final_save_path = "../../../../Models/rainbow_dqn_final.pt"
         os.makedirs(os.path.dirname(final_save_path), exist_ok=True)
         self.agent.save(final_save_path)
@@ -250,15 +250,15 @@ class RainbowDQNBaseline:
     
     def evaluate(self, n_episodes: int = 10, deterministic: bool = True, verbose: bool = True):
         """
-        评估模型性能
+        Evaluate model performance
         
         Args:
-            n_episodes: 评估episode数量
-            deterministic: 是否使用确定性策略
-            verbose: 是否打印详细信息
+            n_episodes: Number of evaluation episodes
+            deterministic: Whether to use deterministic policy
+            verbose: Whether to print detailed information
             
         Returns:
-            评估结果字典
+            Evaluation results dictionary
         """
         if self.agent is None:
             raise ValueError("Agent not initialized. Please train first.")
@@ -290,7 +290,7 @@ class RainbowDQNBaseline:
                 episode_length += 1
                 state = next_state
                 
-                # 防止无限循环
+                # Prevent infinite loop
                 if episode_length >= 1000:
                     break
             
@@ -306,7 +306,7 @@ class RainbowDQNBaseline:
             'mean_length': np.mean(episode_lengths),
             'episode_rewards': episode_rewards,
             'episode_lengths': episode_lengths,
-            'system_metrics': []  # Rainbow DQN特定指标可以在这里添加
+            'system_metrics': []  # Rainbow DQN specific metrics can be added here
         }
         
         if verbose:
@@ -317,13 +317,13 @@ class RainbowDQNBaseline:
         return results
     
     def save_results(self, path_prefix: str):
-        """保存训练结果"""
+        """Save training results"""
         os.makedirs(os.path.dirname(path_prefix) if os.path.dirname(path_prefix) else ".", exist_ok=True)
         
-        # 保存训练历史
+        # Save training history
         import json
         with open(f"{path_prefix}_history.json", 'w') as f:
-            # 转换numpy类型为Python原生类型
+            # Convert numpy types to Python native types
             serializable_history = {}
             for key, value in self.training_history.items():
                 if isinstance(value, list):
@@ -336,7 +336,7 @@ class RainbowDQNBaseline:
         print(f"💾 Rainbow DQN results saved to: {path_prefix}")
     
     def save(self, path: str):
-        """保存模型"""
+        """Save model"""
         if self.agent is None:
             raise ValueError("Agent not trained yet!")
         
@@ -344,7 +344,7 @@ class RainbowDQNBaseline:
         print(f"💾 Rainbow DQN model saved to: {path}")
     
     def load(self, path: str):
-        """加载模型"""
+        """Load model"""
         if self.env is None:
             self.setup_env()
         
@@ -358,21 +358,21 @@ class RainbowDQNBaseline:
 
 
 def test_rainbow_dqn():
-    """测试Rainbow DQN"""
+    """Test Rainbow DQN"""
     print("🧪 Testing Rainbow DQN...")
     
-    # 创建基线
+    # Create baseline
     baseline = RainbowDQNBaseline()
     
-    # 快速训练测试
+    # Quick training test
     results = baseline.train(total_timesteps=10000)
     print(f"Training results: {results}")
     
-    # 评估测试
+    # Evaluation test
     eval_results = baseline.evaluate(n_episodes=5)
     print(f"Evaluation results: {eval_results}")
     
-    # 保存测试
+    # Save test
     baseline.save("../../../../Models/rainbow_dqn_test.pt")
     
     print("✅ Rainbow DQN test completed!")

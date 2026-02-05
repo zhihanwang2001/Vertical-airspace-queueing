@@ -1,36 +1,35 @@
 """
-Top 3模型跨区域泛化性测试脚本 V3 - 奖励组件分解版
 Top 3 Models Cross-Region Generalization Test Script V3 - Reward Decomposition
 
-🎯 核心改进 (V2 → V3):
-1. 保留V2的所有多维度系统指标
-2. **新增：提取奖励组件分解 (reward_components)**
-3. 分析单目标优化(RP1)在多目标权衡上的限制
-4. 为RP1→RP2的transition提供科学依据
+Core Improvements (V2 → V3):
+1. Retain all multi-dimensional system metrics from V2
+2. **New: Extract reward component decomposition (reward_components)**
+3. Analyze limitations of single-objective optimization (RP1) in multi-objective trade-offs
+4. Provide scientific basis for RP1→RP2 transition
 
-评估指标：
-【V2指标】
-- 累积奖励 (Cumulative Reward)
-- 队列利用率 (Queue Utilization)
-- 负载率 (Load Rate)
-- 系统吞吐量 (Throughput)
-- 稳定性得分 (Stability Score)
+Evaluation Metrics:
+[V2 Metrics]
+- Cumulative Reward
+- Queue Utilization
+- Load Rate
+- System Throughput
+- Stability Score
 
-【V3新增 - 奖励组件】
-- R_throughput: 吞吐量奖励 (10.0 × 服务订单数)
-- R_balance: 负载均衡奖励 (基尼系数, 0-5.0)
-- R_efficiency: 能效奖励 (服务/能耗比, 0-3.0)
-- transfer_benefit: 转移效益 (0-2.0)
-- stability_bonus: 稳定性奖励 (0-2.0)
-- P_congestion: 拥堵惩罚 (<0)
-- P_instability: 不稳定惩罚 (<0)
+[V3 New - Reward Components]
+- R_throughput: Throughput reward (10.0 × served orders)
+- R_balance: Load balance reward (Gini coefficient, 0-5.0)
+- R_efficiency: Energy efficiency reward (service/energy ratio, 0-3.0)
+- transfer_benefit: Transfer benefit (0-2.0)
+- stability_bonus: Stability reward (0-2.0)
+- P_congestion: Congestion penalty (<0)
+- P_instability: Instability penalty (<0)
 
-📊 分析目的：
-揭示RP1的单目标优化虽然获得高累积奖励，但在：
-  - 层间公平性 (R_balance)
-  - 能源效率 (R_efficiency)
-  - 负载均衡
-存在trade-offs → motivates RP2的MORL方法
+Analysis Purpose:
+Reveal that RP1's single-objective optimization achieves high cumulative reward, but has trade-offs in:
+  - Inter-layer fairness (R_balance)
+  - Energy efficiency (R_efficiency)
+  - Load balancing
+→ motivates RP2's MORL approach
 """
 
 import sys
@@ -44,56 +43,56 @@ from pathlib import Path
 from typing import Dict, List
 import time
 
-# 导入基线算法
+# Import baseline algorithms
 from algorithms.baselines.sb3_a2c_baseline import SB3A2CBaseline
 from algorithms.baselines.sb3_ppo_baseline import SB3PPOBaseline
 from algorithms.advanced.td7.td7_baseline import TD7Baseline
 
-# 导入环境和配置
+# Import environment and configuration
 from env.configurable_env_wrapper import ConfigurableEnvWrapper
 from algorithms.baselines.space_utils import SB3DictWrapper
 
-# 导入异质性配置生成器
+# Import heterogeneous configuration generator
 from heterogeneous_configs import HeterogeneousRegionConfigs
 
 
 def test_model_in_region(model, model_type: str, config, region_name: str,
                          n_episodes: int = 10, verbose: bool = True):
     """
-    在指定区域测试模型 - V3版本（提取奖励组件分解）
+    Test model in specified region - V3 version (extract reward component decomposition)
 
     Args:
-        model: 已加载模型的baseline实例
-        model_type: 模型类型 ('A2C', 'PPO', 'TD7')
-        config: VerticalQueueConfig配置
-        region_name: 区域名称
-        n_episodes: 测试episode数量
-        verbose: 是否打印详细信息
+        model: Loaded model baseline instance
+        model_type: Model type ('A2C', 'PPO', 'TD7')
+        config: VerticalQueueConfig configuration
+        region_name: Region name
+        n_episodes: Number of test episodes
+        verbose: Whether to print detailed information
 
     Returns:
-        dict: 测试结果（包含多维度指标 + 奖励组件分解）
+        dict: Test results (including multi-dimensional metrics + reward component decomposition)
     """
     if verbose:
         print(f"\n{'='*80}")
-        print(f"测试: {model_type} @ {region_name}")
+        print(f"Testing: {model_type} @ {region_name}")
         print(f"{'='*80}")
 
-    # 创建该区域的环境
+    # Create environment for this region
     base_env = ConfigurableEnvWrapper(config)
     eval_env = SB3DictWrapper(base_env)
 
-    # 记录结果
+    # Record results
     episode_rewards = []
     episode_lengths = []
 
-    # V2指标：系统性能
+    # V2 metrics: System performance
     episode_avg_utilizations = []
     episode_avg_load_rates = []
     episode_throughputs = []
     episode_stability_scores = []
     episode_max_utilizations = []
 
-    # V3新增：奖励组件
+    # V3 new: Reward components
     episode_avg_r_throughput = []
     episode_avg_r_balance = []
     episode_avg_r_efficiency = []
@@ -104,19 +103,19 @@ def test_model_in_region(model, model_type: str, config, region_name: str,
 
     episode_details = []
 
-    # 运行n_episodes个episode
+    # Run n_episodes episodes
     for episode in range(n_episodes):
         obs, info = eval_env.reset()
         episode_reward = 0
         episode_length = 0
         done = False
 
-        # V2指标收集
+        # V2 metric collection
         step_utilizations = []
         step_load_rates = []
         step_stability_scores = []
 
-        # V3新增：奖励组件收集
+        # V3 new: Reward component collection
         step_r_throughput = []
         step_r_balance = []
         step_r_efficiency = []
@@ -125,22 +124,22 @@ def test_model_in_region(model, model_type: str, config, region_name: str,
         step_p_congestion = []
         step_p_instability = []
 
-        # 运行一个完整的episode
+        # Run a complete episode
         while not done:
-            # 根据模型类型选择预测方法
+            # Select prediction method based on model type
             if model_type == 'TD7':
                 action = model.agent.act(obs, training=False)
             else:  # A2C or PPO
                 action, _ = model.model.predict(obs, deterministic=True)
 
-            # 执行动作
+            # Execute action
             obs, reward, terminated, truncated, info = eval_env.step(action)
             done = terminated or truncated
 
             episode_reward += reward
             episode_length += 1
 
-            # 提取V2系统指标
+            # Extract V2 system metrics
             if 'utilization_rates' in info:
                 step_utilizations.append(np.mean(info['utilization_rates']))
             if 'load_rates' in info:
@@ -148,7 +147,7 @@ def test_model_in_region(model, model_type: str, config, region_name: str,
             if 'stability_score' in info:
                 step_stability_scores.append(info['stability_score'])
 
-            # V3新增：提取奖励组件
+            # V3 new: Extract reward components
             if 'reward_components' in info:
                 rc = info['reward_components']
                 step_r_throughput.append(rc.get('throughput', 0.0))
@@ -159,21 +158,21 @@ def test_model_in_region(model, model_type: str, config, region_name: str,
                 step_p_congestion.append(rc.get('congestion', 0.0))
                 step_p_instability.append(rc.get('instability', 0.0))
 
-            # 防止无限循环
+            # Prevent infinite loop
             if episode_length >= 1000:
                 if verbose:
-                    print(f"  ⚠️  Episode {episode+1} 达到最大步数限制 (1000)")
+                    print(f"  Warning: Episode {episode+1} reached maximum step limit (1000)")
                 break
 
-        # 计算episode级别的统计
-        # V2指标
+        # Calculate episode-level statistics
+        # V2 metrics
         avg_utilization = np.mean(step_utilizations) if step_utilizations else 0.0
         avg_load_rate = np.mean(step_load_rates) if step_load_rates else 0.0
         avg_stability = np.mean(step_stability_scores) if step_stability_scores else 0.0
         max_utilization = np.max(step_utilizations) if step_utilizations else 0.0
         throughput = info.get('throughput', 0.0) if info else 0.0
 
-        # V3新增：奖励组件平均值
+        # V3 new: Reward component averages
         avg_r_throughput = np.mean(step_r_throughput) if step_r_throughput else 0.0
         avg_r_balance = np.mean(step_r_balance) if step_r_balance else 0.0
         avg_r_efficiency = np.mean(step_r_efficiency) if step_r_efficiency else 0.0
@@ -182,18 +181,18 @@ def test_model_in_region(model, model_type: str, config, region_name: str,
         avg_p_congestion = np.mean(step_p_congestion) if step_p_congestion else 0.0
         avg_p_instability = np.mean(step_p_instability) if step_p_instability else 0.0
 
-        # 记录结果
+        # Record results
         episode_rewards.append(episode_reward)
         episode_lengths.append(episode_length)
 
-        # V2指标
+        # V2 metrics
         episode_avg_utilizations.append(avg_utilization)
         episode_avg_load_rates.append(avg_load_rate)
         episode_throughputs.append(throughput)
         episode_stability_scores.append(avg_stability)
         episode_max_utilizations.append(max_utilization)
 
-        # V3新增：奖励组件
+        # V3 new: Reward components
         episode_avg_r_throughput.append(avg_r_throughput)
         episode_avg_r_balance.append(avg_r_balance)
         episode_avg_r_efficiency.append(avg_r_efficiency)
@@ -206,13 +205,13 @@ def test_model_in_region(model, model_type: str, config, region_name: str,
             'episode': episode + 1,
             'reward': float(episode_reward),
             'length': int(episode_length),
-            # V2指标
+            # V2 metrics
             'avg_utilization': float(avg_utilization),
             'avg_load_rate': float(avg_load_rate),
             'throughput': float(throughput),
             'stability_score': float(avg_stability),
             'max_utilization': float(max_utilization),
-            # V3新增：奖励组件
+            # V3 new: Reward components
             'reward_components': {
                 'throughput': float(avg_r_throughput),
                 'balance': float(avg_r_balance),
@@ -230,18 +229,18 @@ def test_model_in_region(model, model_type: str, config, region_name: str,
             print(f"    [V2] Util={avg_utilization:.3f}, Load={avg_load_rate:.3f}, Throughput={throughput:.2f}")
             print(f"    [V3] R_throughput={avg_r_throughput:.1f}, R_balance={avg_r_balance:.2f}, R_efficiency={avg_r_efficiency:.2f}")
 
-    # 计算统计结果
+    # Calculate statistics
     results = {
         'model_type': model_type,
         'region_name': region_name,
         'n_episodes': n_episodes,
 
-        # 原有指标
+        # Original metrics
         'mean_reward': float(np.mean(episode_rewards)),
         'std_reward': float(np.std(episode_rewards)),
         'mean_length': float(np.mean(episode_lengths)),
 
-        # V2指标：系统性能
+        # V2 metrics: System performance
         'mean_utilization': float(np.mean(episode_avg_utilizations)),
         'std_utilization': float(np.std(episode_avg_utilizations)),
         'mean_load_rate': float(np.mean(episode_avg_load_rates)),
@@ -253,7 +252,7 @@ def test_model_in_region(model, model_type: str, config, region_name: str,
         'mean_max_congestion': float(np.mean(episode_max_utilizations)),
         'std_max_congestion': float(np.std(episode_max_utilizations)),
 
-        # V3新增：奖励组件统计
+        # V3 new: Reward component statistics
         'reward_components': {
             'mean_throughput': float(np.mean(episode_avg_r_throughput)),
             'std_throughput': float(np.std(episode_avg_r_throughput)),
@@ -271,7 +270,7 @@ def test_model_in_region(model, model_type: str, config, region_name: str,
             'std_instability': float(np.std(episode_avg_p_instability))
         },
 
-        # 详细数据
+        # Detailed data
         'episode_rewards': [float(r) for r in episode_rewards],
         'episode_lengths': [int(l) for l in episode_lengths],
         'episode_details': episode_details,
@@ -279,42 +278,40 @@ def test_model_in_region(model, model_type: str, config, region_name: str,
     }
 
     if verbose:
-        print(f"\n📊 {model_type} @ {region_name} 测试结果:")
-        print(f"   【V2指标】")
-        print(f"   累积奖励: {results['mean_reward']:.2f} ± {results['std_reward']:.2f}")
-        print(f"   队列利用率: {results['mean_utilization']:.3f} ± {results['std_utilization']:.3f}")
-        print(f"   负载率: {results['mean_load_rate']:.3f} ± {results['std_load_rate']:.3f}")
-        print(f"   吞吐量: {results['mean_throughput']:.2f} ± {results['std_throughput']:.2f}")
-        print(f"   稳定性: {results['mean_stability']:.3f} ± {results['std_stability']:.3f}")
-        print(f"\n   【V3奖励组件】")
+        print(f"\n{model_type} @ {region_name} Test Results:")
+        print(f"   [V2 Metrics]")
+        print(f"   Cumulative reward: {results['mean_reward']:.2f} +/- {results['std_reward']:.2f}")
+        print(f"   Queue utilization: {results['mean_utilization']:.3f} +/- {results['std_utilization']:.3f}")
+        print(f"   Load rate: {results['mean_load_rate']:.3f} +/- {results['std_load_rate']:.3f}")
+        print(f"   Throughput: {results['mean_throughput']:.2f} +/- {results['std_throughput']:.2f}")
+        print(f"   Stability: {results['mean_stability']:.3f} +/- {results['std_stability']:.3f}")
+        print(f"\n   [V3 Reward Components]")
         rc = results['reward_components']
-        print(f"   R_throughput: {rc['mean_throughput']:.2f} ± {rc['std_throughput']:.2f}")
-        print(f"   R_balance (公平性): {rc['mean_balance']:.2f} ± {rc['std_balance']:.2f}")
-        print(f"   R_efficiency (能效): {rc['mean_efficiency']:.2f} ± {rc['std_efficiency']:.2f}")
-        print(f"   P_congestion (拥堵惩罚): {rc['mean_congestion']:.2f} ± {rc['std_congestion']:.2f}")
+        print(f"   R_throughput: {rc['mean_throughput']:.2f} +/- {rc['std_throughput']:.2f}")
+        print(f"   R_balance (fairness): {rc['mean_balance']:.2f} +/- {rc['std_balance']:.2f}")
+        print(f"   R_efficiency (energy): {rc['mean_efficiency']:.2f} +/- {rc['std_efficiency']:.2f}")
+        print(f"   P_congestion (penalty): {rc['mean_congestion']:.2f} +/- {rc['std_congestion']:.2f}")
 
-    # 清理环境
+    # Clean up environment
     eval_env.close()
 
     return results
 
-
 def main():
-    """主函数：测试所有3个模型在所有异质性区域的泛化性能 - V3版本（奖励组件分解）"""
+    """Main function: Test all 3 models' generalization performance across all heterogeneous regions - V3 version (reward component decomposition)"""
 
     print("\n" + "="*80)
-    print("Top 3 模型跨区域泛化性测试 V3 - 奖励组件分解版")
-    print("Cross-Region Generalization Test V3 - Reward Component Decomposition")
+    print("Top 3 Models Cross-Region Generalization Test V3 - Reward Component Decomposition")
     print("="*80 + "\n")
 
-    print("🎯 V3核心改进：")
-    print("   - 保留V2的多维度系统指标")
-    print("   - 新增：提取奖励组件分解 (7个组件)")
-    print("   - 揭示单目标优化的多目标trade-offs")
-    print("   - 为RP1→RP2 transition提供科学依据\n")
+    print("V3 Core Improvements:")
+    print("   - Retain V2's multi-dimensional system metrics")
+    print("   - New: Extract reward component decomposition (7 components)")
+    print("   - Reveal multi-objective trade-offs in single-objective optimization")
+    print("   - Provide scientific basis for RP1→RP2 transition\n")
 
-    # ========== 第1步：加载训练好的3个模型 ==========
-    print("第1步：加载训练好的3个模型")
+    # ========== Step 1: Load 3 trained models ==========
+    print("Step 1: Load 3 trained models")
     print("-"*80)
 
     models = {}
@@ -324,58 +321,58 @@ def main():
         'TD7': '../../Models/td7/td7_model_500000.pt'
     }
 
-    # 加载A2C
-    print("\n1.1 加载A2C模型...")
+    # Load A2C
+    print("\n1.1 Loading A2C model...")
     if not os.path.exists(model_paths['A2C'] + '.pth'):
-        print(f"❌ 错误：找不到A2C模型文件 {model_paths['A2C']}.pth")
+        print(f"Error: Cannot find A2C model file {model_paths['A2C']}.pth")
         return
 
     a2c = SB3A2CBaseline()
     a2c.load(model_paths['A2C'])
     models['A2C'] = a2c
-    print("✅ A2C模型加载成功！")
+    print("A2C model loaded successfully!")
 
-    # 加载PPO
-    print("\n1.2 加载PPO模型...")
+    # Load PPO
+    print("\n1.2 Loading PPO model...")
     if not os.path.exists(model_paths['PPO'] + '.pth'):
-        print(f"❌ 错误：找不到PPO模型文件 {model_paths['PPO']}.pth")
+        print(f"Error: Cannot find PPO model file {model_paths['PPO']}.pth")
         return
 
     ppo = SB3PPOBaseline()
     ppo.load(model_paths['PPO'])
     models['PPO'] = ppo
-    print("✅ PPO模型加载成功！")
+    print("PPO model loaded successfully!")
 
-    # 加载TD7
-    print("\n1.3 加载TD7模型...")
+    # Load TD7
+    print("\n1.3 Loading TD7 model...")
     if not os.path.exists(model_paths['TD7']):
-        print(f"❌ 错误：找不到TD7模型文件 {model_paths['TD7']}")
+        print(f"Error: Cannot find TD7 model file {model_paths['TD7']}")
         return
 
-    print(f"📂 模型文件大小: {os.path.getsize(model_paths['TD7']) / (1024*1024):.1f} MB")
+    print(f"Model file size: {os.path.getsize(model_paths['TD7']) / (1024*1024):.1f} MB")
     td7 = TD7Baseline()
     td7.load(model_paths['TD7'])
     models['TD7'] = td7
-    print("✅ TD7模型加载成功！")
+    print("TD7 model loaded successfully!")
 
-    print("\n✅ 所有3个模型加载完成！")
+    print("\nAll 3 models loaded successfully!")
 
-    # ========== 第2步：创建异质性区域配置 ==========
-    print("\n第2步：创建异质性区域配置")
+    # ========== Step 2: Create heterogeneous region configurations ==========
+    print("\nStep 2: Create heterogeneous region configurations")
     print("-"*80)
 
     config_generator = HeterogeneousRegionConfigs()
     all_configs = config_generator.get_all_configs()
 
-    print(f"✅ 已创建 {len(all_configs)} 个区域配置:")
+    print(f"Created {len(all_configs)} region configurations:")
     for region_name in all_configs.keys():
         print(f"   - {region_name}")
 
-    # ========== 第3步：在每个区域运行测试 ==========
-    print("\n第3步：在每个区域运行泛化测试（V3 - 奖励组件分解）")
+    # ========== Step 3: Run tests in each region ==========
+    print("\nStep 3: Run generalization tests in each region (V3 - reward component decomposition)")
     print("-"*80)
-    print("⚠️  这是真实测试，不是mock数据！")
-    print(f"   总测试数: {len(models)} 模型 × {len(all_configs)} 区域 × 10 episodes = {len(models) * len(all_configs) * 10} episodes")
+    print("Warning: This is a real test, not mock data!")
+    print(f"   Total tests: {len(models)} models × {len(all_configs)} regions × 10 episodes = {len(models) * len(all_configs) * 10} episodes")
 
     all_results = {
         'A2C': {},
@@ -386,10 +383,10 @@ def main():
     n_episodes_per_region = 10
     start_time = time.time()
 
-    # 对每个模型和每个区域运行测试
+    # Run tests for each model and each region
     for model_name in ['A2C', 'PPO', 'TD7']:
         print(f"\n{'='*80}")
-        print(f"开始测试 {model_name} 模型")
+        print(f"Starting test for {model_name} model")
         print(f"{'='*80}")
 
         model = models[model_name]
@@ -407,15 +404,15 @@ def main():
 
     total_time = time.time() - start_time
 
-    # ========== 第4步：汇总结果（V3 - 包含奖励组件分析） ==========
+    # ========== Step 4: Summarize results (V3 - including reward component analysis) ==========
     print("\n" + "="*80)
-    print("测试完成！汇总结果（V3 - 多维度指标 + 奖励组件分解）")
+    print("Testing completed! Summary of results (V3 - multi-dimensional metrics + reward component decomposition)")
     print("="*80 + "\n")
 
-    # 表1: 累积奖励对比
-    print("【表1】累积奖励对比 (Cumulative Reward)")
+    # Table 1: Cumulative reward comparison
+    print("[Table 1] Cumulative Reward Comparison")
     print("-"*90)
-    print(f"{'区域':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
+    print(f"{'Region':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
     print("-"*90)
 
     baseline_rewards = {}
@@ -432,10 +429,10 @@ def main():
 
         print(f"{region_name:<30} {a2c_reward:<20.2f} {ppo_reward:<20.2f} {td7_reward:<20.2f}")
 
-    # V3新增：奖励组件对比表格
-    print("\n【表6】R_balance (负载均衡/公平性) 对比")
+    # V3 new: Reward component comparison tables
+    print("\n[Table 6] R_balance (Load Balance/Fairness) Comparison")
     print("-"*90)
-    print(f"{'区域':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
+    print(f"{'Region':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
     print("-"*90)
 
     for region_name in all_configs.keys():
@@ -445,9 +442,9 @@ def main():
 
         print(f"{region_name:<30} {a2c_bal:<20.3f} {ppo_bal:<20.3f} {td7_bal:<20.3f}")
 
-    print("\n【表7】R_efficiency (能源效率) 对比")
+    print("\n[Table 7] R_efficiency (Energy Efficiency) Comparison")
     print("-"*90)
-    print(f"{'区域':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
+    print(f"{'Region':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
     print("-"*90)
 
     for region_name in all_configs.keys():
@@ -457,9 +454,9 @@ def main():
 
         print(f"{region_name:<30} {a2c_eff:<20.3f} {ppo_eff:<20.3f} {td7_eff:<20.3f}")
 
-    print("\n【表8】R_throughput (吞吐量奖励组件) 对比")
+    print("\n[Table 8] R_throughput (Throughput Reward Component) Comparison")
     print("-"*90)
-    print(f"{'区域':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
+    print(f"{'Region':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
     print("-"*90)
 
     for region_name in all_configs.keys():
@@ -469,9 +466,9 @@ def main():
 
         print(f"{region_name:<30} {a2c_thr:<20.2f} {ppo_thr:<20.2f} {td7_thr:<20.2f}")
 
-    print("\n【表9】P_congestion (拥堵惩罚) 对比")
+    print("\n[Table 9] P_congestion (Congestion Penalty) Comparison")
     print("-"*90)
-    print(f"{'区域':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
+    print(f"{'Region':<30} {'A2C':<20} {'PPO':<20} {'TD7':<20}")
     print("-"*90)
 
     for region_name in all_configs.keys():
@@ -482,18 +479,18 @@ def main():
         print(f"{region_name:<30} {a2c_cong:<20.2f} {ppo_cong:<20.2f} {td7_cong:<20.2f}")
 
     print("\n" + "-"*80)
-    print(f"总测试时间: {total_time:.1f}秒 ({total_time/60:.1f}分钟)")
-    print(f"总episode数: {len(models) * len(all_configs) * n_episodes_per_region}")
+    print(f"Total test time: {total_time:.1f}s ({total_time/60:.1f} minutes)")
+    print(f"Total episodes: {len(models) * len(all_configs) * n_episodes_per_region}")
 
-    # ========== 第5步：保存结果 ==========
-    print("\n第5步：保存测试结果 (V3版本)")
+    # ========== Step 5: Save results ==========
+    print("\nStep 5: Save test results (V3 version)")
     print("-"*80)
 
-    # 创建保存目录
+    # Create save directory
     save_dir = Path("../../Results/generalization")
     save_dir.mkdir(exist_ok=True)
 
-    # 保存详细结果
+    # Save detailed results
     results_file = save_dir / "all_models_generalization_results_v3.json"
 
     full_results = {
@@ -529,9 +526,9 @@ def main():
     with open(results_file, 'w', encoding='utf-8') as f:
         json.dump(full_results, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ 详细结果已保存到: {results_file}")
+    print(f"Detailed results saved to: {results_file}")
 
-    # 保存汇总表格（CSV格式 - V3增强版，包含奖励组件）
+    # Save summary table (CSV format - V3 enhanced version, including reward components)
     summary_file = save_dir / "all_models_generalization_summary_v3.csv"
     import csv
 
@@ -544,7 +541,7 @@ def main():
             'Mean Load Rate', 'Std Load Rate',
             'Mean Throughput', 'Std Throughput',
             'Mean Stability', 'Std Stability',
-            # V3新增：奖励组件
+            # V3 new: Reward components
             'R_throughput', 'R_balance', 'R_efficiency',
             'transfer_benefit', 'stability_bonus',
             'P_congestion', 'P_instability'
@@ -561,38 +558,38 @@ def main():
                     f"{res['mean_load_rate']:.4f}", f"{res['std_load_rate']:.4f}",
                     f"{res['mean_throughput']:.2f}", f"{res['std_throughput']:.2f}",
                     f"{res['mean_stability']:.4f}", f"{res['std_stability']:.4f}",
-                    # V3新增
+                    # V3 new
                     f"{rc['mean_throughput']:.2f}", f"{rc['mean_balance']:.3f}", f"{rc['mean_efficiency']:.3f}",
                     f"{rc['mean_transfer']:.3f}", f"{rc['mean_stability']:.3f}",
                     f"{rc['mean_congestion']:.3f}", f"{rc['mean_instability']:.3f}"
                 ])
 
-    print(f"✅ 汇总表格已保存到: {summary_file}")
+    print(f"Summary table saved to: {summary_file}")
 
     print("\n" + "="*80)
-    print("✅ 所有模型泛化性测试全部完成（V3 - 奖励组件分解版）！")
+    print("All model generalization tests completed (V3 - reward component decomposition version)!")
     print("="*80 + "\n")
 
-    print("📌 V3关键发现（奖励组件分解）:")
-    print(f"\n   Baseline性能 (Region A - Standard):")
+    print("V3 Key Findings (Reward Component Decomposition):")
+    print(f"\n   Baseline performance (Region A - Standard):")
     print(f"     - A2C: {baseline_rewards['A2C']:.2f}")
     print(f"     - PPO: {baseline_rewards['PPO']:.2f}")
     print(f"     - TD7: {baseline_rewards['TD7']:.2f}")
 
-    print(f"\n   🎯 RP1→RP2 Transition Logic:")
-    print(f"   虽然RP1的单目标优化获得了高累积奖励，")
-    print(f"   但奖励组件分解显示在多个目标上存在trade-offs：")
-    print(f"     - R_balance (公平性): 层间负载分布不均")
-    print(f"     - R_efficiency (能效): 能源利用率较低")
-    print(f"     - P_congestion (拥堵): 高负载下拥堵增加")
-    print(f"   这些trade-offs揭示了单目标优化的局限性，")
-    print(f"   motivates RP2采用MORL方法进行帕累托优化。")
+    print(f"\n   RP1→RP2 Transition Logic:")
+    print(f"   Although RP1's single-objective optimization achieves high cumulative reward,")
+    print(f"   reward component decomposition reveals trade-offs across multiple objectives:")
+    print(f"     - R_balance (fairness): Uneven load distribution across layers")
+    print(f"     - R_efficiency (energy): Low energy utilization rate")
+    print(f"     - P_congestion (congestion): Increased congestion under high load")
+    print(f"   These trade-offs reveal limitations of single-objective optimization,")
+    print(f"   motivating RP2 to adopt MORL approach for Pareto optimization.")
 
-    print("\n💡 下一步：")
-    print("   1. 查看详细结果: cat generalization_results/all_models_generalization_results_v3.json")
-    print("   2. 查看汇总表格: cat generalization_results/all_models_generalization_summary_v3.csv")
-    print("   3. 分析奖励组件trade-offs，设计RP1→RP2 transition逻辑")
-    print("   4. 撰写论文Section 3.4: 跨场景泛化性分析 + RP2 motivation")
+    print("\nNext steps:")
+    print("   1. View detailed results: cat generalization_results/all_models_generalization_results_v3.json")
+    print("   2. View summary table: cat generalization_results/all_models_generalization_summary_v3.csv")
+    print("   3. Analyze reward component trade-offs, design RP1→RP2 transition logic")
+    print("   4. Write paper Section 3.4: Cross-scenario generalization analysis + RP2 motivation")
 
 
 if __name__ == "__main__":

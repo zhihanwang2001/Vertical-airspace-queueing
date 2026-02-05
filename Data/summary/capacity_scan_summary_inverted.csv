@@ -1,0 +1,9 @@
+family,algorithm,shape,total_capacity,load_multiplier,n,mean_reward,std_reward,mean_crash_rate
+Heuristic,FCFS,inverted,10,5.0,2,128060.87368674557,97.1386322700067,0.0
+Heuristic,FCFS,inverted,30,5.0,2,-178.13777867406577,4.354931633713998,1.0
+Heuristic,Heuristic,inverted,10,5.0,2,-402.80579551816913,1.3763450389139722,1.0
+Heuristic,Heuristic,inverted,30,5.0,2,-1469.3752839378155,4.339852765000161,1.0
+Heuristic,Priority,inverted,10,5.0,2,-39.532854758671355,1.4950257659372717,1.0
+Heuristic,Priority,inverted,30,5.0,2,-326.13672932156135,4.401554058847222,1.0
+Heuristic,SJF,inverted,10,5.0,2,488099.2014512859,86.46172410905787,0.0
+Heuristic,SJF,inverted,30,5.0,2,-29.85785124484576,5.7173207923945135,1.0

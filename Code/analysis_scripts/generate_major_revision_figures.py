@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-生成Major Revision论文图表
-基于n=3, 5× load的结构对比数据
-生成日期: 2026-01-08
+Generate Major Revision Paper Figures
+Based on n=3, 5× load structural comparison data
+Generation date: 2026-01-08
 """
 
 import json
@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from pathlib import Path
 
-# 设置中文字体和样式
+# Set font and style
 mpl.rcParams['font.family'] = 'DejaVu Sans'
 mpl.rcParams['font.size'] = 11
 mpl.rcParams['axes.labelsize'] = 12
@@ -21,13 +21,13 @@ mpl.rcParams['ytick.labelsize'] = 10
 mpl.rcParams['legend.fontsize'] = 10
 mpl.rcParams['figure.titlesize'] = 16
 
-# 数据路径
+# Data paths
 DATA_DIR = Path("Data/ablation_studies/structural_5x_load")
 OUTPUT_DIR = Path("Analysis/figures/major_revision")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 def load_structural_data():
-    """加载结构对比数据（n=3, 5× load）"""
+    """Load structural comparison data (n=3, 5× load)"""
     data = {
         'inverted': {'A2C': [], 'PPO': []},
         'normal': {'A2C': [], 'PPO': []}
@@ -45,7 +45,7 @@ def load_structural_data():
                 if file_path.exists():
                     with open(file_path) as f:
                         result = json.load(f)
-                        # 提取平均奖励
+                        # Extract average reward
                         mean_reward = result.get('mean_reward', 0)
                         data[struct_key][algo].append(mean_reward)
                 else:
@@ -55,13 +55,13 @@ def load_structural_data():
 
 def plot_structure_comparison():
     """
-    Figure 1: 结构对比图（Major Revision核心图）
-    显示inverted vs normal pyramid在5× load下的n=3对比
+    Figure 1: Structural comparison (Major Revision core figure)
+    Shows inverted vs normal pyramid comparison at 5× load with n=3
     """
     data = load_structural_data()
 
-    # 计算统计量
-    stats = {}
+    # Calculate statistics
+    stats =
     for struct in ['inverted', 'normal']:
         stats[struct] = {}
         for algo in ['A2C', 'PPO']:
@@ -74,7 +74,7 @@ def plot_structure_comparison():
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
-    # 子图1: 平均奖励对比
+    # Subplot 1: Average reward comparison
     x = np.arange(2)
     width = 0.35
 
@@ -90,7 +90,7 @@ def plot_structure_comparison():
                     label='Normal [2,3,4,6,8]', color='#ED7D31', capsize=5,
                     error_kw={'linewidth': 2})
 
-    # 添加数值标签
+    # Add value labels
     for bars in [bars1, bars2]:
         for bar in bars:
             height = bar.get_height()
@@ -106,7 +106,7 @@ def plot_structure_comparison():
     ax1.grid(axis='y', alpha=0.3, linestyle='--')
     ax1.set_ylim(bottom=650000, top=750000)
 
-    # 子图2: 提升百分比
+    # Subplot 2: Improvement percentage
     improvements = []
     for algo in ['A2C', 'PPO']:
         inv_mean = stats['inverted'][algo]['mean']
@@ -130,7 +130,7 @@ def plot_structure_comparison():
 
     plt.tight_layout()
 
-    # 保存
+    # Save
     output_file = OUTPUT_DIR / "fig1_structure_comparison_major_revision"
     plt.savefig(f"{output_file}.pdf", dpi=300, bbox_inches='tight')
     plt.savefig(f"{output_file}.png", dpi=300, bbox_inches='tight')
@@ -141,10 +141,10 @@ def plot_structure_comparison():
 
 def plot_statistical_evidence():
     """
-    Figure 2: 统计显著性可视化
-    显示Cohen's d效应量和p值
+    Figure 2: Statistical significance visualization
+    Shows Cohen's d effect size and p-values
     """
-    # 从logs/experiment_a_5x_analysis.log提取的数据
+    # Data extracted from logs/experiment_a_5x_analysis.log
     results = {
         'A2C': {
             'inverted_mean': 723990,
@@ -166,7 +166,7 @@ def plot_statistical_evidence():
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 
-    # 子图1: Cohen's d with 95% CI
+    # Subplot 1: Cohen's d with 95% CI
     algos = ['A2C', 'PPO']
     d_values = [results[a]['cohens_d'] for a in algos]
     ci_lower = [results[a]['ci_lower'] for a in algos]
@@ -188,7 +188,7 @@ def plot_statistical_evidence():
     ax1.grid(axis='x', alpha=0.3, linestyle='--')
     ax1.set_xlim(0, 500)
 
-    # 子图2: -log10(p-value)
+    # Subplot 2: -log10(p-value)
     p_values = [results[a]['p_value'] for a in algos]
     neg_log_p = [-np.log10(p) for p in p_values]
 
@@ -217,24 +217,24 @@ def plot_statistical_evidence():
 
 def main():
     print("="*60)
-    print("生成Major Revision论文图表")
-    print("数据: n=3, 5× load, seeds=[42,123,456]")
+    print("Generate Major Revision Paper Figures")
+    print("Data: n=3, 5× load, seeds=[42,123,456]")
     print("="*60)
 
-    # 生成图表
-    print("\n[1/2] 生成结构对比图...")
+    # Generate figures
+    print("\n[1/2] Generating structure comparison figure...")
     stats = plot_structure_comparison()
 
-    print("\n[2/2] 生成统计显著性图...")
+    print("\n[2/2] Generating statistical significance figure...")
     plot_statistical_evidence()
 
     print("\n" + "="*60)
-    print("图表生成完成！")
-    print(f"输出目录: {OUTPUT_DIR}")
+    print("Figure generation complete!")
+    print(f"Output directory: {OUTPUT_DIR}")
     print("="*60)
 
-    # 打印统计摘要
-    print("\n📊 数据摘要:")
+    # Print statistical summary
+    print("\n📊 Data Summary:")
     for struct in ['inverted', 'normal']:
         print(f"\n{struct.upper()} PYRAMID:")
         for algo in ['A2C', 'PPO']:

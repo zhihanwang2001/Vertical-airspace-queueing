@@ -1,5 +1,5 @@
 """
-简化版：只运行K=30 A2C seed 42（最关键实验）
+Simplified version: Only run K=30 A2C seed 42 (most critical experiment)
 """
 import sys
 sys.path.insert(0, '../..')

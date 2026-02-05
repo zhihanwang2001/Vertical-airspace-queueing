@@ -59,19 +59,20 @@ final/RP1/
 - **D**: Dynamic inter-layer transfers
 - **K**: Finite capacity (inverted pyramid: [8, 6, 4, 3, 2])
 
-**Key Files**:
-- `vertical_queue_env.py` - Main Gymnasium environment
-- `delivery_cabinet.py` - Queue dynamics and routing logic
-- `reward_function.py` - Multi-objective reward design
-- `state_manager.py` - State representation (29-dim)
-- `queue_dynamics.py` - Queueing theory implementation
-- `config.py` - System configuration
-- `README.md` - Complete environment specification (440 lines)
+**Environment Variants**:
+- Default training env (Dict obs, 29 dims): `env.drl_optimized_env_fixed.DRLOptimizedQueueEnvFixed`
+- Theoretical env (vector obs, for mechanism studies): `env.vertical_queue_env.VerticalQueueEnv`
 
-**Environment Specs**:
-- **State Space**: 29 dimensions (queue lengths, service rates, transfers, etc.)
-- **Action Space**: 11 dimensions (6 continuous + 5 discrete) - Hybrid action space
-- **Reward Components**: Throughput, fairness (Gini), efficiency, stability, queue management
+**Key Files**:
+- Training env: `drl_optimized_env_fixed.py`, wrappers `drl_wrapper_fixed.py`, `configurable_env_wrapper.py`
+- Theoretical components: `vertical_queue_env.py`, `reward_function.py`, `state_manager.py`, `queue_dynamics.py`
+- Shared utilities: `delivery_cabinet.py`, `config.py`, `utils.py`
+- `README.md` - Environment specification
+
+**Training Specs (Default)**:
+- **State Space**: Dict with 29 dims (queue lengths, utilization, load rates, service rates, prev_reward, system_metrics)
+- **Action Space**: 11 dims (service_intensities[5], arrival_multiplier[1], emergency_transfers[5])
+- **Reward Components**: Throughput, fairness (Gini), efficiency, congestion, stability, transfer benefit
 
 ### 2. Algorithm Implementations (`Code/algorithms/`)
 
@@ -188,9 +189,7 @@ final/RP1/
 
 #### Guides (`guides/` - 15 documents)
 - `FINAL_TRANSITION_NARRATIVE.md` - Complete RP1 research story
-- `Final_Paper_Chinese_Version.md` - Chinese manuscript (98 KB)
 - `Related_Work.md` - Literature review (60+ papers)
-- `RP1_完整研究报告.md` - Complete research report (Chinese)
 - `GENERALIZATION_TEST_README.md` - Generalization experiment guide
 - `V3_RESULTS_ANALYSIS.md` - Final results analysis
 - `QUICK_REFERENCE_FINAL.md` - Quick reference guide
@@ -278,7 +277,7 @@ python generate_paper_figures.py
 1. **Reproduce Results**: Use `Code/training_scripts/run_baseline_comparison.py`
 2. **Analyze Data**: Results in `Results/comparison/comparison_data.json`
 3. **Visualize**: Run scripts in `Code/analysis_scripts/`
-4. **Read Documentation**: Start with `Documentation/guides/RP1_完整研究报告.md`
+4. **Read Documentation**: Start with `Documentation/guides/FINAL_TRANSITION_NARRATIVE.md`
 
 ### For Practitioners
 1. **Use Best Model**: `Models/sb3_a2c_best/final_model`

@@ -1,24 +1,24 @@
 """
 Major Revision Experiment 1.1: Extended Training for K=30
-验证容量悖论是系统固有特性还是训练预算不足
+Verify whether capacity paradox is an inherent system property or insufficient training budget
 
-关键问题：
-- 论文声称 K=30 在 100K 步训练后崩溃（100%崩溃率）
-- 评审质疑：可能只是训练不足，而非系统固有问题
+Key Question:
+- Paper claims K=30 crashes after 100K training steps (100% crash rate)
+- Reviewer questions: May be just insufficient training, not an inherent system issue
 
-实验设计：
-1. K=30 (uniform [6,6,6,6,6]) 训练 1M 步（vs 原来的100K）
-2. K=23 (inverted pyramid) 训练 1M 步作为对照
-3. K=10 (low capacity) 训练 1M 步作为基准
+Experimental Design:
+1. K=30 (uniform [6,6,6,6,6]) train for 1M steps (vs original 100K)
+2. K=23 (inverted pyramid) train for 1M steps as control
+3. K=10 (low capacity) train for 1M steps as baseline
 
-算法：A2C, PPO（原论文主要算法）
-每个配置：3 seeds
-评估：每10K步评估一次，使用 T=200 统一协议
+Algorithms: A2C, PPO (main algorithms in original paper)
+Each configuration: 3 seeds
+Evaluation: Evaluate every 10K steps, using T=200 unified protocol
 
-预期结果：
-- Best case: K=30 仍然崩溃 → 容量悖论是真实的
-- Worst case: K=30 成功收敛 → 容量悖论是训练不足
-- Most likely: K=30 部分改善但仍差于K=10 → nuanced conclusion
+Expected Results:
+- Best case: K=30 still crashes → capacity paradox is real
+- Worst case: K=30 successfully converges → capacity paradox is insufficient training
+- Most likely: K=30 partially improves but still worse than K=10 → nuanced conclusion
 """
 
 import sys
@@ -43,37 +43,39 @@ from env.drl_wrapper_fixed import DictToBoxActionWrapperFixed, ObservationWrappe
 
 def create_config(capacity_type='k30_uniform', high_load_multiplier=10.0):
     """
-    创建配置
+    Create configuration
 
-    capacity_type:
-    - 'k30_uniform': [6,6,6,6,6] 总30
-    - 'k23_inverted': [8,6,4,3,2] 总23 (baseline)
-    - 'k10_low': [2,2,2,2,2] 总10 (best performer in original)
+    Args:
+        capacity_type:
+            - 'k30_uniform': [6,6,6,6,6] total 30
+            - 'k23_inverted': [8,6,4,3,2] total 23 (baseline)
+            - 'k10_low': [2,2,2,2,2] total 10 (best performer in original)
+        high_load_multiplier: Load multiplier (default 10.0)
     """
     config = VerticalQueueConfig()
 
     if capacity_type == 'k30_uniform':
-        config.layer_capacities = [6, 6, 6, 6, 6]  # 总30
+        config.layer_capacities = [6, 6, 6, 6, 6]  # Total 30
         name = "K=30 Uniform"
     elif capacity_type == 'k23_inverted':
-        config.layer_capacities = [8, 6, 4, 3, 2]  # 总23
+        config.layer_capacities = [8, 6, 4, 3, 2]  # Total 23
         name = "K=23 Inverted Pyramid"
     elif capacity_type == 'k10_low':
-        config.layer_capacities = [2, 2, 2, 2, 2]  # 总10
+        config.layer_capacities = [2, 2, 2, 2, 2]  # Total 10
         name = "K=10 Low Capacity"
     else:
         raise ValueError(f"Unknown capacity type: {capacity_type}")
 
-    # 固定UAM流量模式（原论文设定）
+    # Fixed UAM traffic pattern (original paper setting)
     config.arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]
 
-    # 10× 高负载
+    # 10× high load
     total_capacity = sum(config.layer_capacities)
     avg_service_rate = np.mean(config.layer_service_rates)
     base_rate_v3 = 0.75 * total_capacity * avg_service_rate / 5
     config.base_arrival_rate = base_rate_v3 * high_load_multiplier
 
-    # 计算理论负载
+    # Calculate theoretical load
     layer_loads = []
     for i, (w, c) in enumerate(zip(config.arrival_weights, config.layer_capacities)):
         layer_arrival = config.base_arrival_rate * w
@@ -82,23 +84,23 @@ def create_config(capacity_type='k30_uniform', high_load_multiplier=10.0):
         layer_loads.append(layer_load)
 
     print(f"\n{'='*80}")
-    print(f"配置: {name}")
-    print(f"容量: {config.layer_capacities} (总计: {total_capacity})")
-    print(f"到达权重: {config.arrival_weights}")
-    print(f"总到达率: {config.base_arrival_rate:.2f}")
-    print(f"\n各层理论负载:")
+    print(f"Configuration: {name}")
+    print(f"Capacity: {config.layer_capacities} (Total: {total_capacity})")
+    print(f"Arrival weights: {config.arrival_weights}")
+    print(f"Total arrival rate: {config.base_arrival_rate:.2f}")
+    print(f"\nTheoretical load per layer:")
     for i, load in enumerate(layer_loads):
-        status = "🔴" if load >= 1.0 else "🟡" if load > 0.8 else "🟢"
+        status = "RED" if load >= 1.0 else "YELLOW" if load > 0.8 else "GREEN"
         print(f"  L{i}: {load*100:.1f}% {status}")
-    print(f"平均负载: {np.mean(layer_loads)*100:.1f}%")
-    print(f"最大负载: {np.max(layer_loads)*100:.1f}%")
+    print(f"Average load: {np.mean(layer_loads)*100:.1f}%")
+    print(f"Maximum load: {np.max(layer_loads)*100:.1f}%")
     print(f"{'='*80}\n")
 
     return config, name
 
 
 def create_env(config):
-    """创建环境"""
+    """Create environment"""
     base_env = ConfigurableEnvWrapper(config)
     wrapped_env = DictToBoxActionWrapperFixed(base_env)
     env = ObservationWrapperFixed(wrapped_env)
@@ -110,22 +112,22 @@ def train_and_evaluate(
     capacity_type='k30_uniform',
     seed=42,
     total_timesteps=1_000_000,  # 1M steps (vs original 100K)
-    eval_freq=10_000,  # 每10K评估
+    eval_freq=10_000,  # Evaluate every 10K
     n_eval_episodes=10
 ):
     """
-    训练并评估
+    Train and evaluate
 
-    关键参数：
+    Key parameters:
     - total_timesteps: 1M (10× original)
     - eval_freq: 10K (vs original 5K)
-    - max_episode_steps: 200 (统一协议，与原论文A2C/PPO一致)
+    - max_episode_steps: 200 (unified protocol, consistent with original paper A2C/PPO)
     """
 
-    # 创建配置
+    # Create configuration
     config, config_name = create_config(capacity_type)
 
-    # 设置输出目录
+    # Set output directory
     output_dir = Path(f"Results/major_revision_exp1/{capacity_type}/{algo_name}_seed{seed}")
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -136,22 +138,22 @@ def train_and_evaluate(
     print(f"Output: {output_dir}")
     print(f"{'='*80}\n")
 
-    # 创建训练和评估环境
+    # Create training and evaluation environments
     train_env = create_env(config)
     eval_env = create_env(config)
 
-    # 设置episode长度（统一协议）
-    train_env.env.env._max_episode_steps = 1000  # 训练时较长
-    eval_env.env.env._max_episode_steps = 200    # 评估时统一T=200
+    # Set episode length (unified protocol)
+    train_env.env.env._max_episode_steps = 1000  # Longer for training
+    eval_env.env.env._max_episode_steps = 200    # Unified T=200 for evaluation
 
-    # 创建算法
+    # Create algorithm
     if algo_name == 'A2C':
-        # 使用原论文的staged learning rate
-        # 但由于是1M步，调整transition point
+        # Use staged learning rate from original paper
+        # But adjust transition point for 1M steps
         model = A2C(
             "MlpPolicy",
             train_env,
-            learning_rate=7e-4,  # 初始高学习率
+            learning_rate=7e-4,  # Initial high learning rate
             n_steps=32,
             gamma=0.99,
             gae_lambda=0.95,
@@ -183,7 +185,7 @@ def train_and_evaluate(
     else:
         raise ValueError(f"Unknown algorithm: {algo_name}")
 
-    # 创建评估回调
+    # Create evaluation callback
     eval_callback = EvalCallback(
         eval_env,
         best_model_save_path=str(output_dir / "best_model"),
@@ -195,16 +197,16 @@ def train_and_evaluate(
         verbose=1
     )
 
-    # 创建checkpoint回调（每50K保存）
+    # Create checkpoint callback (save every 50K)
     checkpoint_callback = CheckpointCallback(
         save_freq=50_000,
         save_path=str(output_dir / "checkpoints"),
         name_prefix=f"{algo_name}_checkpoint"
     )
 
-    # 训练
+    # Training
     print(f"\n{'='*80}")
-    print(f"开始训练...")
+    print(f"Starting training...")
     print(f"{'='*80}\n")
 
     start_time = time.time()
@@ -219,16 +221,16 @@ def train_and_evaluate(
         training_time = time.time() - start_time
 
         print(f"\n{'='*80}")
-        print(f"训练完成！")
-        print(f"耗时: {training_time/60:.1f} 分钟")
+        print(f"Training complete!")
+        print(f"Time taken: {training_time/60:.1f} minutes")
         print(f"{'='*80}\n")
 
-        # 保存最终模型
+        # Save final model
         model.save(output_dir / "final_model")
 
-        # 最终评估（T=200）
+        # Final evaluation (T=200)
         print(f"\n{'='*80}")
-        print(f"最终评估 (T=200, {n_eval_episodes} episodes)...")
+        print(f"Final evaluation (T=200, {n_eval_episodes} episodes)...")
         print(f"{'='*80}\n")
 
         eval_env.env.env._max_episode_steps = 200
@@ -259,7 +261,7 @@ def train_and_evaluate(
 
             print(f"  Episode {ep+1}: Reward={episode_reward:.1f}, Length={episode_length}")
 
-        # 计算统计
+        # Calculate statistics
         mean_reward = np.mean(episode_rewards)
         std_reward = np.std(episode_rewards)
         mean_length = np.mean(episode_lengths)
@@ -293,25 +295,25 @@ def train_and_evaluate(
             }
         }
 
-        # 保存结果
+        # Save results
         results_file = output_dir / "results.json"
         with open(results_file, 'w') as f:
             json.dump(results, f, indent=2)
 
         print(f"\n{'='*80}")
-        print(f"最终结果:")
-        print(f"  平均奖励: {mean_reward:.1f} ± {std_reward:.1f}")
-        print(f"  平均长度: {mean_length:.1f}")
-        print(f"  崩溃率: {crash_rate:.1f}%")
-        print(f"  完成率: {completion_rate:.1f}%")
+        print(f"Final results:")
+        print(f"  Mean reward: {mean_reward:.1f} ± {std_reward:.1f}")
+        print(f"  Mean length: {mean_length:.1f}")
+        print(f"  Crash rate: {crash_rate:.1f}%")
+        print(f"  Completion rate: {completion_rate:.1f}%")
         print(f"{'='*80}\n")
 
-        print(f"结果已保存到: {results_file}")
+        print(f"Results saved to: {results_file}")
 
         return results
 
     except Exception as e:
-        print(f"\n❌ 训练失败: {e}")
+        print(f"\n❌ Training failed: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -323,16 +325,16 @@ def train_and_evaluate(
 
 def main():
     """
-    主函数：运行所有配置
+    Main function: Run all configurations
 
-    优先级：
-    1. K=30 (关键) - 验证容量悖论
-    2. K=23 (对照) - 确认扩展训练不破坏已知结果
-    3. K=10 (基准) - 验证最优配置是否进一步改善
+    Priority:
+    1. K=30 (critical) - Verify capacity paradox
+    2. K=23 (control) - Confirm extended training doesn't break known results
+    3. K=10 (baseline) - Verify if optimal configuration improves further
     """
 
     configurations = [
-        # 最关键：K=30
+        # Most critical: K=30
         ('A2C', 'k30_uniform', 42),
         ('A2C', 'k30_uniform', 123),
         ('A2C', 'k30_uniform', 456),
@@ -341,14 +343,14 @@ def main():
         ('PPO', 'k30_uniform', 123),
         ('PPO', 'k30_uniform', 456),
 
-        # 对照：K=23
+        # Control: K=23
         ('A2C', 'k23_inverted', 42),
         ('A2C', 'k23_inverted', 123),
 
         ('PPO', 'k23_inverted', 42),
         ('PPO', 'k23_inverted', 123),
 
-        # 基准：K=10
+        # Baseline: K=10
         ('A2C', 'k10_low', 42),
         ('PPO', 'k10_low', 42),
     ]
@@ -356,7 +358,7 @@ def main():
     print(f"\n{'#'*80}")
     print(f"# Major Revision Experiment 1.1: Extended Training")
     print(f"# Total configurations: {len(configurations)}")
-    print(f"# Estimated time: ~{len(configurations) * 2} hours (parallel可以减少)")
+    print(f"# Estimated time: ~{len(configurations) * 2} hours (can be reduced with parallel execution)")
     print(f"{'#'*80}\n")
 
     all_results = []
@@ -378,7 +380,7 @@ def main():
         if result:
             all_results.append(result)
 
-    # 保存汇总结果
+    # Save summary results
     summary_file = Path("Results/major_revision_exp1/summary.json")
     summary_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -386,12 +388,12 @@ def main():
         json.dump(all_results, f, indent=2)
 
     print(f"\n{'#'*80}")
-    print(f"# 所有实验完成！")
-    print(f"# 汇总结果: {summary_file}")
+    print(f"# All experiments complete!")
+    print(f"# Summary results: {summary_file}")
     print(f"{'#'*80}\n")
 
-    # 快速分析
-    print("\n快速分析:")
+    # Quick analysis
+    print("\nQuick analysis:")
     print("="*80)
 
     for capacity_type in ['k30_uniform', 'k23_inverted', 'k10_low']:
@@ -414,7 +416,7 @@ def main():
             print(f"    Crash:  {np.mean(crash_rates):.1f}%")
 
     print("\n" + "="*80)
-    print("分析完成！请查看详细结果进行论文修订。")
+    print("Analysis complete! Please review detailed results for paper revision.")
 
 
 if __name__ == "__main__":

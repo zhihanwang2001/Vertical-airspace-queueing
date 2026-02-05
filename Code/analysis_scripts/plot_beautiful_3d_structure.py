@@ -1,5 +1,5 @@
 """
-美化版垂直分层排队系统3D结构图 (图1)
+Beautiful 3D Vertical Stratified Queue System Structure (Figure 1)
 Beautiful 3D Vertical Stratified Queue System Structure
 """
 
@@ -9,16 +9,16 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import numpy as np
 import seaborn as sns
 
-# 设置绘图风格
+# Set plotting style
 sns.set_style("white")
 plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'STHeiti']
 plt.rcParams['axes.unicode_minus'] = False
 
-# 创建图形
+# Create figure
 fig = plt.figure(figsize=(16, 10))
 ax = fig.add_subplot(111, projection='3d')
 
-# 层配置（倒金字塔）
+# Layer configuration (inverted pyramid)
 layers = [
     {'name': 'Layer 5', 'height': 100, 'capacity': 8, 'color': '#3498DB', 'alpha': 0.25},
     {'name': 'Layer 4', 'height': 80, 'capacity': 6, 'color': '#2ECC71', 'alpha': 0.3},
@@ -27,38 +27,38 @@ layers = [
     {'name': 'Layer 1', 'height': 20, 'capacity': 2, 'color': '#9B59B6', 'alpha': 0.45},
 ]
 
-# 绘制每一层（倒金字塔形状：容量越大，层越宽）
+# Draw each layer (inverted pyramid shape: larger capacity = wider layer)
 for i, layer in enumerate(layers):
     z = layer['height']
     capacity = layer['capacity']
 
-    # 根据容量计算层的大小（倒金字塔：容量大→面积大）
-    size = capacity * 1.5  # 缩放因子
+    # Calculate layer size based on capacity (inverted pyramid: larger capacity → larger area)
+    size = capacity * 1.5  # Scaling factor
 
-    # 定义层的四个角点
+    # Define four corner points of the layer
     x_range = [-size, size, size, -size, -size]
     y_range = [-size, -size, size, size, -size]
     z_range = [z, z, z, z, z]
 
-    # 绘制层的底面
+    # Draw layer base
     verts = [list(zip(x_range[:-1], y_range[:-1], z_range[:-1]))]
     poly = Poly3DCollection(verts, alpha=layer['alpha'],
                            facecolor=layer['color'],
                            edgecolor='#2C3E50', linewidth=2.5)
     ax.add_collection3d(poly)
 
-    # 绘制层的边框（加粗）
+    # Draw layer border (thickened)
     ax.plot(x_range, y_range, z_range, color='#2C3E50', linewidth=3, alpha=0.9)
 
-    # 添加层标签
+    # Add layer label
     ax.text(size + 2, 0, z,
             f'{layer["name"]}\n{z}m\nC={capacity}',
             fontsize=13, fontweight='bold', color='#2C3E50',
             bbox=dict(boxstyle='round,pad=0.5', facecolor='white',
                      edgecolor=layer['color'], linewidth=2.5, alpha=0.95))
 
-    # 在层中心绘制UAV示意（小球）
-    num_uavs = min(capacity // 2 + 1, 4)  # 示意性显示UAV数量
+    # Draw UAV representation in layer center (small spheres)
+    num_uavs = min(capacity // 2 + 1, 4)  # Illustrative UAV count
     for j in range(num_uavs):
         theta = 2 * np.pi * j / num_uavs
         r = size * 0.5
@@ -68,20 +68,20 @@ for i, layer in enumerate(layers):
                   c=layer['color'], s=300, marker='o',
                   edgecolors='#2C3E50', linewidths=2, alpha=0.9)
 
-# 绘制层间传输箭头
+# Draw inter-layer transfer arrows
 for i in range(len(layers) - 1):
     z_from = layers[i]['height']
     z_to = layers[i + 1]['height']
 
-    # 向上传输箭头
+    # Upward transfer arrow
     ax.quiver(8, 8, z_from + 1, 0, 0, z_to - z_from - 2,
              color='#27AE60', arrow_length_ratio=0.15, linewidth=3, alpha=0.8)
 
-    # 向下传输箭头
+    # Downward transfer arrow
     ax.quiver(-8, -8, z_to - 1, 0, 0, -(z_to - z_from - 2),
              color='#E67E22', arrow_length_ratio=0.15, linewidth=3, alpha=0.8)
 
-# 添加到达流标注
+# Add arrival stream annotation
 ax.text(-15, -15, 0, 'Arrival\nStream', fontsize=14, fontweight='bold',
         color='#8E44AD',
         bbox=dict(boxstyle='round,pad=0.6', facecolor='#F4ECF7',
@@ -89,13 +89,13 @@ ax.text(-15, -15, 0, 'Arrival\nStream', fontsize=14, fontweight='bold',
 ax.quiver(-13, -13, 0, 6, 6, 5, color='#8E44AD', arrow_length_ratio=0.2,
          linewidth=3.5, alpha=0.9)
 
-# 添加离开流标注
+# Add departure stream annotation
 ax.text(15, 15, 105, 'Departure\nStream', fontsize=14, fontweight='bold',
         color='#16A085',
         bbox=dict(boxstyle='round,pad=0.6', facecolor='#E8F8F5',
                  edgecolor='#16A085', linewidth=2.5))
 
-# 添加图例
+# Add legend
 legend_elements = [
     plt.Line2D([0], [0], marker='o', color='w',
               markerfacecolor='#3498DB', markersize=12,
@@ -110,7 +110,7 @@ legend_elements = [
 ax.legend(handles=legend_elements, loc='upper left', fontsize=13,
          framealpha=0.95, edgecolor='#2C3E50', fancybox=True, shadow=True)
 
-# 设置轴标签和标题
+# Set axis labels and title
 ax.set_xlabel('X-axis (m)', fontsize=14, fontweight='bold', color='#2C3E50', labelpad=10)
 ax.set_ylabel('Y-axis (m)', fontsize=14, fontweight='bold', color='#2C3E50', labelpad=10)
 ax.set_zlabel('Altitude (m)', fontsize=14, fontweight='bold', color='#2C3E50', labelpad=10)
@@ -119,15 +119,15 @@ ax.set_title('Vertical Stratified Queue System: Inverted Pyramid Capacity Profil
              'MCRPS/D/K Framework for UAV Airspace Management',
              fontsize=18, fontweight='bold', pad=30, color='#2C3E50')
 
-# 设置视角
+# Set viewing angle
 ax.view_init(elev=25, azim=45)
 
-# 设置轴范围
+# Set axis ranges
 ax.set_xlim([-18, 18])
 ax.set_ylim([-18, 18])
 ax.set_zlim([0, 120])
 
-# 背景颜色
+# Background color
 ax.xaxis.pane.fill = False
 ax.yaxis.pane.fill = False
 ax.zaxis.pane.fill = False
@@ -135,7 +135,7 @@ ax.xaxis.pane.set_edgecolor('#BDC3C7')
 ax.yaxis.pane.set_edgecolor('#BDC3C7')
 ax.zaxis.pane.set_edgecolor('#BDC3C7')
 
-# 网格
+# Grid
 ax.grid(True, alpha=0.2, linestyle='--', linewidth=1)
 
 plt.tight_layout()

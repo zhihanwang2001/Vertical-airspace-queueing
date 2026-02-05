@@ -1,14 +1,13 @@
 """
-消融实验配置模块
 Ablation Study Configuration Module
 
-定义4个关键组件的消融实验：
-1. 无高层优先 (No High-Layer Priority) - 移除到达权重优势
-2. 单目标优化 (Single-Objective) - 移除多目标优化
-3. 传统金字塔 (Traditional Pyramid) - 移除倒金字塔优势  
-4. 无转移机制 (No Transfer) - 移除层间转移功能
+Define ablation experiments for 4 key components:
+1. No High-Layer Priority - Remove arrival weight advantage
+2. Single-Objective - Remove multi-objective optimization
+3. Traditional Pyramid - Remove inverted pyramid advantage
+4. No Transfer - Remove inter-layer transfer functionality
 
-每个消融实验都保持其他组件不变，以确保公平对比
+Each ablation experiment keeps other components unchanged to ensure fair comparison
 """
 
 import copy
@@ -16,170 +15,170 @@ from typing import Dict, Any, List
 from env.config import VerticalQueueConfig
 
 class AblationConfigs:
-    """消融实验配置管理器"""
-    
+    """Ablation study configuration manager"""
+
     @staticmethod
     def get_full_system_config() -> VerticalQueueConfig:
         """
-        获取完整系统配置（我们的完整方法）
-        这是对照组，包含所有创新组件
+        Get full system configuration (our complete method)
+        This is the control group, containing all innovative components
         """
         config = VerticalQueueConfig()
-        
-        # 确保使用我们的核心创新配置
-        config.layer_capacities = [8, 6, 4, 3, 2]  # 倒金字塔
-        config.arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]  # 高层优先 
-        config.layer_service_rates = [1.2, 1.0, 0.8, 0.6, 0.4]  # 高层快速服务
-        
+
+        # Ensure using our core innovative configuration
+        config.layer_capacities = [8, 6, 4, 3, 2]  # Inverted pyramid
+        config.arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]  # High-layer priority
+        config.layer_service_rates = [1.2, 1.0, 0.8, 0.6, 0.4]  # High-layer fast service
+
         return config
-    
-    @staticmethod 
+
+    @staticmethod
     def get_no_high_priority_config() -> VerticalQueueConfig:
         """
-        消融实验1: 无高层优先 (No High-Layer Priority)
-        
-        移除组件: 高层优先到达机制
-        修改: arrival_weights -> 均匀分布 [0.2, 0.2, 0.2, 0.2, 0.2]
-        保持: 倒金字塔容量、多目标优化、转移机制
-        
-        预期影响: 失去高层快速处理优势，整体吞吐量下降
+        Ablation Experiment 1: No High-Layer Priority
+
+        Removed component: High-layer priority arrival mechanism
+        Modification: arrival_weights -> Uniform distribution [0.2, 0.2, 0.2, 0.2, 0.2]
+        Kept: Inverted pyramid capacity, multi-objective optimization, transfer mechanism
+
+        Expected impact: Loss of high-layer fast processing advantage, overall throughput decrease
         """
         config = AblationConfigs.get_full_system_config()
-        
-        # 移除高层优先：使用均匀到达权重
+
+        # Remove high-layer priority: use uniform arrival weights
         config.arrival_weights = [0.2, 0.2, 0.2, 0.2, 0.2]
-        
-        # 标记此配置用途
+
+        # Mark this configuration purpose
         config._ablation_type = "no_high_priority"
         config._removed_component = "High-Layer Priority Arrival"
-        
+
         return config
-    
+
     @staticmethod
     def get_single_objective_config() -> VerticalQueueConfig:
         """
-        消融实验2: 单目标优化 (Single-Objective)
-        
-        移除组件: 多目标优化框架  
-        修改: 只优化吞吐量，移除其他5个目标
-        保持: 倒金字塔容量、高层优先、转移机制
-        
-        预期影响: 失去多目标平衡，可能吞吐量高但稳定性差
+        Ablation Experiment 2: Single-Objective
+
+        Removed component: Multi-objective optimization framework
+        Modification: Only optimize throughput, remove other 5 objectives
+        Kept: Inverted pyramid capacity, high-layer priority, transfer mechanism
+
+        Expected impact: Loss of multi-objective balance, possibly high throughput but poor stability
         """
         config = AblationConfigs.get_full_system_config()
-        
-        # 标记为单目标优化
-        config._ablation_type = "single_objective"  
+
+        # Mark as single-objective optimization
+        config._ablation_type = "single_objective"
         config._removed_component = "Multi-Objective Optimization"
-        config._reward_type = "throughput_only"  # 环境会据此调整奖励函数
-        
+        config._reward_type = "throughput_only"  # Environment will adjust reward function accordingly
+
         return config
-    
+
     @staticmethod
     def get_traditional_pyramid_config() -> VerticalQueueConfig:
         """
-        消融实验3: 传统金字塔 (Traditional Pyramid)
-        
-        移除组件: 倒金字塔容量结构
-        修改: layer_capacities -> 传统金字塔 [2, 3, 4, 6, 8] (底大顶小)
-        保持: 高层优先、多目标优化、转移机制
-        
-        预期影响: 容量分配不合理，高层容量不足导致转移频繁
+        Ablation Experiment 3: Traditional Pyramid
+
+        Removed component: Inverted pyramid capacity structure
+        Modification: layer_capacities -> Traditional pyramid [2, 3, 4, 6, 8] (large bottom, small top)
+        Kept: High-layer priority, multi-objective optimization, transfer mechanism
+
+        Expected impact: Unreasonable capacity allocation, insufficient high-layer capacity leads to frequent transfers
         """
         config = AblationConfigs.get_full_system_config()
-        
-        # 使用传统金字塔结构（与我们的创新相反）
-        config.layer_capacities = [2, 3, 4, 6, 8]  # 底层大，顶层小
-        
-        # 标记此配置用途
+
+        # Use traditional pyramid structure (opposite of our innovation)
+        config.layer_capacities = [2, 3, 4, 6, 8]  # Large bottom, small top
+
+        # Mark this configuration purpose
         config._ablation_type = "traditional_pyramid"
         config._removed_component = "Inverted Pyramid Structure"
-        
+
         return config
-    
+
     @staticmethod
     def get_no_transfer_config() -> VerticalQueueConfig:
         """
-        消融实验4: 无转移机制 (No Transfer)
-        
-        移除组件: 层间转移机制
-        修改: 禁用下沉转移功能
-        保持: 倒金字塔容量、高层优先、多目标优化
-        
-        预期影响: 无法缓解局部拥塞，系统适应性下降
+        Ablation Experiment 4: No Transfer
+
+        Removed component: Inter-layer transfer mechanism
+        Modification: Disable downward transfer functionality
+        Kept: Inverted pyramid capacity, high-layer priority, multi-objective optimization
+
+        Expected impact: Cannot alleviate local congestion, system adaptability decreases
         """
         config = AblationConfigs.get_full_system_config()
-        
-        # 标记禁用转移机制
+
+        # Mark transfer mechanism disabled
         config._ablation_type = "no_transfer"
         config._removed_component = "Transfer Mechanism"
-        config._transfer_enabled = False  # 环境会据此禁用转移
-        
+        config._transfer_enabled = False  # Environment will disable transfer accordingly
+
         return config
-    
+
     @staticmethod
     def get_all_ablation_configs() -> Dict[str, VerticalQueueConfig]:
         """
-        获取所有消融实验配置
-        
+        Get all ablation experiment configurations
+
         Returns:
             Dict containing:
-            - 'full_system': 完整系统（对照组）
-            - 'no_high_priority': 无高层优先
-            - 'single_objective': 单目标优化
-            - 'traditional_pyramid': 传统金字塔
-            - 'no_transfer': 无转移机制
+            - 'full_system': Full system (control group)
+            - 'no_high_priority': No high-layer priority
+            - 'single_objective': Single-objective optimization
+            - 'traditional_pyramid': Traditional pyramid
+            - 'no_transfer': No transfer mechanism
         """
         return {
             'full_system': AblationConfigs.get_full_system_config(),
             'no_high_priority': AblationConfigs.get_no_high_priority_config(),
-            'single_objective': AblationConfigs.get_single_objective_config(), 
+            'single_objective': AblationConfigs.get_single_objective_config(),
             'traditional_pyramid': AblationConfigs.get_traditional_pyramid_config(),
             'no_transfer': AblationConfigs.get_no_transfer_config()
         }
-    
+
     @staticmethod
     def get_ablation_experiment_plan() -> Dict[str, Dict]:
         """
-        获取完整的消融实验计划
-        
+        Get complete ablation experiment plan
+
         Returns:
-            详细的实验设计，包含每个实验的目的、修改和预期结果
+            Detailed experiment design, including purpose, modifications, and expected results for each experiment
         """
         return {
             'full_system': {
                 'name': 'Complete System',
-                'description': '包含所有创新组件的完整系统',
+                'description': 'Complete system with all innovative components',
                 'components': [
                     'Inverted Pyramid Capacity [8,6,4,3,2]',
-                    'High-Layer Priority Weights [0.3,0.25,0.2,0.15,0.1]', 
+                    'High-Layer Priority Weights [0.3,0.25,0.2,0.15,0.1]',
                     'Multi-Objective Optimization (6 objectives)',
                     'Dynamic Transfer Mechanism'
                 ],
                 'expected_performance': 'Baseline (100%)',
                 'config_changes': 'None (reference)'
             },
-            
+
             'no_high_priority': {
                 'name': 'No High-Layer Priority',
-                'description': '移除高层优先到达机制',
+                'description': 'Remove high-layer priority arrival mechanism',
                 'removed_component': 'High-Layer Priority Arrival',
                 'components': [
                     'Inverted Pyramid Capacity [8,6,4,3,2]',
                     'Uniform Priority Weights [0.2,0.2,0.2,0.2,0.2]',  # Modified
-                    'Multi-Objective Optimization (6 objectives)', 
+                    'Multi-Objective Optimization (6 objectives)',
                     'Dynamic Transfer Mechanism'
                 ],
                 'expected_performance': 'Reduced by ~31.7%',
                 'config_changes': {
                     'arrival_weights': [0.2, 0.2, 0.2, 0.2, 0.2]
                 },
-                'hypothesis': '高层优先机制对系统吞吐量贡献最大'
+                'hypothesis': 'High-layer priority mechanism contributes most to system throughput'
             },
-            
+
             'single_objective': {
                 'name': 'Single-Objective Optimization',
-                'description': '只优化吞吐量，移除多目标框架',
+                'description': 'Only optimize throughput, remove multi-objective framework',
                 'removed_component': 'Multi-Objective Optimization',
                 'components': [
                     'Inverted Pyramid Capacity [8,6,4,3,2]',
@@ -191,12 +190,12 @@ class AblationConfigs:
                 'config_changes': {
                     'reward_type': 'throughput_only'
                 },
-                'hypothesis': '多目标优化平衡各项指标，提升整体性能'
+                'hypothesis': 'Multi-objective optimization balances all metrics and improves overall performance'
             },
-            
+
             'traditional_pyramid': {
-                'name': 'Traditional Pyramid Structure', 
-                'description': '使用传统金字塔容量结构',
+                'name': 'Traditional Pyramid Structure',
+                'description': 'Use traditional pyramid capacity structure',
                 'removed_component': 'Inverted Pyramid Structure',
                 'components': [
                     'Traditional Pyramid Capacity [2,3,4,6,8]',  # Modified
@@ -208,12 +207,12 @@ class AblationConfigs:
                 'config_changes': {
                     'layer_capacities': [2, 3, 4, 6, 8]
                 },
-                'hypothesis': '倒金字塔结构更适合垂直分层系统'
+                'hypothesis': 'Inverted pyramid structure is more suitable for vertical stratified systems'
             },
-            
+
             'no_transfer': {
                 'name': 'No Transfer Mechanism',
-                'description': '禁用层间转移功能', 
+                'description': 'Disable inter-layer transfer functionality',
                 'removed_component': 'Dynamic Transfer Mechanism',
                 'components': [
                     'Inverted Pyramid Capacity [8,6,4,3,2]',
@@ -225,136 +224,136 @@ class AblationConfigs:
                 'config_changes': {
                     'transfer_enabled': False
                 },
-                'hypothesis': '转移机制提供系统适应性和负载缓解能力'
+                'hypothesis': 'Transfer mechanism provides system adaptability and load relief capability'
             }
         }
     
     @staticmethod
     def validate_ablation_design():
         """
-        验证消融实验设计的正确性
-        
-        检查：
-        1. 每个实验只修改一个组件
-        2. 其他组件保持一致 
-        3. 配置参数有效性
+        Validate correctness of ablation experiment design
+
+        Check:
+        1. Each experiment modifies only one component
+        2. Other components remain consistent
+        3. Configuration parameter validity
         """
         configs = AblationConfigs.get_all_ablation_configs()
         base_config = configs['full_system']
-        
-        print("🔍 验证消融实验设计...")
+
+        print("🔍 Validating ablation experiment design...")
         print("=" * 50)
-        
+
         for name, config in configs.items():
             if name == 'full_system':
                 continue
-                
-            print(f"\n✅ 验证 {name}:")
-            
-            # 检查修改的组件
+
+            print(f"\n✅ Validating {name}:")
+
+            # Check modified component
             if hasattr(config, '_ablation_type'):
-                print(f"   移除组件: {config._removed_component}")
-            
-            # 检查配置差异
+                print(f"   Removed component: {config._removed_component}")
+
+            # Check configuration differences
             changes = []
-            
+
             if config.arrival_weights != base_config.arrival_weights:
                 changes.append(f"arrival_weights: {config.arrival_weights}")
-                
+
             if config.layer_capacities != base_config.layer_capacities:
                 changes.append(f"layer_capacities: {config.layer_capacities}")
-                
+
             if hasattr(config, '_reward_type'):
                 changes.append(f"reward_type: {config._reward_type}")
-                
+
             if hasattr(config, '_transfer_enabled'):
                 changes.append(f"transfer_enabled: {config._transfer_enabled}")
-            
-            print(f"   配置修改: {changes}")
-            
-            # 验证其他参数保持不变
+
+            print(f"   Configuration changes: {changes}")
+
+            # Verify other parameters remain unchanged
             same_params = [
                 'num_layers',
-                'layer_heights', 
+                'layer_heights',
                 'base_arrival_rate',
                 'layer_service_rates'
             ]
-            
+
             for param in same_params:
                 if getattr(config, param) != getattr(base_config, param):
-                    print(f"   ⚠️  警告: {param} 发生了意外变化")
-        
-        print(f"\n✅ 消融实验设计验证完成!")
-        print(f"📊 共设计 {len(configs)} 个配置（含对照组）")
-        
+                    print(f"   ⚠️  Warning: {param} changed unexpectedly")
+
+        print(f"\n✅ Ablation experiment design validation complete!")
+        print(f"📊 Total {len(configs)} configurations designed (including control group)")
+
         return True
 
 
 class AblationEnvironmentFactory:
-    """消融实验环境工厂"""
-    
+    """Ablation experiment environment factory"""
+
     @staticmethod
     def create_ablation_env(config: VerticalQueueConfig):
         """
-        根据消融配置创建环境
-        
+        Create environment based on ablation configuration
+
         Args:
-            config: 消融实验配置
-            
+            config: Ablation experiment configuration
+
         Returns:
-            配置好的环境实例
+            Configured environment instance
         """
-        # 这里需要根据具体的环境实现来调整
-        # 暂时返回配置，实际使用时需要创建环境实例
+        # This needs to be adjusted based on specific environment implementation
+        # For now return configuration, actual use requires creating environment instance
         return config
-    
+
     @staticmethod
     def apply_ablation_modifications(env, config: VerticalQueueConfig):
         """
-        将消融配置应用到环境中
-        
+        Apply ablation configuration to environment
+
         Args:
-            env: 环境实例
-            config: 消融配置
+            env: Environment instance
+            config: Ablation configuration
         """
-        # 应用配置修改
+        # Apply configuration modifications
         if hasattr(config, '_reward_type') and config._reward_type == 'throughput_only':
-            # 修改奖励函数为只关注吞吐量
+            # Modify reward function to focus only on throughput
             env.reward_weights = {'throughput': 1.0, 'others': 0.0}
-            
+
         if hasattr(config, '_transfer_enabled') and not config._transfer_enabled:
-            # 禁用转移机制
+            # Disable transfer mechanism
             env.disable_transfer = True
-            
-        # 应用基础配置
+
+        # Apply basic configuration
         env.layer_capacities = config.layer_capacities
         env.arrival_weights = config.arrival_weights
         env.layer_service_rates = config.layer_service_rates
-        
+
         return env
 
 
-# 测试和验证
+# Testing and validation
 if __name__ == "__main__":
-    print("🧪 消融实验配置测试")
+    print("🧪 Ablation Experiment Configuration Test")
     print("=" * 50)
-    
-    # 验证设计
+
+    # Validate design
     AblationConfigs.validate_ablation_design()
-    
-    # 展示实验计划
+
+    # Show experiment plan
     plan = AblationConfigs.get_ablation_experiment_plan()
-    print(f"\n📋 消融实验计划:")
+    print(f"\n📋 Ablation Experiment Plan:")
     print("=" * 50)
-    
+
     for name, details in plan.items():
         print(f"\n🎯 {details['name']}")
-        print(f"   描述: {details['description']}")
+        print(f"   Description: {details['description']}")
         if 'removed_component' in details:
-            print(f"   移除组件: {details['removed_component']}")
-        print(f"   预期性能: {details['expected_performance']}")
+            print(f"   Removed component: {details['removed_component']}")
+        print(f"   Expected performance: {details['expected_performance']}")
         if 'hypothesis' in details:
-            print(f"   假设: {details['hypothesis']}")
-    
-    print(f"\n✅ 消融实验配置系统准备完成!")
-    print(f"🚀 你现在可以运行消融实验了！")
+            print(f"   Hypothesis: {details['hypothesis']}")
+
+    print(f"\n✅ Ablation experiment configuration system ready!")
+    print(f"🚀 You can now run ablation experiments!")

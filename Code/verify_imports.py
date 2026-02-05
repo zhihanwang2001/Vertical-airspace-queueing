@@ -1,20 +1,20 @@
-"""验证所有Python文件的导入是否正确"""
+"""Verify that all Python file imports are correct"""
 import os
 import sys
 from pathlib import Path
 import ast
 
-# 添加Code目录到sys.path
+# Add Code directory to sys.path
 code_dir = Path(__file__).parent
 sys.path.insert(0, str(code_dir))
 
 def check_imports(file_path):
-    """检查文件的导入是否有语法错误"""
+    """Check if file imports have syntax errors"""
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # 尝试解析AST
+        # Try to parse AST
         ast.parse(content)
         return True, None
     except SyntaxError as e:
@@ -23,15 +23,15 @@ def check_imports(file_path):
         return False, f"Error: {e}"
 
 def main():
-    """主函数"""
+    """Main function"""
     print("="*80)
-    print("验证所有Python文件的导入路径")
+    print("Verifying all Python file import paths")
     print("="*80)
 
     errors = []
     success_count = 0
 
-    # 遍历所有.py文件
+    # Traverse all .py files
     for py_file in code_dir.rglob('*.py'):
         if py_file.name in ['fix_imports.py', 'batch_fix_imports.py', 'verify_imports.py']:
             continue
@@ -47,13 +47,13 @@ def main():
             errors.append((relative_path, error_msg))
 
     print("\n" + "="*80)
-    print(f"验证完成！")
-    print(f"成功: {success_count} 个文件")
-    print(f"错误: {len(errors)} 个文件")
+    print(f"Verification completed!")
+    print(f"Success: {success_count} files")
+    print(f"Errors: {len(errors)} files")
     print("="*80)
 
     if errors:
-        print("\n错误详情:")
+        print("\nError details:")
         for path, msg in errors:
             print(f"  - {path}: {msg}")
 

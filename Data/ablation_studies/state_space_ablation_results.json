@@ -1,0 +1,143 @@
+{
+  "minimal": {
+    "config": "minimal",
+    "state_dim": 15,
+    "features": [
+      "queue_lengths",
+      "capacities",
+      "utilization"
+    ],
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "rewards": [
+      8715.14904288581,
+      13488.522937978374,
+      7076.158227645955
+    ],
+    "crash_rates": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "throughputs": [
+      907.0,
+      1458.0,
+      839.0
+    ],
+    "mean_reward": 9759.943402836714,
+    "std_reward": 2720.0859956403406,
+    "mean_crash_rate": 0.0,
+    "mean_throughput": 1068.0
+  },
+  "core": {
+    "config": "core",
+    "state_dim": 20,
+    "features": [
+      "queue_lengths",
+      "capacities",
+      "utilization",
+      "service_rates"
+    ],
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "rewards": [
+      12797.337947898366,
+      12467.01103653349,
+      8717.48434170452
+    ],
+    "crash_rates": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "throughputs": [
+      1438.0,
+      1378.0,
+      935.0
+    ],
+    "mean_reward": 11327.27777537879,
+    "std_reward": 1850.3234477481633,
+    "mean_crash_rate": 0.0,
+    "mean_throughput": 1250.3333333333333
+  },
+  "extended": {
+    "config": "extended",
+    "state_dim": 25,
+    "features": [
+      "queue_lengths",
+      "capacities",
+      "utilization",
+      "service_rates",
+      "arrival_rates"
+    ],
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "rewards": [
+      9343.898971110142,
+      11547.138107611358,
+      8681.815165208991
+    ],
+    "crash_rates": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "throughputs": [
+      927.0,
+      1270.0,
+      924.0
+    ],
+    "mean_reward": 9857.617414643497,
+    "std_reward": 1224.8670323710212,
+    "mean_crash_rate": 0.0,
+    "mean_throughput": 1040.3333333333333
+  },
+  "full": {
+    "config": "full",
+    "state_dim": 29,
+    "features": [
+      "queue_lengths",
+      "capacities",
+      "utilization",
+      "service_rates",
+      "arrival_rates",
+      "timestep",
+      "total_load",
+      "avg_wait",
+      "crash_flag"
+    ],
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "rewards": [
+      13266.791129860376,
+      12946.243766760028,
+      9264.886692520344
+    ],
+    "crash_rates": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "throughputs": [
+      1409.0,
+      1332.0,
+      981.0
+    ],
+    "mean_reward": 11825.973863046916,
+    "std_reward": 1815.6841271312398,
+    "mean_crash_rate": 0.0,
+    "mean_throughput": 1240.6666666666667
+  }
+}

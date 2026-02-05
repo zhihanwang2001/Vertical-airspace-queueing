@@ -1,0 +1,7 @@
+algorithm,10,30
+FCFS,0.0,1.0
+SJF,0.0,1.0
+Priority,1.0,1.0
+Heuristic,1.0,1.0
+A2C,0.0,0.124
+PPO,0.0,0.172

@@ -1,0 +1,16 @@
+================================================================================
+FINAL ABLATION STUDY STATISTICAL ANALYSIS
+================================================================================
+
+HCA2C-Full: 228,945.35 ± 170.36 (CV 0.07%)
+A2C-Enhanced: 410,530.41 ± 167,322.50 (CV 40.76%)
+
+Variance Ratio: 964664.7×
+CV Ratio: 547.7×
+t-test: t=1.880, p=0.1333
+Cohen's d: 1.535
+
+Bimodal Distribution:
+  Low-performance mode: 217,323.29 (33%)
+  High-performance mode: 507,133.97 (67%)
+  Mode gap: 289,810.68

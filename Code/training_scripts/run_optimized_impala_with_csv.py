@@ -1,8 +1,9 @@
 """
 Run Optimized IMPALA with CSV Logging (Compatible with result_excel format)
-使用CSV日志运行优化的IMPALA算法，兼容result_excel文件格式
 
-这个脚本专门为兼容现有的结果格式而创建，会生成与其他算法相同格式的CSV文件
+This script runs the optimized IMPALA algorithm with CSV logging, compatible with result_excel file format.
+It is specifically created for compatibility with existing result formats,
+generating CSV files in the same format as other algorithms.
 """
 
 import argparse
@@ -17,7 +18,7 @@ from algorithms.advanced.impala.impala_optimized import OptimizedIMPALABaseline
 
 
 class CSVTrainingLogger:
-    """CSV训练日志记录器，兼容result_excel格式"""
+    """CSV training logger, compatible with result_excel format"""
 
     def __init__(self, save_path: str):
         self.save_path = save_path
@@ -28,7 +29,7 @@ class CSVTrainingLogger:
     def __enter__(self):
         self.csv_file = open(self.save_path, 'w', newline='')
         self.csv_writer = csv.writer(self.csv_file)
-        # 写入标准格式的头部（与其他算法一致）
+        # Write standard format header (consistent with other algorithms)
         self.csv_writer.writerow(['Wall time', 'Step', 'Value'])
         return self
 
@@ -37,14 +38,14 @@ class CSVTrainingLogger:
             self.csv_file.close()
 
     def log(self, timestep: int, reward: float):
-        """记录训练数据点"""
+        """Log training data point"""
         wall_time = time.time()
         self.csv_writer.writerow([wall_time, timestep, reward])
-        self.csv_file.flush()  # 立即写入
+        self.csv_file.flush()  # Write immediately
 
 
 def run_optimized_impala_with_csv():
-    """运行优化的IMPALA并生成CSV日志"""
+    """Run optimized IMPALA and generate CSV log"""
     parser = argparse.ArgumentParser(description='Run Optimized IMPALA with CSV logging')
     parser.add_argument('--timesteps', type=int, default=500000,
                         help='Total training timesteps (default: 500000)')
@@ -57,27 +58,27 @@ def run_optimized_impala_with_csv():
 
     args = parser.parse_args()
 
-    # 生成CSV文件名（与其他算法格式一致）
+    # Generate CSV filename (consistent with other algorithm formats)
     if args.csv_file is None:
         timestamp = int(time.time())
         csv_filename = f"../../Results/excel/IMPALA_Optimized_{timestamp}.csv"
     else:
         csv_filename = args.csv_file
 
-    # 确保目录存在
+    # Ensure directory exists
     os.makedirs(os.path.dirname(csv_filename), exist_ok=True)
 
-    print("🚀 Running Optimized IMPALA with CSV Logging")
+    print("Running Optimized IMPALA with CSV Logging")
     print("=" * 80)
-    print(f"📊 Configuration:")
+    print(f"Configuration:")
     print(f"   Total timesteps: {args.timesteps:,}")
     print(f"   Evaluation episodes: {args.eval_episodes}")
     print(f"   Log frequency: {args.log_freq:,}")
     print(f"   CSV output: {csv_filename}")
 
-    # 优化的IMPALA配置
+    # Optimized IMPALA configuration
     config = {
-        # 保守的超参数设置（避免训练崩溃）
+        # Conservative hyperparameter settings (avoid training collapse)
         'learning_rate': 5e-5,
         'rho_bar': 0.8,
         'c_bar': 0.8,
@@ -90,44 +91,44 @@ def run_optimized_impala_with_csv():
         'gradient_clip': 10.0,
         'learning_starts': 2000,
         'train_freq': 2,
-        'verbose': 1  # 启用进度输出
+        'verbose': 1  # Enable progress output
     }
 
-    print(f"\n🎯 IMPALA Optimizations:")
-    print(f"   ✅ Mixed action space support")
-    print(f"   ✅ Queue-specific network architecture")
-    print(f"   ✅ Conservative V-trace: rho_bar={config['rho_bar']}, c_bar={config['c_bar']}")
-    print(f"   ✅ Lower learning rate: {config['learning_rate']}")
-    print(f"   ✅ Enhanced stability mechanisms")
+    print(f"\nIMPALA Optimizations:")
+    print(f"   Mixed action space support")
+    print(f"   Queue-specific network architecture")
+    print(f"   Conservative V-trace: rho_bar={config['rho_bar']}, c_bar={config['c_bar']}")
+    print(f"   Lower learning rate: {config['learning_rate']}")
+    print(f"   Enhanced stability mechanisms")
 
-    # 创建基线
+    # Create baseline
     baseline = OptimizedIMPALABaseline(config=config)
 
-    # 自定义训练循环，包含CSV日志记录
-    print(f"\n🏃 Starting training...")
+    # Custom training loop with CSV logging
+    print(f"\nStarting training...")
 
     with CSVTrainingLogger(csv_filename) as logger:
 
-        # 设置环境和智能体
+        # Setup environment and agent
         baseline.setup_env()
         baseline.create_agent()
 
-        # 训练变量
+        # Training variables
         episode = 0
         timestep = 0
         episode_reward = 0.0
         episode_length = 0
         recent_rewards = []
 
-        # 重置环境
+        # Reset environment
         state, _ = baseline.env.reset()
         start_time = time.time()
 
         while timestep < args.timesteps:
-            # 选择动作
+            # Select action
             action = baseline.agent.act(state, training=True)
 
-            # 执行动作
+            # Execute action
             try:
                 step_result = baseline.env.step(action)
                 if len(step_result) == 5:
@@ -136,33 +137,33 @@ def run_optimized_impala_with_csv():
                 else:
                     next_state, reward, done, info = step_result
             except Exception as e:
-                print(f"❌ Environment step error: {e}")
+                print(f"Environment step error: {e}")
                 break
 
-            # 存储经验
+            # Store experience
             baseline.agent.store_transition(state, action, reward, next_state, done)
 
-            # 更新统计
+            # Update statistics
             episode_reward += reward
             episode_length += 1
             timestep += 1
 
-            # 训练智能体
+            # Train agent
             if timestep >= config['learning_starts']:
                 train_info = baseline.agent.train()
 
-            # Episode结束处理
+            # Episode end handling
             if done:
-                # 记录episode信息
+                # Record episode information
                 baseline.training_history['episode_rewards'].append(episode_reward)
                 baseline.training_history['episode_lengths'].append(episode_length)
                 recent_rewards.append(episode_reward)
 
-                # 保持最近100个奖励
+                # Keep last 100 rewards
                 if len(recent_rewards) > 100:
                     recent_rewards.pop(0)
 
-                # 打印进度
+                # Print progress
                 if episode % 20 == 0:
                     elapsed_time = time.time() - start_time
                     avg_recent = np.mean(recent_rewards) if recent_rewards else 0
@@ -174,7 +175,7 @@ def run_optimized_impala_with_csv():
                           f"Length: {episode_length:4d} | "
                           f"Time: {elapsed_time:.1f}s")
 
-                # 重置episode
+                # Reset episode
                 episode += 1
                 episode_reward = 0.0
                 episode_length = 0
@@ -182,14 +183,14 @@ def run_optimized_impala_with_csv():
             else:
                 state = next_state
 
-            # CSV日志记录（按频率）
+            # CSV logging (by frequency)
             if timestep % args.log_freq == 0 and timestep > 0:
-                # 运行快速评估获取当前性能
+                # Run quick evaluation to get current performance
                 eval_reward = 0.0
                 if recent_rewards:
                     eval_reward = np.mean(recent_rewards)
                 else:
-                    # 如果没有recent_rewards，做一个快速评估
+                    # If no recent_rewards, do a quick evaluation
                     eval_state, _ = baseline.env.reset()
                     eval_episode_reward = 0.0
                     eval_done = False
@@ -210,49 +211,49 @@ def run_optimized_impala_with_csv():
 
                     eval_reward = eval_episode_reward
 
-                # 记录到CSV
+                # Log to CSV
                 logger.log(timestep, eval_reward)
 
-                print(f"📊 Logged timestep {timestep:,}: reward = {eval_reward:.2f}")
+                print(f"Logged timestep {timestep:,}: reward = {eval_reward:.2f}")
 
-    # 训练完成
+    # Training completed
     total_time = time.time() - start_time
 
-    print(f"\n✅ Training completed!")
+    print(f"\nTraining completed!")
     print(f"   Total episodes: {episode}")
     print(f"   Total time: {total_time:.2f}s ({total_time/60:.1f}min)")
     print(f"   CSV file saved: {csv_filename}")
 
-    # 最终评估
-    print(f"\n📊 Final evaluation...")
+    # Final evaluation
+    print(f"\nFinal evaluation...")
     eval_results = baseline.evaluate(n_episodes=args.eval_episodes, deterministic=True, verbose=False)
 
-    print(f"📈 Final Performance:")
-    print(f"   Mean reward: {eval_results['mean_reward']:.2f} ± {eval_results['std_reward']:.2f}")
+    print(f"Final Performance:")
+    print(f"   Mean reward: {eval_results['mean_reward']:.2f} +/- {eval_results['std_reward']:.2f}")
     print(f"   Mean length: {eval_results['mean_length']:.1f}")
 
-    # 与之前的IMPALA结果比较
-    original_impala_score = 1705.13  # 从result_excel/prepare_fix.md
+    # Compare with previous IMPALA results
+    original_impala_score = 1705.13  # From result_excel/prepare_fix.md
     improvement = eval_results['mean_reward'] - original_impala_score
     improvement_pct = (improvement / original_impala_score) * 100
 
-    print(f"\n📊 Comparison with Original IMPALA:")
+    print(f"\nComparison with Original IMPALA:")
     print(f"   Original IMPALA: {original_impala_score:.2f} (with training collapse)")
     print(f"   Optimized IMPALA: {eval_results['mean_reward']:.2f}")
     print(f"   Improvement: {improvement:+.2f} ({improvement_pct:+.1f}%)")
 
     if improvement > 0:
-        print(f"   ✅ Optimization successful!")
+        print(f"   Optimization successful!")
         if improvement > 500:
-            print(f"   🎉 Significant improvement achieved!")
+            print(f"   Significant improvement achieved!")
     else:
-        print(f"   ⚠️  Performance did not improve as expected")
+        print(f"   Performance did not improve as expected")
 
-    # 保存最终模型
+    # Save final model
     final_model_path = "../../Models/impala_optimized_final.pt"
     os.makedirs(os.path.dirname(final_model_path), exist_ok=True)
     baseline.save(final_model_path)
-    print(f"💾 Final model saved: {final_model_path}")
+    print(f"Final model saved: {final_model_path}")
 
     return {
         'final_reward': eval_results['mean_reward'],
@@ -265,15 +266,15 @@ def run_optimized_impala_with_csv():
 if __name__ == "__main__":
     try:
         results = run_optimized_impala_with_csv()
-        print(f"\n🎯 Summary:")
+        print(f"\nSummary:")
         print(f"   Final performance: {results['final_reward']:.2f}")
         print(f"   Training time: {results['training_time']:.1f}s")
         print(f"   Improvement: {results['improvement']:+.2f}")
         print(f"   CSV data saved: {results['csv_file']}")
 
     except KeyboardInterrupt:
-        print(f"\n⚠️  Training interrupted by user")
+        print(f"\nTraining interrupted by user")
     except Exception as e:
-        print(f"\n❌ Training failed: {e}")
+        print(f"\nTraining failed: {e}")
         import traceback
         traceback.print_exc()

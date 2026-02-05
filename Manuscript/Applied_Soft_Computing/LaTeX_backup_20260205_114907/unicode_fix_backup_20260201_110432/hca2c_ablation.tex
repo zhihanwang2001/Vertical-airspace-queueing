@@ -1,0 +1,73 @@
+\subsection{HCA2C Algorithm Comparison: Performance-Stability Trade-off}
+\label{subsec:hca2c-ablation}
+
+To comprehensively evaluate the HCA2C architecture against baseline algorithms, we conducted a systematic comparison with A2C and PPO across varying load conditions. This ablation study addresses the fundamental question: does HCA2C's hierarchical architecture provide advantages over simpler baseline algorithms, and under what conditions?
+
+\subsubsection{Experimental Setup}
+
+We compared three algorithms across three load levels (3.0$\times$, 5.0$\times$, and 7.0$\times$) to assess performance under varying system stress conditions. Each configuration was evaluated using five random seeds (42-46), resulting in a total of 45 experiments (3 algorithms $\times$ 5 seeds $\times$ 3 loads).
+
+All experiments used identical training configurations: 100,000 timesteps for training and 30 episodes for evaluation. The training environment employed the inverted pyramid capacity structure [8, 6, 4, 3, 2] with base arrival rate of 0.3, which was scaled by the load multiplier to simulate different traffic intensities. Load 3.0$\times$ represents moderate traffic, 5.0$\times$ represents high traffic, and 7.0$\times$ represents extreme traffic conditions.
+
+\subsubsection{Performance Comparison}
+
+Table~\ref{tab:hca2c-ablation} presents the performance comparison of the three algorithms across different load levels. The results reveal significant performance variations both across algorithms and load conditions.
+
+\input{tables/tab_hca2c_ablation}
+
+\textbf{Moderate Load (3.0$\times$):} Under moderate load conditions, A2C achieved the highest mean reward of 428,604 ± 174,782, followed by PPO (411,086 ± 41,964) and HCA2C (228,879 ± 262). However, A2C exhibited high variance (CV=36.47\%), indicating unstable training dynamics. In contrast, HCA2C demonstrated exceptional stability with CV=0.10\%, though at the cost of lower absolute performance. Statistical analysis revealed a significant difference between HCA2C and PPO (p=0.0006, Cohen's d=-6.14), with PPO achieving superior performance.
+
+\textbf{High Load (5.0$\times$):} At high load, A2C reached peak performance with a mean reward of 771,222 ± 1,647, significantly outperforming both HCA2C (79,458 ± 229, p<0.001, Cohen's d=588.4) and PPO (482,716 ± 57,381, p<0.001, Cohen's d=7.1). Remarkably, A2C exhibited extremely low variance at this load level (CV=0.19\%), suggesting that the 5.0$\times$ load may represent an optimal operating point for the A2C algorithm. PPO achieved intermediate performance, also significantly outperforming HCA2C (p<0.001, Cohen's d=-9.9).
+
+\textbf{Extreme Load (7.0$\times$):} Under extreme load conditions, HCA2C completely failed, achieving negative mean reward (-134,254 ± 471). This catastrophic failure indicates that HCA2C's capacity-aware mechanisms become overly conservative under extreme stress, leading to system collapse. In contrast, both A2C (112,519 ± 60,377) and PPO (85,312 ± 70) maintained positive performance, demonstrating better load robustness. The differences between HCA2C and both baselines were highly significant (p<0.001), with extremely large effect sizes (Cohen's d=-5.78 for A2C, d=-652.5 for PPO).
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_hca2c_ablation_comprehensive.png}
+\caption{HCA2C ablation study comprehensive analysis. (A) Performance comparison across load levels showing mean rewards with error bars (standard deviation). A2C achieves peak performance at load 5.0$\times$. (B) Distribution boxplots revealing HCA2C's low variance and A2C's high variance characteristics. (C) Coefficient of variation (CV) analysis showing HCA2C maintains extremely low CV (<0.5\%) across all loads, while A2C exhibits CV exceeding 35\% at loads 3.0$\times$ and 7.0$\times$. (D) Training time comparison showing HCA2C requires approximately 120 minutes while A2C and PPO require only 1-4 minutes. All experiments used 5 random seeds (42-46), with 100,000 training timesteps and 30 evaluation episodes per configuration.}
+\label{fig:hca2c-ablation}
+\end{figure}
+
+\subsubsection{Training Stability Analysis}
+
+Figure~\ref{fig:hca2c-ablation}(C) illustrates the training stability of the three algorithms, measured by coefficient of variation (CV) across random seeds. HCA2C demonstrated exceptional training stability with an average CV of only 0.20\% across all load levels. Specifically, HCA2C's CV remained below 0.5\% at all three loads: 0.11\% (3.0$\times$), 0.29\% (5.0$\times$), and 0.35\% (7.0$\times$). This remarkable consistency indicates that HCA2C's hierarchical architecture provides strong regularization, ensuring reproducible performance across different random initializations.
+
+In contrast, A2C exhibited high variance with an average CV of 31.55\%. The variance was particularly pronounced at loads 3.0$\times$ (CV=40.78\%) and 7.0$\times$ (CV=53.66\%), while surprisingly stable at 5.0$\times$ (CV=0.21\%). This load-dependent stability pattern suggests that A2C's training dynamics are highly sensitive to the traffic intensity, achieving stable convergence only at specific operating points.
+
+PPO provided a middle ground with an average CV of 7.39\%, demonstrating moderate stability across load levels. PPO's CV ranged from 0.08\% (7.0$\times$) to 11.89\% (5.0$\times$), showing more consistent behavior than A2C but less stability than HCA2C.
+
+\subsubsection{Load Sensitivity Analysis}
+
+The experimental results reveal distinct load sensitivity patterns for each algorithm. Figure~\ref{fig:hca2c-ablation}(A) shows the performance trends across load levels.
+
+\textbf{A2C Load Sensitivity:} A2C's performance exhibited a non-monotonic relationship with load level. Performance increased from 428,604 at 3.0$\times$ to a peak of 771,222 at 5.0$\times$, then dramatically decreased to 112,519 at 7.0$\times$. This pattern suggests that A2C achieves optimal performance at intermediate load levels, where the balance between system capacity and arrival rate enables stable policy learning. The high variance at 3.0$\times$ and 7.0$\times$ indicates that A2C struggles to find consistent solutions at these load levels.
+
+\textbf{HCA2C Load Sensitivity:} HCA2C showed a monotonic decrease in performance as load increased: 228,879 (3.0$\times$) $\rightarrow$ 79,458 (5.0$\times$) $\rightarrow$ -134,254 (7.0$\times$). The complete failure at 7.0$\times$ suggests that HCA2C's capacity-aware clipping mechanism becomes overly restrictive under extreme load, preventing the algorithm from taking necessary actions to manage high arrival rates. This failure mode indicates a fundamental limitation of the hierarchical architecture under distribution shift.
+
+\textbf{PPO Load Sensitivity:} PPO demonstrated the most robust load sensitivity pattern, maintaining positive performance across all load levels: 411,086 (3.0$\times$) $\rightarrow$ 482,716 (5.0$\times$) $\rightarrow$ 85,312 (7.0$\times$). While performance decreased at extreme load, PPO avoided catastrophic failure, suggesting better generalization capabilities compared to HCA2C.
+
+\subsubsection{Computational Efficiency}
+
+Table~\ref{tab:hca2c-ablation} reports the training time for each algorithm-load combination. HCA2C required significantly longer training time (87-139 minutes) compared to A2C (0.7-3.3 minutes) and PPO (0.7-4.1 minutes). This 40-200$\times$ computational overhead stems from HCA2C's complex hierarchical architecture, which involves multiple policy networks, coordination modules, and capacity-aware action clipping.
+
+The computational cost-benefit trade-off is particularly unfavorable for HCA2C given its performance limitations. While HCA2C provides superior training stability, the combination of long training time, limited performance, and catastrophic failure under extreme load raises questions about its practical applicability.
+
+\subsubsection{Statistical Significance}
+
+Pairwise t-tests confirmed the statistical significance of the observed performance differences. At load 5.0$\times$, all three pairwise comparisons showed significant differences (p<0.001), with A2C significantly outperforming both PPO and HCA2C. The effect sizes were extremely large (Cohen's d=588.4 for A2C vs HCA2C, d=7.1 for A2C vs PPO), indicating not just statistical but also practical significance.
+
+At load 3.0$\times$, HCA2C vs PPO showed significant difference (p=0.0006, d=-6.14), while HCA2C vs A2C was marginally non-significant (p=0.063, d=-1.62). At load 7.0$\times$, HCA2C's catastrophic failure resulted in extremely significant differences compared to both baselines (p<0.001), with effect sizes exceeding d=-5.
+
+These statistical results provide strong evidence that: (1) A2C achieves superior performance at specific load levels (5.0$\times$), (2) HCA2C provides exceptional training stability but limited performance, and (3) PPO offers a balanced trade-off between performance and stability.
+
+\subsubsection{Key Takeaways}
+
+The ablation study reveals a fundamental performance-stability trade-off in deep reinforcement learning for vertical queueing systems:
+
+\begin{itemize}
+\item \textbf{Performance Hierarchy}: A2C > PPO > HCA2C at most load levels, with A2C achieving 771,222 reward at optimal load (5.0$\times$)
+\item \textbf{Stability Hierarchy}: HCA2C >> PPO > A2C, with HCA2C maintaining CV<0.5\% across all loads
+\item \textbf{Load Robustness}: PPO > A2C > HCA2C, with HCA2C failing catastrophically at extreme load (7.0$\times$)
+\item \textbf{Computational Cost}: HCA2C requires 40-200$\times$ longer training time than baseline algorithms
+\item \textbf{Algorithm Selection}: Choice depends on application requirements---HCA2C for safety-critical systems requiring predictable training outcomes, A2C for maximum performance when multiple training runs are feasible, PPO for balanced performance and stability
+\end{itemize}

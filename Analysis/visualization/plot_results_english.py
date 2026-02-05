@@ -1,6 +1,6 @@
 """
 Visualization Script - Generate Paper Figures (English Labels)
-可视化分析脚本 - 生成论文图表（英文标签版本，避免中文显示问题）
+Visualization analysis script - Generate paper figures (English label version, avoid Chinese display issues)
 """
 
 import json
@@ -9,26 +9,26 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-# 设置图表风格
+# Set chart style
 plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams['font.size'] = 11
 plt.rcParams['axes.labelsize'] = 12
 plt.rcParams['axes.titlesize'] = 14
 plt.rcParams['legend.fontsize'] = 11
 
-# 数据路径
+# Data paths
 project_root = Path(__file__).parent.parent.parent
 data_file = project_root / 'Data' / 'summary' / 'comprehensive_experiments_data.json'
 output_dir = project_root / 'Analysis' / 'figures'
 output_dir.mkdir(parents=True, exist_ok=True)
 
-# 读取数据
+# Read data
 with open(data_file, 'r') as f:
     data = json.load(f)
 
 experiments = data['experiments']
 
-# 转换为DataFrame
+# Convert to DataFrame
 df = pd.DataFrame(experiments)
 
 print(f"Loaded {len(df)} experiments")
@@ -109,7 +109,7 @@ def plot_capacity_performance():
     plt.tight_layout()
     plt.savefig(output_dir / 'fig1_capacity_performance_en.png', dpi=300, bbox_inches='tight')
     plt.savefig(output_dir / 'fig1_capacity_performance_en.pdf', bbox_inches='tight')
-    print(f"✓ Saved: fig1_capacity_performance_en.png/pdf")
+    print(f"Saved: fig1_capacity_performance_en.png/pdf")
     plt.close()
 
 
@@ -202,7 +202,7 @@ def plot_structure_comparison():
     plt.tight_layout()
     plt.savefig(output_dir / 'fig2_structure_comparison_en.png', dpi=300, bbox_inches='tight')
     plt.savefig(output_dir / 'fig2_structure_comparison_en.pdf', bbox_inches='tight')
-    print(f"✓ Saved: fig2_structure_comparison_en.png/pdf")
+    print(f"Saved: fig2_structure_comparison_en.png/pdf")
     plt.close()
 
 
@@ -252,7 +252,7 @@ def plot_algorithm_robustness():
     plt.tight_layout()
     plt.savefig(output_dir / 'fig3_algorithm_robustness_en.png', dpi=300, bbox_inches='tight')
     plt.savefig(output_dir / 'fig3_algorithm_robustness_en.pdf', bbox_inches='tight')
-    print(f"✓ Saved: fig3_algorithm_robustness_en.png/pdf")
+    print(f"Saved: fig3_algorithm_robustness_en.png/pdf")
     plt.close()
 
 
@@ -321,7 +321,7 @@ def plot_algorithm_radar():
     plt.tight_layout()
     plt.savefig(output_dir / 'fig4_algorithm_radar_en.png', dpi=300, bbox_inches='tight')
     plt.savefig(output_dir / 'fig4_algorithm_radar_en.pdf', bbox_inches='tight')
-    print(f"✓ Saved: fig4_algorithm_radar_en.png/pdf")
+    print(f"Saved: fig4_algorithm_radar_en.png/pdf")
     plt.close()
 
 
@@ -399,7 +399,7 @@ def plot_heatmap():
     plt.tight_layout()
     plt.savefig(output_dir / 'fig5_heatmap_en.png', dpi=300, bbox_inches='tight')
     plt.savefig(output_dir / 'fig5_heatmap_en.pdf', bbox_inches='tight')
-    print(f"✓ Saved: fig5_heatmap_en.png/pdf")
+    print(f"Saved: fig5_heatmap_en.png/pdf")
     plt.close()
 
 
@@ -419,7 +419,7 @@ if __name__ == '__main__':
     plot_heatmap()
 
     print("\n" + "="*80)
-    print(f"✓ All figures generated and saved to: {output_dir}")
+    print(f"All figures generated and saved to: {output_dir}")
     print("="*80 + "\n")
 
     # List generated files

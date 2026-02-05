@@ -1,12 +1,11 @@
 """
-外卖柜模型
 Delivery Cabinet Model
 
-实现24格外卖柜的数字孪生建模：
-- 24格存储系统 (8+8+8三温区)
-- 温区管理数学模型
-- 订单存储策略
-- 与垂直分层队列的协同
+Implements digital twin modeling of 24-compartment delivery cabinet:
+- 24-compartment storage system (8+8+8 three temperature zones)
+- Temperature zone management mathematical model
+- Order storage strategy
+- Coordination with vertical stratified queue
 """
 
 import numpy as np
@@ -20,67 +19,67 @@ from .utils import MathUtils
 
 
 class TemperatureZone(Enum):
-    """温区类型"""
-    COLD = "cold"      # 冷藏区 (0-5°C)
-    HOT = "hot"        # 保温区 (55-65°C)  
-    NORMAL = "normal"  # 常温区 (15-25°C)
+    """Temperature zone types"""
+    COLD = "cold"      # Cold storage zone (0-5°C)
+    HOT = "hot"        # Warming zone (55-65°C)  
+    NORMAL = "normal"  # Normal temperature zone (15-25°C)
 
 
 @dataclass
 class GridCell:
-    """外卖柜格子"""
+    """Delivery cabinet compartment"""
     cell_id: int
     zone: TemperatureZone
     is_occupied: bool = False
     order_id: Optional[int] = None
     size_capacity: str = "medium"  # "small", "medium", "large"
     temperature: float = 20.0
-    storage_time: int = 0  # 存储时长
+    storage_time: int = 0  # Storage duration
 
 
 @dataclass
 class StoredOrder:
-    """存储的订单"""
+    """Stored order"""
     order_id: int
     zone_required: TemperatureZone
     size: str
     storage_start_time: int
-    max_storage_time: int = 120  # 最大存储时间(步数)
+    max_storage_time: int = 120  # Maximum storage time (steps)
     priority: str = "medium"
     temperature_sensitive: bool = True
 
 
 class DeliveryCabinet:
     """
-    外卖柜模型类
+    Delivery Cabinet Model Class
     
-    实现完整的24格外卖柜数字孪生：
-    1. 物理结构：24格 = 8(冷) + 8(热) + 8(常温)
-    2. 温区管理：动态温度控制
-    3. 存储策略：基于温度、大小的智能分配
-    4. 性能监控：利用率、温控效果、服务质量
+    Implements complete 24-compartment delivery cabinet digital twin:
+    1. Physical structure: 24 compartments = 8(cold) + 8(hot) + 8(normal)
+    2. Temperature zone management: Dynamic temperature control
+    3. Storage strategy: Intelligent allocation based on temperature and size
+    4. Performance monitoring: Utilization rate, temperature control effectiveness, service quality
     """
     
     def __init__(self, config: VerticalQueueConfig):
         self.config = config
         self.math_utils = MathUtils()
         
-        # 系统参数
+        # System parameters
         self.total_cells = 24
         self.cells_per_zone = 8
         self.current_step = 0
         
-        # 初始化格子系统
+        # Initialize compartment system
         self.grid_cells = self._initialize_grid()
         
-        # 温控系统
+        # Temperature control system
         self.temperature_controller = self._initialize_temperature_controller()
         
-        # 存储管理
+        # Storage management
         self.stored_orders = {}  # order_id -> StoredOrder
-        self.service_queue = []  # 等待存储的订单队列
+        self.service_queue = []  # Queue of orders waiting for storage
         
-        # 性能统计
+        # Performance statistics
         self.performance_stats = {
             'total_stored': 0,
             'total_retrieved': 0,
@@ -90,48 +89,48 @@ class DeliveryCabinet:
             'zone_utilizations': {zone: 0.0 for zone in TemperatureZone}
         }
         
-        # 故障状态
+        # Failure status
         self.is_system_failed = False
         self.failure_reason = None
     
     def _initialize_grid(self) -> List[GridCell]:
         """
-        初始化24格存储系统
+        Initialize 24-compartment storage system
         
-        布局：
-        - 格子 0-7: 冷藏区 (COLD)
-        - 格子 8-15: 保温区 (HOT)  
-        - 格子 16-23: 常温区 (NORMAL)
+        Layout:
+        - Compartments 0-7: Cold storage zone (COLD)
+        - Compartments 8-15: Warming zone (HOT)  
+        - Compartments 16-23: Normal temperature zone (NORMAL)
         """
         cells = []
         
-        # 冷藏区 (0-7)
+        # Cold storage zone (0-7)
         for i in range(8):
             cell = GridCell(
                 cell_id=i,
                 zone=TemperatureZone.COLD,
                 size_capacity="medium",
-                temperature=2.5  # 冷藏温度
+                temperature=2.5  # Cold storage temperature
             )
             cells.append(cell)
         
-        # 保温区 (8-15)
+        # Warming zone (8-15)
         for i in range(8, 16):
             cell = GridCell(
                 cell_id=i,
                 zone=TemperatureZone.HOT,
                 size_capacity="medium",
-                temperature=60.0  # 保温温度
+                temperature=60.0  # Warming temperature
             )
             cells.append(cell)
         
-        # 常温区 (16-23)
+        # Normal temperature zone (16-23)
         for i in range(16, 24):
             cell = GridCell(
                 cell_id=i,
                 zone=TemperatureZone.NORMAL,
                 size_capacity="medium",
-                temperature=20.0  # 常温
+                temperature=20.0  # Normal temperature
             )
             cells.append(cell)
         
@@ -139,18 +138,18 @@ class DeliveryCabinet:
     
     def _initialize_temperature_controller(self) -> Dict:
         """
-        初始化温控系统
+        Initialize temperature control system
         
-        基于01理论的温度保持模型：
+        Temperature maintenance model based on 01 theory:
         temp_i(t+1) = temp_i(t) + α_i·(target_i - temp_i(t)) + β_i·load_i(t) + ε_i(t)
         """
         return {
             TemperatureZone.COLD: {
                 'target_temp': 2.5,
                 'current_temp': 2.5,
-                'alpha': 0.1,  # 温控响应系数
-                'beta': 0.05,  # 负载影响系数
-                'tolerance': 2.0,  # 温度容忍范围
+                'alpha': 0.1,  # Temperature control response coefficient
+                'beta': 0.05,  # Load impact coefficient
+                'tolerance': 2.0,  # Temperature tolerance range
                 'is_active': True
             },
             TemperatureZone.HOT: {
@@ -173,25 +172,25 @@ class DeliveryCabinet:
     
     def reset(self):
         """
-        重置外卖柜状态
+        Reset delivery cabinet state
         """
         self.current_step = 0
         
-        # 清空所有格子
+        # Clear all compartments
         for cell in self.grid_cells:
             cell.is_occupied = False
             cell.order_id = None
             cell.storage_time = 0
         
-        # 重置温度
+        # Reset temperature
         for zone, controller in self.temperature_controller.items():
             controller['current_temp'] = controller['target_temp']
         
-        # 清空存储和队列
+        # Clear storage and queue
         self.stored_orders.clear()
         self.service_queue.clear()
         
-        # 重置统计
+        # Reset statistics
         for key in self.performance_stats:
             if isinstance(self.performance_stats[key], dict):
                 for subkey in self.performance_stats[key]:
@@ -199,48 +198,48 @@ class DeliveryCabinet:
             else:
                 self.performance_stats[key] = 0
         
-        # 重置故障状态
+        # Reset failure status
         self.is_system_failed = False
         self.failure_reason = None
     
     def step(self, service_requests: List[Dict]) -> Dict:
         """
-        外卖柜系统步进
+        Delivery cabinet system step
         
-        处理：
-        1. 新的存储请求
-        2. 订单取出
-        3. 温控系统更新
-        4. 超时订单处理
-        5. 性能统计更新
+        Processes:
+        1. New storage requests
+        2. Order retrievals
+        3. Temperature control system update
+        4. Timeout order handling
+        5. Performance statistics update
         
         Args:
-            service_requests: 来自队列系统的服务请求列表
+            service_requests: List of service requests from queue system
             
         Returns:
-            外卖柜状态信息字典
+            Dictionary of delivery cabinet state information
         """
         self.current_step += 1
         
-        # 1. 处理新的存储请求
+        # 1. Process new storage requests
         storage_results = self._process_storage_requests(service_requests)
         
-        # 2. 处理订单取出 (模拟客户取货)
+        # 2. Process order retrievals (simulate customer pickups)
         retrieval_results = self._process_order_retrievals()
         
-        # 3. 更新温控系统
+        # 3. Update temperature control system
         temperature_info = self._update_temperature_control()
         
-        # 4. 处理超时订单
+        # 4. Handle timeout orders
         timeout_info = self._handle_timeout_orders()
         
-        # 5. 更新存储时间
+        # 5. Update storage times
         self._update_storage_times()
         
-        # 6. 检查系统故障
+        # 6. Check system health
         self._check_system_health()
         
-        # 7. 更新性能统计
+        # 7. Update performance statistics
         self._update_performance_stats()
         
         return {
@@ -261,19 +260,19 @@ class DeliveryCabinet:
     
     def _process_storage_requests(self, service_requests: List[Dict]) -> Dict:
         """
-        处理存储请求
+        Process storage requests
         
-        实现智能存储分配策略：
-        1. 温度匹配优先
-        2. 大小适配
-        3. 负载均衡
+        Implements intelligent storage allocation strategy:
+        1. Temperature matching priority
+        2. Size fitting
+        3. Load balancing
         """
         successful_storage = 0
         failed_storage = 0
         storage_details = []
         
         for request in service_requests:
-            # 创建存储订单
+            # Create stored order
             stored_order = StoredOrder(
                 order_id=request.get('order_id', random.randint(1000, 9999)),
                 zone_required=self._determine_temperature_zone(request),
@@ -282,11 +281,11 @@ class DeliveryCabinet:
                 priority=request.get('priority', 'medium')
             )
             
-            # 寻找合适的格子
+            # Find suitable compartment
             target_cell = self._find_optimal_cell(stored_order)
             
             if target_cell is not None:
-                # 执行存储
+                # Execute storage
                 target_cell.is_occupied = True
                 target_cell.order_id = stored_order.order_id
                 target_cell.storage_time = 0
@@ -301,7 +300,7 @@ class DeliveryCabinet:
                     'success': True
                 })
             else:
-                # 存储失败，加入服务队列
+                # Storage failed, add to service queue
                 self.service_queue.append(stored_order)
                 failed_storage += 1
                 
@@ -320,7 +319,7 @@ class DeliveryCabinet:
     
     def _determine_temperature_zone(self, request: Dict) -> TemperatureZone:
         """
-        确定订单所需温区
+        Determine required temperature zone for order
         """
         temp_zone = request.get('temperature_zone', 'normal')
         
@@ -334,9 +333,9 @@ class DeliveryCabinet:
     
     def _find_optimal_cell(self, order: StoredOrder) -> Optional[GridCell]:
         """
-        寻找最优存储格子
+        Find optimal storage compartment
         
-        分配策略基于01理论中的订单分配函数：
+        Allocation strategy based on order assignment function in 01 theory:
         P(assign_o→(i,j)) = exp(φ_temp·match(o.temp,i) + φ_size·fit(o.size,j)) / Σ exp(...)
         """
         available_cells = [cell for cell in self.grid_cells 
@@ -345,41 +344,41 @@ class DeliveryCabinet:
         if not available_cells:
             return None
         
-        # 计算每个可用格子的适配分数
+        # Calculate fitness score for each available compartment
         cell_scores = []
         for cell in available_cells:
             score = self._calculate_cell_score(cell, order)
             cell_scores.append((cell, score))
         
-        # 按分数排序，选择最佳格子
+        # Sort by score, select best compartment
         cell_scores.sort(key=lambda x: x[1], reverse=True)
         
         return cell_scores[0][0] if cell_scores else None
     
     def _calculate_cell_score(self, cell: GridCell, order: StoredOrder) -> float:
         """
-        计算格子-订单适配分数
+        Calculate compartment-order fitness score
         
-        考虑因素：
-        1. 温度匹配度
-        2. 大小适配度  
-        3. 负载均衡
+        Considers:
+        1. Temperature matching
+        2. Size fitting  
+        3. Load balancing
         """
-        # 温度匹配度 (完美匹配得分1.0)
+        # Temperature matching (perfect match scores 1.0)
         temp_match = 1.0 if cell.zone == order.zone_required else 0.0
         
-        # 大小适配度
+        # Size fitting
         size_match = self._calculate_size_match(cell.size_capacity, order.size)
         
-        # 负载均衡因子 (优先选择负载较低的区域)
+        # Load balancing factor (prefer lower load zones)
         zone_load = self._get_zone_load(order.zone_required)
-        load_factor = 1.0 - zone_load  # 负载越低，因子越高
+        load_factor = 1.0 - zone_load  # Lower load, higher factor
         
-        # 优先级权重
+        # Priority weight
         priority_weight = {'low': 0.8, 'medium': 1.0, 'high': 1.2}
         priority_factor = priority_weight.get(order.priority, 1.0)
         
-        # 综合评分
+        # Composite score
         score = (temp_match * 0.4 + 
                 size_match * 0.3 + 
                 load_factor * 0.2 + 
@@ -389,7 +388,7 @@ class DeliveryCabinet:
     
     def _calculate_size_match(self, cell_capacity: str, order_size: str) -> float:
         """
-        计算大小匹配度
+        Calculate size matching degree
         """
         size_order = {'small': 1, 'medium': 2, 'large': 3}
         capacity_order = {'small': 1, 'medium': 2, 'large': 3}
@@ -398,27 +397,27 @@ class DeliveryCabinet:
         capacity_val = capacity_order.get(cell_capacity, 2)
         
         if order_val <= capacity_val:
-            return 1.0 - (capacity_val - order_val) * 0.2  # 优先大小匹配
+            return 1.0 - (capacity_val - order_val) * 0.2  # Prefer exact size match
         else:
-            return 0.0  # 无法容纳
+            return 0.0  # Cannot accommodate
     
     def _process_order_retrievals(self) -> Dict:
         """
-        处理订单取出 (模拟客户取货)
+        Process order retrievals (simulate customer pickups)
         """
         retrieval_count = 0
         retrieved_orders = []
         
-        # 模拟取货过程 (基于简单概率模型)
+        # Simulate pickup process (based on simple probability model)
         for cell in self.grid_cells:
             if cell.is_occupied and cell.order_id in self.stored_orders:
                 order = self.stored_orders[cell.order_id]
                 
-                # 取货概率 (基于存储时间和优先级)
+                # Retrieval probability (based on storage time and priority)
                 retrieval_prob = self._calculate_retrieval_probability(order, cell)
                 
                 if random.random() < retrieval_prob:
-                    # 执行取货
+                    # Execute retrieval
                     retrieved_orders.append({
                         'order_id': order.order_id,
                         'cell_id': cell.cell_id,
@@ -426,16 +425,16 @@ class DeliveryCabinet:
                         'zone': cell.zone.value
                     })
                     
-                    # 清空格子
+                    # Clear compartment
                     cell.is_occupied = False
                     cell.order_id = None
                     cell.storage_time = 0
                     
-                    # 移除订单记录
+                    # Remove order record
                     del self.stored_orders[order.order_id]
                     retrieval_count += 1
         
-        # 处理服务队列中的订单 (如果有空位)
+        # Process orders in service queue (if space available)
         self._process_waiting_queue()
         
         return {
@@ -445,38 +444,38 @@ class DeliveryCabinet:
     
     def _calculate_retrieval_probability(self, order: StoredOrder, cell: GridCell) -> float:
         """
-        计算取货概率
+        Calculate retrieval probability
         
-        基于存储时间和订单特性
+        Based on storage time and order characteristics
         """
-        # 基础取货概率
+        # Base retrieval probability
         base_prob = 0.1
         
-        # 时间因子 (存储时间越长，取货概率越高)
-        time_factor = min(cell.storage_time / 30.0, 1.0)  # 30步后达到最大概率
+        # Time factor (longer storage time, higher retrieval probability)
+        time_factor = min(cell.storage_time / 30.0, 1.0)  # Max probability after 30 steps
         
-        # 优先级因子
+        # Priority factor
         priority_factor = {'low': 0.8, 'medium': 1.0, 'high': 1.5}
         priority_mult = priority_factor.get(order.priority, 1.0)
         
-        # 最终概率
+        # Final probability
         prob = base_prob + time_factor * 0.3 * priority_mult
         
-        return min(prob, 0.8)  # 最大80%取货概率
+        return min(prob, 0.8)  # Maximum 80% retrieval probability
     
     def _process_waiting_queue(self):
         """
-        处理等待队列中的订单
+        Process orders in waiting queue
         """
         if not self.service_queue:
             return
         
-        # 尝试为等待队列中的订单分配格子
+        # Try to allocate compartments for orders in waiting queue
         processed_orders = []
         for order in self.service_queue:
             target_cell = self._find_optimal_cell(order)
             if target_cell is not None:
-                # 分配成功
+                # Allocation successful
                 target_cell.is_occupied = True
                 target_cell.order_id = order.order_id
                 target_cell.storage_time = 0
@@ -484,15 +483,15 @@ class DeliveryCabinet:
                 self.stored_orders[order.order_id] = order
                 processed_orders.append(order)
         
-        # 从等待队列中移除已处理的订单
+        # Remove processed orders from waiting queue
         for order in processed_orders:
             self.service_queue.remove(order)
     
     def _update_temperature_control(self) -> Dict:
         """
-        更新温控系统
+        Update temperature control system
         
-        基于01理论温度保持模型：
+        Based on 01 theory temperature maintenance model:
         temp_i(t+1) = temp_i(t) + α_i·(target_i - temp_i(t)) + β_i·load_i(t) + ε_i(t)
         """
         temp_info = {}
@@ -501,20 +500,20 @@ class DeliveryCabinet:
             if not controller['is_active']:
                 continue
             
-            # 当前温度
+            # Current temperature
             current_temp = controller['current_temp']
             target_temp = controller['target_temp']
             alpha = controller['alpha']
             beta = controller['beta']
             
-            # 计算负载影响
+            # Calculate load effect
             zone_load = self._get_zone_load(zone)
-            load_effect = beta * zone_load * (random.random() - 0.5) * 2  # 负载带来的温度波动
+            load_effect = beta * zone_load * (random.random() - 0.5) * 2  # Temperature fluctuation from load
             
-            # 随机温度波动
+            # Random temperature fluctuation
             epsilon = random.gauss(0, 0.5)
             
-            # 更新温度
+            # Update temperature
             new_temp = (current_temp + 
                        alpha * (target_temp - current_temp) + 
                        load_effect + 
@@ -522,12 +521,12 @@ class DeliveryCabinet:
             
             controller['current_temp'] = new_temp
             
-            # 更新格子温度
+            # Update compartment temperatures
             for cell in self.grid_cells:
                 if cell.zone == zone:
                     cell.temperature = new_temp
             
-            # 检查温度违规
+            # Check temperature violation
             temp_violation = abs(new_temp - target_temp) > controller['tolerance']
             if temp_violation:
                 self.performance_stats['temperature_violations'] += 1
@@ -543,7 +542,7 @@ class DeliveryCabinet:
     
     def _handle_timeout_orders(self) -> Dict:
         """
-        处理超时订单
+        Handle timeout orders
         """
         timeout_orders = []
         
@@ -551,7 +550,7 @@ class DeliveryCabinet:
             if cell.is_occupied and cell.order_id in self.stored_orders:
                 order = self.stored_orders[cell.order_id]
                 
-                # 检查是否超时
+                # Check if timeout
                 if cell.storage_time > order.max_storage_time:
                     timeout_orders.append({
                         'order_id': order.order_id,
@@ -559,7 +558,7 @@ class DeliveryCabinet:
                         'overtime': cell.storage_time - order.max_storage_time
                     })
                     
-                    # 强制取出超时订单
+                    # Force removal of timeout order
                     cell.is_occupied = False
                     cell.order_id = None
                     cell.storage_time = 0
@@ -574,7 +573,7 @@ class DeliveryCabinet:
     
     def _update_storage_times(self):
         """
-        更新所有存储订单的时间
+        Update storage time for all stored orders
         """
         for cell in self.grid_cells:
             if cell.is_occupied:
@@ -582,29 +581,29 @@ class DeliveryCabinet:
     
     def _check_system_health(self):
         """
-        检查系统健康状态
+        Check system health status
         """
-        # 检查温控系统故障
+        # Check temperature control system failure
         temp_failures = 0
         for zone, controller in self.temperature_controller.items():
             temp_diff = abs(controller['current_temp'] - controller['target_temp'])
-            if temp_diff > controller['tolerance'] * 2:  # 严重温度偏差
+            if temp_diff > controller['tolerance'] * 2:  # Severe temperature deviation
                 temp_failures += 1
         
-        if temp_failures >= 2:  # 多个温区同时故障
+        if temp_failures >= 2:  # Multiple zones failing simultaneously
             self.is_system_failed = True
             self.failure_reason = "multiple_temperature_control_failure"
         
-        # 检查过载情况
-        if len(self.service_queue) > 20:  # 等待队列过长
+        # Check overload situation
+        if len(self.service_queue) > 20:  # Waiting queue too long
             self.is_system_failed = True
             self.failure_reason = "service_queue_overflow"
     
     def _update_performance_stats(self):
         """
-        更新性能统计
+        Update performance statistics
         """
-        # 更新区域利用率
+        # Update zone utilization rates
         for zone in TemperatureZone:
             zone_cells = [cell for cell in self.grid_cells if cell.zone == zone]
             occupied_cells = [cell for cell in zone_cells if cell.is_occupied]
@@ -613,13 +612,13 @@ class DeliveryCabinet:
     
     def _get_grid_states(self) -> List[int]:
         """
-        获取24格状态 (0/1表示空/占用)
+        Get 24-compartment states (0/1 for empty/occupied)
         """
         return [1 if cell.is_occupied else 0 for cell in self.grid_cells]
     
     def _get_zone_temperatures(self) -> List[float]:
         """
-        获取三个温区的当前温度
+        Get current temperatures of three zones
         """
         temps = []
         for zone in [TemperatureZone.COLD, TemperatureZone.HOT, TemperatureZone.NORMAL]:
@@ -629,7 +628,7 @@ class DeliveryCabinet:
     
     def _get_zone_loads(self) -> List[float]:
         """
-        获取三个温区的负载率
+        Get load rates of three zones
         """
         loads = []
         for zone in [TemperatureZone.COLD, TemperatureZone.HOT, TemperatureZone.NORMAL]:
@@ -639,7 +638,7 @@ class DeliveryCabinet:
     
     def _get_zone_load(self, zone: TemperatureZone) -> float:
         """
-        获取指定温区的负载率
+        Get load rate of specified zone
         """
         zone_cells = [cell for cell in self.grid_cells if cell.zone == zone]
         occupied_cells = [cell for cell in zone_cells if cell.is_occupied]
@@ -647,7 +646,7 @@ class DeliveryCabinet:
     
     def _get_thermal_status(self) -> float:
         """
-        获取温控系统整体状态 (0-1，1表示最佳)
+        Get overall temperature control system status (0-1, 1 is optimal)
         """
         total_score = 0
         active_controllers = 0
@@ -664,20 +663,20 @@ class DeliveryCabinet:
     
     def get_occupancy_rate(self) -> float:
         """
-        获取整体占用率
+        Get overall occupancy rate
         """
         occupied = sum(1 for cell in self.grid_cells if cell.is_occupied)
         return occupied / len(self.grid_cells)
     
     def is_failed(self) -> bool:
         """
-        检查系统是否故障
+        Check if system has failed
         """
         return self.is_system_failed
     
     def get_detailed_info(self) -> Dict:
         """
-        获取详细的外卖柜信息
+        Get detailed delivery cabinet information
         """
         return {
             'total_cells': self.total_cells,
@@ -705,40 +704,40 @@ class DeliveryCabinet:
         }
 
 
-# 测试外卖柜模型
+# Test delivery cabinet model
 if __name__ == "__main__":
     from .config import VerticalQueueConfig
     
     config = VerticalQueueConfig()
     cabinet = DeliveryCabinet(config)
     
-    print("外卖柜模型创建成功!")
-    print(f"总格子数: {cabinet.total_cells}")
-    print(f"初始占用率: {cabinet.get_occupancy_rate():.1%}")
+    print("Delivery cabinet model created successfully!")
+    print(f"Total compartments: {cabinet.total_cells}")
+    print(f"Initial occupancy rate: {cabinet.get_occupancy_rate():.1%}")
     
-    # 测试存储请求
+    # Test storage requests
     test_requests = [
         {'order_id': 1001, 'temperature_zone': 'cold', 'size': 'medium'},
         {'order_id': 1002, 'temperature_zone': 'hot', 'size': 'small'},
         {'order_id': 1003, 'temperature_zone': 'normal', 'size': 'large'},
     ]
     
-    print("\n开始外卖柜仿真...")
+    print("\nStarting delivery cabinet simulation...")
     for step in range(10):
-        # 随机添加一些服务请求
+        # Randomly add some service requests
         requests = test_requests if step < 3 else []
         
         info = cabinet.step(requests)
         
-        print(f"Step {step + 1}: 占用率{info['occupancy_rate']:.1%}, "
-              f"服务队列{info['service_queue_length']}, "
-              f"温控状态{info['thermal_status']:.2f}")
+        print(f"Step {step + 1}: Occupancy rate {info['occupancy_rate']:.1%}, "
+              f"Service queue {info['service_queue_length']}, "
+              f"Thermal status {info['thermal_status']:.2f}")
     
-    # 显示详细信息
+    # Display detailed information
     detail_info = cabinet.get_detailed_info()
-    print(f"\n最终状态:")
-    print(f"占用格子: {detail_info['occupied_cells']}/{detail_info['total_cells']}")
+    print(f"\nFinal state:")
+    print(f"Occupied compartments: {detail_info['occupied_cells']}/{detail_info['total_cells']}")
     zone_utilizations = [f'{zone}: {info["utilization"]:.1%}' for zone, info in detail_info['zone_info'].items()]
-    print(f"各温区利用率: {zone_utilizations}")
+    print(f"Zone utilization rates: {zone_utilizations}")
     
-    print("\n外卖柜模型测试完成!")
+    print("\nDelivery cabinet model test completed!")

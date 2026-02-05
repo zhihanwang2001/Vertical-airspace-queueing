@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Capacity Paradox: Performance Under 10$\times$ Extreme Load}
+\label{tab:capacity-scan}
+\begin{tabular}{lrrrc}
+\toprule
+\textbf{Total Capacity K} & \textbf{Configuration} & \textbf{A2C Reward} & \textbf{Crash Rate} & \textbf{Status} \\
+\midrule
+10 & [2,2,2,2,2] & 11,146 & 0\% & \textbf{Optimal} \\
+15 & [3,3,3,3,3] & 10,923 & 5\% & Strong \\
+20 & [4,4,4,4,4] & 10,855 & 10\% & Good \\
+25 & [5,5,5,5,5] & 8,456 & 45\% & Degraded \\
+30 & [6,6,6,6,6] & 13 & 100\% & Collapsed \\
+40 & [8,8,8,8,8] & -30 & 100\% & Failed \\
+\bottomrule
+\end{tabular}
+\vspace{0.2cm}
+\small
+\textit{Note: Counter-intuitive "capacity paradox" where K=10 outperforms K=30 by 857$\times$ and K=40 by orders of magnitude. Extended training (500K timesteps) confirms paradox persists.}
+\end{table}

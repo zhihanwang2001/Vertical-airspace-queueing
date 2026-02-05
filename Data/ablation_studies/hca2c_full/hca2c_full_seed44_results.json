@@ -1,0 +1,11 @@
+{
+  "variant": "hca2c_full",
+  "load_multiplier": 3.0,
+  "seed": 44,
+  "total_timesteps": 500000,
+  "mean_reward": 228752.4350032719,
+  "std_reward": 1118.162343699696,
+  "crash_rate": 0.0,
+  "training_time_minutes": 20.93247210184733,
+  "timestamp": "2026-01-27T11:20:53.808993"
+}

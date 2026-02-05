@@ -1,0 +1,13 @@
+Category,Claim,Manuscript,Actual,Difference,Status,Data Source
+Algorithm Performance,A2C Mean Reward,4437.86,4391.40,1.05%,✅ Match,Results/excel/SB3_A2C.csv
+Algorithm Performance,PPO Mean Reward,4419.98,3281.15,25.77%,❌ Major,Results/excel/SB3_PPO.csv
+"Structural (7x,K=10)",A2C Inverted,"447,683","447,771",0.02%,✅ Match,capacity_scan_summary_inverted_3_7_10.csv
+"Structural (7x,K=10)",A2C Normal,"387,514","387,416",0.03%,✅ Match,capacity_scan_summary_reverse_3_7_10.csv
+"Structural (7x,K=10)",PPO Inverted,"445,892","447,815",0.43%,✅ Match,capacity_scan_summary_inverted_3_7_10.csv
+"Structural (7x,K=10)",PPO Normal,"388,321","387,574",0.19%,✅ Match,capacity_scan_summary_reverse_3_7_10.csv
+Capacity Paradox,K=10 A2C,"11,180","11,146",0.30%,✅ Match,all_experiments_summary.csv
+Capacity Paradox,K=30 A2C,13,14,6.00%,✅ Match,all_experiments_summary.csv
+Capacity Paradox,K=40 A2C,-245,-30,87.67%,⚠️ Minor,all_experiments_summary.csv
+Load Sensitivity,3x Improvement,9.7%,12.1%,2.4pp,⚠️ Minor,capacity_scan_summary_*_3_7_10.csv
+Load Sensitivity,7x Improvement,15.6%,15.6%,0.0pp,✅ Match,capacity_scan_summary_*_3_7_10.csv
+Load Sensitivity,10x Improvement,19.7%,19.6%,0.1pp,✅ Match,capacity_scan_summary_*_3_7_10.csv

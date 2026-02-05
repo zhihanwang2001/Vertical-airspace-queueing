@@ -1,6 +1,6 @@
 """
 Heuristic Baseline
-启发式基线算法 - 基于队列理论和系统专业知识的策略
+Heuristic baseline algorithm - strategy based on queuing theory and system expertise
 """
 
 import numpy as np
@@ -11,7 +11,7 @@ from .base_baseline import BaseBaseline
 
 
 class HeuristicBaseline(BaseBaseline):
-    """启发式基线算法实现"""
+    """Heuristic baseline algorithm implementation"""
     
     def __init__(self, 
                  env,
@@ -19,14 +19,14 @@ class HeuristicBaseline(BaseBaseline):
                  config: Optional[Dict] = None):
         
         default_config = {
-            # 启发式策略参数
-            'load_balance_threshold': 0.8,  # 负载均衡阈值
-            'utilization_target': 0.7,     # 目标利用率
-            'emergency_threshold': 0.9,     # 紧急传输阈值
+            # Heuristic strategy parameters
+            'load_balance_threshold': 0.8,  # Load balance threshold
+            'utilization_target': 0.7,     # Target utilization
+            'emergency_threshold': 0.9,     # Emergency transfer threshold
             'service_rate_bounds': (0.1, 2.0),
             'arrival_rate_bounds': (0.5, 5.0),
-            'adaptive_factor': 0.1,         # 自适应调整因子
-            'priority_weights': [1.0, 0.8, 0.6, 0.4, 0.2]  # 层级优先级权重
+            'adaptive_factor': 0.1,         # Adaptive adjustment factor
+            'priority_weights': [1.0, 0.8, 0.6, 0.4, 0.2]  # Layer priority weights
         }
         
         if config:
@@ -34,7 +34,7 @@ class HeuristicBaseline(BaseBaseline):
         
         super().__init__(env, algorithm_name, default_config)
         
-        # 记录历史状态用于自适应调整
+        # Record historical states for adaptive adjustment
         self.history_window = 10
         self.utilization_history = []
         self.reward_history = []
@@ -44,35 +44,35 @@ class HeuristicBaseline(BaseBaseline):
         print(f"Target utilization: {self.config['utilization_target']}")
     
     def _extract_state_info(self, observation) -> Dict:
-        """从观察中提取状态信息"""
+        """Extract state information from observation"""
         if isinstance(observation, dict):
-            # 从Dict观测空间提取信息
+            # Extract information from Dict observation space
             extracted = {}
             extracted['queue_lengths'] = observation.get('queue_lengths', np.zeros(5))
             extracted['utilization_rates'] = observation.get('utilization_rates', np.zeros(5))
             extracted['service_rates'] = observation.get('service_rates', np.ones(5))
             extracted['load_rates'] = observation.get('load_rates', np.ones(5))
             
-            # 推算到达率 (从负载率和服务率)
+            # Infer arrival rates (from load rates and service rates)
             load_rates = extracted['load_rates']
             service_rates = extracted['service_rates']
             arrival_rates = load_rates * service_rates
             extracted['arrival_rates'] = arrival_rates
             
-            # 系统指标
+            # System metrics
             system_metrics = observation.get('system_metrics', np.zeros(3))
             extracted['throughput'] = system_metrics[0] if len(system_metrics) > 0 else 0
             extracted['system_load'] = system_metrics[1] if len(system_metrics) > 1 else np.mean(extracted['utilization_rates'])
-            extracted['emergency_flags'] = [0, 0]  # 简化
-            extracted['waiting_times'] = np.zeros(5)  # 简化
+            extracted['emergency_flags'] = [0, 0]  # Simplified
+            extracted['waiting_times'] = np.zeros(5)  # Simplified
             
             return extracted
             
         elif isinstance(observation, (list, np.ndarray)):
-            # 处理扁平化观测
+            # Handle flattened observation
             obs_array = np.array(observation).flatten()
             
-            # 基于29维观察空间的结构
+            # Based on 29-dimensional observation space structure
             if len(obs_array) >= 29:
                 return {
                     'queue_lengths': obs_array[0:5],
@@ -86,7 +86,7 @@ class HeuristicBaseline(BaseBaseline):
                     'emergency_flags': [0, 0]
                 }
             else:
-                # 简化处理
+                # Simplified handling
                 n_layers = 5
                 return {
                     'queue_lengths': obs_array[0:n_layers] if len(obs_array) >= n_layers else np.zeros(n_layers),
@@ -100,7 +100,7 @@ class HeuristicBaseline(BaseBaseline):
                     'emergency_flags': [0, 0]
                 }
         else:
-            # 默认状态
+            # Default state
             return {
                 'queue_lengths': np.zeros(5),
                 'utilization_rates': np.zeros(5),
@@ -114,17 +114,17 @@ class HeuristicBaseline(BaseBaseline):
             }
     
     def predict(self, observation, deterministic: bool = True) -> Tuple[np.ndarray, Optional[Dict]]:
-        """基于启发式规则预测动作"""
+        """Predict action based on heuristic rules"""
         state_info = self._extract_state_info(observation)
         
-        # 提取关键状态信息
+        # Extract key state information
         queue_lengths = np.array(state_info['queue_lengths'])
         utilization_rates = np.array(state_info['utilization_rates'])
         arrival_rates = np.array(state_info['arrival_rates'])
         service_rates = np.array(state_info['service_rates'])
         system_load = state_info['system_load']
         
-        # 启发式决策
+        # Heuristic decision
         action = self._make_heuristic_decision(
             queue_lengths, utilization_rates, arrival_rates, 
             service_rates, system_load
@@ -134,19 +134,19 @@ class HeuristicBaseline(BaseBaseline):
     
     def _make_heuristic_decision(self, queue_lengths, utilization_rates, 
                                arrival_rates, service_rates, system_load) -> Dict:
-        """基于启发式规则做出决策"""
+        """Make decision based on heuristic rules"""
         
-        # 1. 服务强度调整策略
+        # 1. Service intensity adjustment strategy
         service_intensities = self._adjust_service_intensities(
             queue_lengths, utilization_rates, service_rates
         )
         
-        # 2. 到达率调整策略
+        # 2. Arrival rate adjustment strategy
         arrival_multiplier = self._adjust_arrival_rate(
             utilization_rates, system_load
         )
         
-        # 3. 紧急传输策略
+        # 3. Emergency transfer strategy
         emergency_transfers = self._decide_emergency_transfers(
             queue_lengths, utilization_rates
         )
@@ -158,7 +158,7 @@ class HeuristicBaseline(BaseBaseline):
         }
     
     def _adjust_service_intensities(self, queue_lengths, utilization_rates, service_rates):
-        """调整服务强度"""
+        """Adjust service intensities"""
         service_intensities = np.ones(5)
         
         target_util = self.config['utilization_target']
@@ -169,20 +169,20 @@ class HeuristicBaseline(BaseBaseline):
             queue_len = queue_lengths[i]
             priority = priority_weights[i]
             
-            # 基于利用率和队列长度调整
+            # Adjust based on utilization and queue length
             if current_util > target_util or queue_len > 10:
-                # 增加服务强度
+                # Increase service intensity
                 adjustment = min(1.5, 1 + (current_util - target_util) * 2 + queue_len * 0.1)
             elif current_util < target_util * 0.5:
-                # 减少服务强度以节省资源
+                # Reduce service intensity to save resources
                 adjustment = max(0.5, 1 - (target_util - current_util) * 1.5)
             else:
                 adjustment = 1.0
             
-            # 考虑层级优先级
+            # Consider layer priority
             adjustment *= (0.8 + 0.4 * priority)
             
-            # 应用边界约束
+            # Apply boundary constraints
             service_intensities[i] = np.clip(
                 adjustment, 
                 self.config['service_rate_bounds'][0], 
@@ -192,21 +192,21 @@ class HeuristicBaseline(BaseBaseline):
         return service_intensities
     
     def _adjust_arrival_rate(self, utilization_rates, system_load):
-        """调整系统到达率"""
+        """Adjust system arrival rate"""
         avg_utilization = np.mean(utilization_rates)
         target_util = self.config['utilization_target']
         
         if avg_utilization > self.config['load_balance_threshold']:
-            # 系统过载，减少到达率
+            # System overloaded, reduce arrival rate
             multiplier = max(0.5, 1.0 - (avg_utilization - target_util) * 2)
         elif avg_utilization < target_util * 0.6:
-            # 系统负载低，可以增加到达率
+            # System load low, can increase arrival rate
             multiplier = min(3.0, 1.0 + (target_util - avg_utilization) * 1.5)
         else:
-            # 正常范围
+            # Normal range
             multiplier = 1.0
         
-        # 考虑系统总体负载
+        # Consider overall system load
         if system_load > 0.8:
             multiplier *= 0.8
         elif system_load < 0.3:
@@ -219,20 +219,20 @@ class HeuristicBaseline(BaseBaseline):
         )
     
     def _decide_emergency_transfers(self, queue_lengths, utilization_rates):
-        """决定紧急传输"""
+        """Decide emergency transfers"""
         emergency_transfers = np.zeros(5, dtype=int)
         emergency_threshold = self.config['emergency_threshold']
         
-        for i in range(4):  # 只有前4层可以向下传输
+        for i in range(4):  # Only first 4 layers can transfer down
             current_util = utilization_rates[i]
             current_queue = queue_lengths[i]
             next_util = utilization_rates[i + 1]
             
-            # 紧急传输条件
+            # Emergency transfer conditions
             should_transfer = (
-                current_util > emergency_threshold or  # 当前层过载
-                current_queue > 15 or                  # 队列过长
-                (current_util > 0.8 and next_util < 0.5)  # 当前高负载且下层有余量
+                current_util > emergency_threshold or  # Current layer overloaded
+                current_queue > 15 or                  # Queue too long
+                (current_util > 0.8 and next_util < 0.5)  # Current high load and next layer has capacity
             )
             
             if should_transfer:
@@ -241,10 +241,10 @@ class HeuristicBaseline(BaseBaseline):
         return emergency_transfers
     
     def train(self, total_timesteps: int, **kwargs) -> Dict:
-        """训练过程（启发式策略可以通过收集数据进行自适应）"""
+        """Training process (heuristic policy can be adaptive by collecting data)"""
         print(f"Running Heuristic Baseline for {total_timesteps} timesteps...")
         
-        # 重置训练记录
+        # Reset training records
         self.training_history = {
             'episode_rewards': [],
             'episode_lengths': [],
@@ -261,14 +261,14 @@ class HeuristicBaseline(BaseBaseline):
         episode_count = 0
         
         for timestep in range(total_timesteps):
-            # 预测动作
+            # Predict action
             action, _ = self.predict(state, deterministic=True)
             
-            # 执行动作
+            # Execute action
             next_state, reward, terminated, truncated, info = self.env.step(action)
             done = terminated or truncated
             
-            # 记录状态用于自适应
+            # Record state for adaptation
             state_info = self._extract_state_info(state)
             self._update_adaptive_parameters(state_info, reward)
             
@@ -277,11 +277,11 @@ class HeuristicBaseline(BaseBaseline):
             episode_length += 1
             
             if done:
-                # 记录episode信息
+                # Record episode information
                 self.training_history['episode_rewards'].append(episode_reward)
                 self.training_history['episode_lengths'].append(episode_length)
                 
-                # 计算平均奖励
+                # Calculate average reward
                 if len(self.training_history['episode_rewards']) >= 100:
                     avg_reward = np.mean(self.training_history['episode_rewards'][-100:])
                     self.training_history['avg_rewards'].append(avg_reward)
@@ -289,7 +289,7 @@ class HeuristicBaseline(BaseBaseline):
                 if episode_count % 100 == 0:
                     print(f"Episode {episode_count}, Timestep {timestep}, Reward: {episode_reward:.2f}")
                 
-                # 重置环境
+                # Reset environment
                 state, _ = self.env.reset()
                 episode_reward = 0
                 episode_length = 0
@@ -312,42 +312,42 @@ class HeuristicBaseline(BaseBaseline):
         }
     
     def _update_adaptive_parameters(self, state_info, reward):
-        """根据历史表现自适应调整参数"""
+        """Adaptively adjust parameters based on historical performance"""
         utilization_rates = state_info['utilization_rates']
         avg_utilization = np.mean(utilization_rates)
         
-        # 更新历史记录
+        # Update historical records
         self.utilization_history.append(avg_utilization)
         self.reward_history.append(reward)
         
-        # 保持历史窗口大小
+        # Maintain history window size
         if len(self.utilization_history) > self.history_window:
             self.utilization_history.pop(0)
             self.reward_history.pop(0)
         
-        # 自适应调整（简单版本）
+        # Adaptive adjustment (simple version)
         if len(self.reward_history) >= self.history_window:
             recent_reward = np.mean(self.reward_history[-5:])
             early_reward = np.mean(self.reward_history[:5])
             
             if recent_reward < early_reward:
-                # 性能下降，调整阈值
+                # Performance degradation, adjust thresholds
                 self.config['load_balance_threshold'] *= (1 - self.config['adaptive_factor'])
                 self.config['utilization_target'] *= (1 - self.config['adaptive_factor'] * 0.5)
             else:
-                # 性能改善，保持或微调
+                # Performance improvement, maintain or fine-tune
                 self.config['load_balance_threshold'] *= (1 + self.config['adaptive_factor'] * 0.5)
                 self.config['utilization_target'] *= (1 + self.config['adaptive_factor'] * 0.3)
         
-        # 边界约束
+        # Boundary constraints
         self.config['load_balance_threshold'] = np.clip(self.config['load_balance_threshold'], 0.6, 0.95)
         self.config['utilization_target'] = np.clip(self.config['utilization_target'], 0.5, 0.8)
     
     def save(self, path: str) -> None:
-        """保存模型"""
+        """Save model"""
         import json
         
-        # 转换numpy类型为Python原生类型
+        # Convert numpy types to Python native types
         def convert_numpy(obj):
             if isinstance(obj, np.ndarray):
                 return obj.tolist()
@@ -378,7 +378,7 @@ class HeuristicBaseline(BaseBaseline):
         print(f"Heuristic Baseline saved to: {path}")
     
     def load(self, path: str) -> None:
-        """加载模型"""
+        """Load model"""
         import json
         
         with open(path, 'r') as f:
@@ -400,7 +400,7 @@ class HeuristicBaseline(BaseBaseline):
         print(f"Heuristic Baseline loaded from: {path}")
     
     def get_info(self) -> Dict:
-        """获取算法信息"""
+        """Get algorithm information"""
         info = super().get_info()
         info.update({
             'description': 'Heuristic policy based on queuing theory',

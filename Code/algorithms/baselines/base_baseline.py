@@ -1,5 +1,5 @@
 """
-基线算法基础类
+Base class for baseline algorithms
 Base class for all baseline algorithms
 """
 
@@ -14,7 +14,7 @@ import os
 
 class BaseBaseline(ABC):
     """
-    所有基线算法的基础类
+    Base class for all baseline algorithms
     """
     
     def __init__(self, 
@@ -22,18 +22,18 @@ class BaseBaseline(ABC):
                  algorithm_name: str,
                  config: Optional[Dict] = None):
         """
-        初始化基线算法
+        Initialize baseline algorithm
         
         Args:
-            env: 环境实例
-            algorithm_name: 算法名称
-            config: 算法配置参数
+            env: Environment instance
+            algorithm_name: Algorithm name
+            config: Algorithm configuration parameters
         """
         self.env = env
         self.algorithm_name = algorithm_name
         self.config = config or {}
         
-        # 训练记录
+        # Training records
         self.training_history = {
             'episode_rewards': [],
             'episode_lengths': [],
@@ -42,7 +42,7 @@ class BaseBaseline(ABC):
             'loss_values': []
         }
         
-        # 评估记录
+        # Evaluation records
         self.evaluation_history = {
             'eval_rewards': [],
             'eval_std': [],
@@ -50,32 +50,32 @@ class BaseBaseline(ABC):
             'system_metrics': []
         }
         
-        # 算法特定参数
+        # Algorithm-specific parameters
         self.total_timesteps = 0
         self.episode_count = 0
         
     @abstractmethod
     def train(self, total_timesteps: int, **kwargs) -> Dict:
         """
-        训练算法
+        Train algorithm
         
         Args:
-            total_timesteps: 总训练步数
-            **kwargs: 其他训练参数
+            total_timesteps: Total training timesteps
+            **kwargs: Other training parameters
             
         Returns:
-            训练结果字典
+            Training results dictionary
         """
         pass
     
     @abstractmethod
     def predict(self, observation, deterministic: bool = True) -> Tuple[np.ndarray, Optional[Dict]]:
         """
-        预测动作
+        Predict action
         
         Args:
-            observation: 观察值
-            deterministic: 是否确定性预测
+            observation: Observation
+            deterministic: Whether to use deterministic prediction
             
         Returns:
             (action, extra_info)
@@ -85,20 +85,20 @@ class BaseBaseline(ABC):
     @abstractmethod
     def save(self, path: str) -> None:
         """
-        保存模型
+        Save model
         
         Args:
-            path: 保存路径
+            path: Save path
         """
         pass
     
     @abstractmethod
     def load(self, path: str) -> None:
         """
-        加载模型
+        Load model
         
         Args:
-            path: 模型路径
+            path: Model path
         """
         pass
     
@@ -107,15 +107,15 @@ class BaseBaseline(ABC):
                  deterministic: bool = True,
                  verbose: bool = True) -> Dict:
         """
-        评估算法性能
+        Evaluate algorithm performance
         
         Args:
-            n_episodes: 评估轮数
-            deterministic: 是否确定性评估
-            verbose: 是否输出详细信息
+            n_episodes: Number of evaluation episodes
+            deterministic: Whether to use deterministic evaluation
+            verbose: Whether to print detailed information
             
         Returns:
-            评估结果字典
+            Evaluation results dictionary
         """
         episode_rewards = []
         episode_lengths = []
@@ -138,7 +138,7 @@ class BaseBaseline(ABC):
             episode_rewards.append(episode_reward)
             episode_lengths.append(episode_length)
             
-            # 收集系统指标
+            # Collect system metrics
             if hasattr(info, 'keys') and 'throughput' in info:
                 system_metrics.append({
                     'throughput': info.get('throughput', 0),
@@ -149,7 +149,7 @@ class BaseBaseline(ABC):
             if verbose and (ep + 1) % 5 == 0:
                 print(f"  Episode {ep + 1}/{n_episodes}: Reward = {episode_reward:.2f}")
         
-        # 计算统计量
+        # Calculate statistics
         mean_reward = np.mean(episode_rewards)
         std_reward = np.std(episode_rewards)
         mean_length = np.mean(episode_lengths)
@@ -172,10 +172,10 @@ class BaseBaseline(ABC):
     
     def plot_training_history(self, save_path: Optional[str] = None) -> None:
         """
-        绘制训练历史
+        Plot training history
         
         Args:
-            save_path: 保存路径
+            save_path: Save path
         """
         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
         fig.suptitle(f'{self.algorithm_name} Training History', fontsize=16)
@@ -222,24 +222,24 @@ class BaseBaseline(ABC):
     
     def save_results(self, save_dir: str) -> None:
         """
-        保存训练和评估结果
+        Save training and evaluation results
         
         Args:
-            save_dir: 保存目录
+            save_dir: Save directory
         """
         os.makedirs(save_dir, exist_ok=True)
         
-        # 保存训练历史
+        # Save training history
         training_file = os.path.join(save_dir, f'{self.algorithm_name}_training_history.json')
         with open(training_file, 'w') as f:
             json.dump(self.training_history, f, indent=2)
         
-        # 保存评估历史
+        # Save evaluation history
         eval_file = os.path.join(save_dir, f'{self.algorithm_name}_evaluation_history.json')
         with open(eval_file, 'w') as f:
             json.dump(self.evaluation_history, f, indent=2)
         
-        # 保存配置
+        # Save configuration
         config_file = os.path.join(save_dir, f'{self.algorithm_name}_config.json')
         with open(config_file, 'w') as f:
             json.dump(self.config, f, indent=2)
@@ -248,10 +248,10 @@ class BaseBaseline(ABC):
     
     def get_info(self) -> Dict:
         """
-        获取算法信息
+        Get algorithm information
         
         Returns:
-            算法信息字典
+            Algorithm information dictionary
         """
         return {
             'algorithm_name': self.algorithm_name,

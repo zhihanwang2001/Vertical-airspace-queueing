@@ -1,0 +1,78 @@
+\subsection{Performance-Stability Trade-off in Algorithm Comparison}
+
+The HCA2C ablation study reveals a fundamental trade-off in deep reinforcement learning for vertical queueing systems: performance versus training stability. This trade-off manifests clearly in the comparison between A2C, PPO, and HCA2C.
+
+\subsubsection{A2C's High Performance, High Variance Profile}
+
+A2C achieved the highest performance at load 5.0$\times$ (771,222 $\pm$ 1,647), demonstrating the potential of single-policy architectures to reach superior solutions. However, this high performance came with significant instability across different load levels (average CV=31.55\%). At loads 3.0$\times$ and 7.0$\times$, A2C exhibited coefficients of variation exceeding 40\%, indicating that training outcomes were highly dependent on random initialization and stochastic training dynamics.
+
+This variance pattern suggests that A2C's unconstrained policy space allows for both high-performing and low-performing solutions. Without architectural constraints, the optimization process can converge to different local optima depending on the random seed, leading to unpredictable training outcomes. From a practical perspective, this means that deploying A2C in production would require multiple training runs to ensure convergence to a high-performing solution, increasing overall computational cost despite faster individual training times (0.7-3.3 minutes per run).
+
+\subsubsection{HCA2C's High Stability, Limited Performance Profile}
+
+In stark contrast, HCA2C demonstrated exceptional training stability (average CV=0.20\%), with coefficients of variation below 0.5\% at all load levels. This remarkable consistency indicates that HCA2C's hierarchical architecture acts as a strong regularizer, constraining the policy space to a narrow region of consistent solutions.
+
+However, this stability came at the cost of limited performance and catastrophic failure under extreme load. HCA2C's mean rewards were consistently lower than both baselines at loads 3.0$\times$ and 5.0$\times$, and the algorithm completely failed at load 7.0$\times$ (mean reward: -134,254). This suggests that the architectural constraints that ensure stability also limit the algorithm's ability to explore the full policy space and adapt to varying conditions.
+
+\subsubsection{Theoretical Interpretation: Bias-Variance Decomposition}
+
+This trade-off can be understood through the lens of bias-variance decomposition. HCA2C's hierarchical structure introduces inductive bias by decomposing the decision-making process into global and local levels. This bias reduces variance (ensuring consistent training) but increases bias (limiting the representational capacity). A2C, with its single unconstrained policy network, has lower bias (higher representational capacity) but higher variance (less consistent training).
+
+The mathematical relationship can be expressed as:
+\begin{equation}
+\text{Expected Error} = \text{Bias}^2 + \text{Variance} + \text{Irreducible Error}
+\end{equation}
+
+HCA2C optimizes for low variance at the expense of higher bias, while A2C accepts higher variance to achieve lower bias. PPO, with its clipped objective function, achieves a middle ground: moderate bias through adaptive regularization and moderate variance through constrained policy updates.
+
+\subsubsection{Understanding HCA2C's Failure Mode}
+
+HCA2C's catastrophic failure at load 7.0$\times$ warrants detailed analysis, as it reveals fundamental limitations of the hierarchical architecture. We hypothesize three contributing factors:
+
+\textbf{Overly Conservative Capacity-Aware Clipping.} HCA2C employs a CapacityAwareClipper that dynamically constrains actions based on current system state. Under extreme load (7.0$\times$), the high arrival rate may trigger aggressive action clipping, preventing the algorithm from taking necessary actions to manage the traffic. Evidence supporting this hypothesis includes the consistent negative rewards across all five seeds (mean=-134,254, std=471), suggesting a systematic failure mode rather than random poor performance.
+
+\textbf{Hierarchical Coordination Breakdown.} HCA2C's decision-making involves coordination between a global policy (system-level decisions) and five layer-specific policies (local decisions). Under extreme load, the coordination mechanism may fail, leading to conflicting decisions. The coordination module uses 1D convolution and self-attention to facilitate inter-layer communication. However, these mechanisms were trained primarily on moderate load scenarios. Under extreme load, the coordination patterns may be out-of-distribution, causing the module to produce ineffective coordination signals.
+
+\textbf{Training Distribution Mismatch.} During training, HCA2C likely encountered predominantly moderate load scenarios due to the stochastic nature of the environment and the algorithm's own action choices. The extreme load condition (7.0$\times$) represents a distribution shift from the training data. HCA2C's hierarchical architecture, while providing stability within the training distribution, lacks the flexibility to generalize to out-of-distribution scenarios. This hypothesis is supported by the monotonic performance decrease as load increases (228,879 $\rightarrow$ 79,458 $\rightarrow$ -134,254).
+
+\subsubsection{A2C's Anomalous Stability at Load 5.0$\times$}
+
+A2C's exceptional stability at load 5.0$\times$ (CV=0.19\%) stands in stark contrast to its high variance at other loads (CV=36.47\% at 3.0$\times$, 47.99\% at 7.0$\times$). This load-specific stability pattern is surprising and suggests several possible explanations:
+
+\textbf{Optimal Load-Capacity Matching.} Load 5.0$\times$ may represent an optimal balance between system capacity and arrival rate, where the queueing dynamics are most stable and predictable. The inverted pyramid capacity structure [8, 6, 4, 3, 2] with base arrival rate 0.3 $\times$ 5.0 = 1.5 may create a "sweet spot" where the arrival rate closely matches the aggregate service capacity, minimizing queue length fluctuations and reward variance.
+
+\textbf{Reward Function Smoothness.} The reward function at load 5.0$\times$ may be smoother and more convex than at other loads, reducing the prevalence of local optima and saddle points. This smoothness could arise from the specific interaction between the multi-objective reward components (throughput, fairness, efficiency, congestion penalty, stability bonus) at this load level. At loads 3.0$\times$ and 7.0$\times$, the reward function may be more rugged, with multiple local optima corresponding to different queue management strategies.
+
+\subsubsection{PPO's Balanced Performance}
+
+PPO demonstrated a balanced profile across all metrics: moderate performance (intermediate between A2C and HCA2C at most loads), moderate stability (CV=7.39\%), and good load robustness (positive performance at all loads). This balanced profile makes PPO an attractive choice for practical applications where multiple objectives must be satisfied.
+
+PPO's clipped objective function provides a form of regularization that constrains policy updates, preventing the large policy changes that can lead to training instability. However, unlike HCA2C's architectural constraints, PPO's clipping is adaptive and temporary, allowing the algorithm to make larger updates when beneficial while preventing destructive updates. This adaptive regularization mechanism enables PPO to achieve a middle ground: sufficient constraint to ensure moderate stability, but enough flexibility to reach good (though not optimal) performance.
+
+\subsubsection{Computational Cost-Benefit Analysis}
+
+The ablation study reveals a stark computational cost disparity: HCA2C requires 40-200$\times$ longer training time than the baselines (87-139 minutes vs 0.7-4.1 minutes). This computational overhead stems from HCA2C's complex architecture: multiple policy networks (one global, five layer-specific), coordination modules (1D convolution and self-attention), and capacity-aware clipping (dynamic action bound computation).
+
+Given HCA2C's performance limitations and catastrophic failure at high load, the 40-200$\times$ computational overhead is difficult to justify. While the exceptional training stability (CV=0.20\%) is valuable, it does not compensate for lower absolute performance at all successful load levels, complete failure at extreme load, and significantly longer training time. In contrast, A2C and PPO offer faster training with the potential for higher performance. Even accounting for the need to run multiple training runs to ensure good convergence (due to higher variance), the total computational cost would likely be lower than HCA2C's single training run.
+
+\subsubsection{Implications for Algorithm Selection}
+
+The ablation study provides clear guidance for algorithm selection based on application requirements:
+
+\textbf{Choose A2C when:} (1) Maximum performance is critical, (2) Operating conditions are known and stable (e.g., load $\approx$ 5.0$\times$), (3) Multiple training runs are feasible to ensure convergence, (4) Training time is not a constraint.
+
+\textbf{Choose PPO when:} (1) Balanced performance and stability are needed, (2) Operating conditions vary across a range, (3) Predictable training outcomes are important, (4) Computational efficiency is a priority.
+
+\textbf{Choose HCA2C when:} (1) Training stability is paramount, (2) Operating conditions are moderate (loads 3.0$\times$-5.0$\times$), (3) Interpretability and safety certification are required, (4) Computational cost for training is acceptable.
+
+\textbf{Avoid HCA2C when:} (1) Extreme operating conditions are expected (load > 6.0$\times$), (2) Maximum performance is critical, (3) Training time is constrained.
+
+\subsubsection{Broader Implications for Hierarchical Reinforcement Learning}
+
+The ablation study results have broader implications for hierarchical reinforcement learning research:
+
+\textbf{Architectural Constraints Are Double-Edged.} Hierarchical architectures introduce inductive bias that can improve training stability but may limit performance and generalization. The design of hierarchical structures must carefully balance constraint (for stability) and flexibility (for performance). Our results show that HCA2C's hierarchical decomposition provides exceptional stability (CV=0.20\%) but at the cost of 66\% performance reduction compared to A2C at optimal load and catastrophic failure under distribution shift.
+
+\textbf{Distribution Shift Is Critical.} Hierarchical algorithms may be particularly vulnerable to distribution shift, as the coordination mechanisms are learned on specific data distributions. HCA2C's monotonic performance degradation and eventual failure as load increases demonstrates this vulnerability. Robust hierarchical RL requires explicit mechanisms for handling out-of-distribution scenarios, such as adaptive capacity-aware clipping that adjusts based on system load, robust coordination mechanisms with explicit out-of-distribution detection, or progressive load training with curriculum learning.
+
+\textbf{Computational Cost Matters.} The computational overhead of hierarchical architectures must be justified by clear performance or stability benefits. In this study, HCA2C's 40-200$\times$ computational cost was not justified by its performance profile. For many applications, well-tuned baseline algorithms (A2C, PPO) may outperform complex hierarchical architectures. The additional complexity of hierarchical methods should only be introduced when clear benefits are demonstrated.

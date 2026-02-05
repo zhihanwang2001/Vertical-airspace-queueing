@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """
-修正算法性能排名图（正确排序版本）
 Fix Algorithm Performance Ranking Figure (Correct Order)
 """
 
@@ -8,15 +7,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 
-# 设置中文字体和样式
+# Set Chinese font and style
 plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
 sns.set_style("whitegrid")
 
 def create_ranking_figure():
-    """根据result.md创建正确排序的排名图"""
+    """Create correctly sorted ranking figure based on result.md"""
     
-    # 根据result.md的最终排名数据（从高到低排序）
+    # Based on final ranking data from result.md (sorted from high to low)
     algorithms = [
         'PPO', 'TD7', 'R2D2', 'SAC v2', 'TD3', 'SAC', 'Heuristic', 
         'Rainbow DQN', 'Priority', 'FCFS', 'SJF', 'DDPG', 'A2C', 'IMPALA', 'Random'
@@ -32,46 +31,46 @@ def create_ranking_figure():
         166.43, 67.63, 66.64, 66.58, 119.34, 52.68, 25.24, 308.75
     ]
     
-    # 颜色分类：顶级层(>4200) 红色，中级层(2000-4000) 橙色，低级层(1000-2000) 蓝色, 最低 绿色
+    # Color classification: Top tier(>4200) red, Mid tier(2000-4000) orange, Low tier(1000-2000) blue, Bottom green
     colors = []
     for reward in mean_rewards:
         if reward > 4200:
-            colors.append('#e74c3c')  # 红色 - 顶级层
+            colors.append('#e74c3c')  # Red - top tier
         elif reward >= 2000:
-            colors.append('#f39c12')  # 橙色 - 中级层  
+            colors.append('#f39c12')  # Orange - mid tier
         elif reward >= 1000:
-            colors.append('#3498db')  # 蓝色 - 低级层
+            colors.append('#3498db')  # Blue - low tier
         else:
-            colors.append('#2ecc71')  # 绿色 - 最低层
-    
-    # 创建水平条形图（最高分在顶部）
+            colors.append('#2ecc71')  # Green - bottom tier
+
+    # Create horizontal bar chart (highest score at top)
     fig, ax = plt.subplots(figsize=(12, 10))
+
+    # y-axis position (highest score at top, so reverse)
+    y_pos = np.arange(len(algorithms))[::-1]  # Reverse y-axis position
     
-    # y轴位置（最高分在顶部，所以要反转）
-    y_pos = np.arange(len(algorithms))[::-1]  # 反转y轴位置
-    
-    # 绘制条形图
+    # Draw bar chart
     bars = ax.barh(y_pos, mean_rewards, xerr=std_rewards, 
                    color=colors, alpha=0.8, capsize=5,
                    error_kw={'elinewidth': 2, 'capthick': 2})
     
-    # 设置算法标签（最高分在顶部）
+    # Set algorithm labels (highest score at top)
     ax.set_yticks(y_pos)
     ax.set_yticklabels(algorithms, fontsize=11)
     
-    # 设置x轴
+    # Set x-axis
     ax.set_xlabel('Mean Reward', fontsize=12, fontweight='bold')
     ax.set_xlim(0, 5000)
     
-    # 添加标题
+    # Add title
     ax.set_title('Algorithm Performance Ranking in MCRPS/D/K Framework', 
                 fontsize=14, fontweight='bold', pad=20)
     
-    # 添加性能分层线
+    # Add performance tier lines
     ax.axvline(x=4000, color='red', linestyle='--', alpha=0.7, linewidth=2)
     ax.axvline(x=2000, color='orange', linestyle='--', alpha=0.7, linewidth=2)
     
-    # 添加图例
+    # Add legend
     from matplotlib.patches import Patch
     legend_elements = [
         Patch(facecolor='#e74c3c', alpha=0.8, label='Top-Tier (>4000)'),
@@ -81,14 +80,14 @@ def create_ranking_figure():
     ]
     ax.legend(handles=legend_elements, loc='lower right', fontsize=10)
     
-    # 在每个条形上添加数值
+    # Add values on each bar
     for i, (bar, mean, std) in enumerate(zip(bars, mean_rewards, std_rewards)):
         width = bar.get_width()
         ax.text(width + 50, bar.get_y() + bar.get_height()/2, 
                 f'{mean:.0f}±{std:.0f}', 
                 ha='left', va='center', fontsize=9, fontweight='bold')
     
-    # 添加排名标识（前三名）
+    # Add ranking indicators (top 3)
     for i in range(3):
         medals = ['🥇', '🥈', '🥉']
         ax.text(100, y_pos[i], medals[i], 
@@ -98,8 +97,8 @@ def create_ranking_figure():
     plt.savefig('../../Figures/analysis/figure1_performance_ranking_corrected.png', dpi=300, bbox_inches='tight')
     plt.close()
     
-    print("✅ 修正的排名图已生成: figure1_performance_ranking_corrected.png")
-    print("排序正确：PPO(最高)在顶部，Random(最低)在底部")
+    print("✅ Corrected ranking figure generated: figure1_performance_ranking_corrected.png")
+    print("Correct order: PPO (highest) at top, Random (lowest) at bottom")
 
 if __name__ == "__main__":
     create_ranking_figure()

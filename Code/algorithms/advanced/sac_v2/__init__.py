@@ -1,6 +1,6 @@
 """
 SAC v2 Algorithm Implementation
-SAC v2算法实现，包含自动熵调节和双Q网络架构
+SAC v2 algorithm implementation with automatic entropy tuning and dual Q-network architecture
 """
 
 from .sac_v2_agent import SAC_v2_Agent
