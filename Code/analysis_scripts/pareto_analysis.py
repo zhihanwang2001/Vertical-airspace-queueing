@@ -1,6 +1,5 @@
 """
 Pareto Optimal Set Analysis for Vertical Stratified Queuing System
-Pareto Optimal Set Analysis for Vertical Stratified Queuing System
 """
 
 import numpy as np
@@ -28,33 +27,33 @@ class ParetoAnalyzer:
     def __init__(self, env):
         """
         Args:
-            env: 垂直分层队列环境实例
+            env: Vertical stratified queue environment instance
         """
         self.env = env
         self.objective_names = [
-            'Throughput', 'Balance', 'Efficiency', 
+            'Throughput', 'Balance', 'Efficiency',
             'Transfer', 'Stability', 'Penalty'
         ]
         self.n_objectives = len(self.objective_names)
-        
-        # 存储评估结果
+
+        # Store evaluation results
         self.solutions = []
         self.objective_values = []
         self.pareto_indices = []
         self.pareto_front = []
-        
+
         print(f"ParetoAnalyzer initialized with {self.n_objectives} objectives")
     
     def evaluate_solution(self, policy_params: Dict, n_episodes: int = 10) -> np.ndarray:
         """
         Evaluate multi-objective performance of a single solution
-        
+
         Args:
             policy_params: Policy parameters dictionary
             n_episodes: Number of evaluation episodes
-            
+
         Returns:
-            6dimensional objective vector
+            6-dimensional objective vector
         """
         objective_values = np.zeros(self.n_objectives)
         

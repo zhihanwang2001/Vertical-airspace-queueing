@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Fix Algorithm Performance Ranking Figure (Correct Order)
-Fix Algorithm Performance Ranking Figure (Correct Order)
 """
 
 import matplotlib.pyplot as plt
@@ -36,18 +35,18 @@ def create_ranking_figure():
     colors = []
     for reward in mean_rewards:
         if reward > 4200:
-            colors.append('#e74c3c')  # 红色 - 顶级层
+            colors.append('#e74c3c')  # Red - top tier
         elif reward >= 2000:
-            colors.append('#f39c12')  # 橙色 - 中级层  
+            colors.append('#f39c12')  # Orange - mid tier
         elif reward >= 1000:
-            colors.append('#3498db')  # 蓝色 - 低级层
+            colors.append('#3498db')  # Blue - low tier
         else:
-            colors.append('#2ecc71')  # green - 最低层
-    
+            colors.append('#2ecc71')  # Green - bottom tier
+
     # Create horizontal bar chart (highest score at top)
     fig, ax = plt.subplots(figsize=(12, 10))
-    
-    # yy-axis position (highest score at top, so reverse)
+
+    # y-axis position (highest score at top, so reverse)
     y_pos = np.arange(len(algorithms))[::-1]  # Reverse y-axis position
     
     # Draw bar chart
