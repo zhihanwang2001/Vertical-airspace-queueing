@@ -51,9 +51,9 @@ if p_value < 0.05:
 else:
     print(f"❌ Not significant (p >= 0.05)")
 
-# Mann-Whitney U检验 (Non-parametric)
+# Mann-Whitney U test (Non-parametric)
 u_stat, p_value_u = mannwhitneyu(inverted['mean_reward'], reverse['mean_reward'], alternative='two-sided')
-print(f"Mann-Whitney U检验: U={u_stat:.3f}, p={p_value_u:.4f}")
+print(f"Mann-Whitney U test: U={u_stat:.3f}, p={p_value_u:.4f}")
 if p_value_u < 0.05:
     print(f"✅ Statistically significant (p < 0.05)")
 else:
@@ -105,16 +105,16 @@ else:
     print(f"❌ Crash rateDifferenceNot significant")
 
 # ============================================================================
-# 3. Capacity效应检验 (Kruskal-Wallis)
+# 3. Capacity effect test (Kruskal-Wallis)
 # ============================================================================
 
 print("\n" + "="*80)
-print("3. Capacity效应检验 (所有Capacity配置, A2C+PPO)")
+print("3. Capacity effect test (all capacity configurations, A2C+PPO)")
 print("="*80 + "\n")
 
 df_onpolicy = df[df['algorithm'].isin(['A2C', 'PPO'])].copy()
 
-# 按Capacity分组
+# Group by capacity
 capacity_groups = []
 capacity_labels = []
 for cap in sorted(df_onpolicy['total_capacity'].unique()):
@@ -124,17 +124,17 @@ for cap in sorted(df_onpolicy['total_capacity'].unique()):
         capacity_labels.append(f"Cap{int(cap)}")
         print(f"Capacity{int(cap)}: n={len(group)}, mean={np.mean(group):.2f}, std={np.std(group):.2f}")
 
-# Kruskal-Wallis检验 (Non-parametricANOVA)
+# Kruskal-Wallis test (Non-parametric ANOVA)
 h_stat, p_value_kw = kruskal(*capacity_groups)
-print(f"\nKruskal-Wallis检验: H={h_stat:.3f}, p={p_value_kw:.6f}")
+print(f"\nKruskal-Wallis test: H={h_stat:.3f}, p={p_value_kw:.6f}")
 if p_value_kw < 0.05:
-    print(f"✅ Capacity效应Statistically significant (p < 0.05)")
-    print(f"   Conclusion: 不Same capacity配置的性能存In显著Difference")
+    print(f"✅ Capacity effect statistically significant (p < 0.05)")
+    print(f"   Conclusion: Different capacity configurations show significant performance differences")
 else:
-    print(f"❌ Capacity效应Not significant")
+    print(f"❌ Capacity effect not significant")
 
 # ============================================================================
-# 4. Paired analysis: Under the same configuration的算法对比
+# 4. Paired analysis: Algorithm comparison under the same configuration
 # ============================================================================
 
 print("\n" + "="*80)
@@ -170,11 +170,11 @@ for config in configs_viable:
             ties += 1
 
 print(f"\nSummary: A2Cwins{a2c_wins}times, PPOwins{ppo_wins}times, Tie{ties}times")
-print(f"A2Cwins率: {a2c_wins/(a2c_wins+ppo_wins+ties)*100:.1f}%")
+print(f"A2C win rate: {a2c_wins/(a2c_wins+ppo_wins+ties)*100:.1f}%")
 
 # Sign test (Sign Test)
 if a2c_wins + ppo_wins > 0:
-    # 二项检验
+    # Binomial test
     from scipy.stats import binomtest
     result = binomtest(a2c_wins, n=a2c_wins+ppo_wins, p=0.5, alternative='two-sided')
     print(f"\nSign test (Sign Test): p={result.pvalue:.4f}")
@@ -209,7 +209,7 @@ elif abs(d_a2c_ppo) < 0.5:
 elif abs(d_a2c_ppo) < 0.8:
     print(f"  Effect size: Large (large)")
 else:
-    print(f"  Effect size: 非常Large (very large)")
+    print(f"  Effect size: very large")
 
 # Inverted Pyramid vs Normal Pyramid
 d_inv_rev = cohens_d(inverted['mean_reward'].values, reverse['mean_reward'].values)
@@ -224,11 +224,11 @@ else:
     print(f"  Effect size: 非常Large")
 
 # ============================================================================
-# 6. 置信区间Analysis
+# 6. Confidence interval analysis
 # ============================================================================
 
 print("\n" + "="*80)
-print("6. 95%置信区间Analysis (Based onstd_reward)")
+print("6. 95% confidence interval analysis (based on std_reward)")
 print("="*80 + "\n")
 
 # Inverted Pyramid A2C/PPO
@@ -259,19 +259,19 @@ if upper_ppo < lower_a2c:
 elif lower_ppo > upper_a2c:
     print(f"\n✅ Confidence intervals do not overlap → PPOSignificantly better thanA2C")
 else:
-    print(f"\n⚠️ Confidence intervals overlap → 需要更多Data或DifferenceNot significant")
+    print(f"\n⚠️ Confidence intervals overlap → need more data or difference not significant")
 
 # ============================================================================
 # 7. Generate statistical report
 # ============================================================================
 
 report = f"""
-# Statistical Significance Tests报告
+# Statistical significance tests report
 # Statistical Significance Test Report
 
 Generation time: 2026-01-05
 Dataset: 21 experiments (7 configurations × 3 algorithms)
-评估轮times: 50 episodes per experiment
+Evaluation rounds: 50 episodes per experiment
 Significance level: α = 0.05
 
 ---
@@ -284,20 +284,20 @@ Significance level: α = 0.05
 - Difference: {inverted['mean_reward'].mean() - reverse['mean_reward'].mean():.2f} (+{(inverted['mean_reward'].mean()/reverse['mean_reward'].mean()-1)*100:.1f}%)
 
 **Statistical tests**:
-- t-test: t={t_stat:.3f}, p={p_value:.4f} {'✅ 显著' if p_value < 0.05 else '❌ Not significant'}
-- Mann-Whitney U: U={u_stat:.3f}, p={p_value_u:.4f} {'✅ 显著' if p_value_u < 0.05 else '❌ Not significant'}
-- Cohen's d: {d_inv_rev:.3f} ({'非常Large' if abs(d_inv_rev) >= 0.8 else 'Large' if abs(d_inv_rev) >= 0.5 else 'Medium' if abs(d_inv_rev) >= 0.2 else 'Small'}Effect size)
+- t-test: t={t_stat:.3f}, p={p_value:.4f} {'✅ significant' if p_value < 0.05 else '❌ not significant'}
+- Mann-Whitney U: U={u_stat:.3f}, p={p_value_u:.4f} {'✅ significant' if p_value_u < 0.05 else '❌ not significant'}
+- Cohen's d: {d_inv_rev:.3f} ({'very large' if abs(d_inv_rev) >= 0.8 else 'large' if abs(d_inv_rev) >= 0.5 else 'medium' if abs(d_inv_rev) >= 0.2 else 'small'} effect size)
 
 **Crash rate**:
 - Inverted Pyramid: {inverted['crash_rate'].mean()*100:.1f}%
 - Normal Pyramid: {reverse['crash_rate'].mean()*100:.1f}%
 - Difference: {(inverted['crash_rate'].mean() - reverse['crash_rate'].mean())*100:.1f} percentage points
 
-**Conclusion**: Inverted PyramidInSame capacity下{'Significantly better than' if p_value < 0.05 else 'Better than'}Normal Pyramid
+**Conclusion**: Inverted pyramid at same capacity {'significantly better than' if p_value < 0.05 else 'better than'} normal pyramid
 
 ---
 
-## 2. A2C vs PPO (可行配置, Capacity≤25)
+## 2. A2C vs PPO (viable configurations, Capacity≤25)
 
 **Data**:
 - A2C (n={len(a2c_viable)}): Average reward = {a2c_viable['mean_reward'].mean():.2f}
@@ -305,16 +305,16 @@ Significance level: α = 0.05
 - Difference: {a2c_viable['mean_reward'].mean() - ppo_viable['mean_reward'].mean():.2f} (+{(a2c_viable['mean_reward'].mean()/ppo_viable['mean_reward'].mean()-1)*100:.1f}%)
 
 **Statistical tests**:
-- t-test: t={t_stat:.3f}, p={p_value:.4f} {'✅ 显著' if p_value < 0.05 else '❌ Not significant'}
-- Cohen's d: {d_a2c_ppo:.3f} ({'非常Large' if abs(d_a2c_ppo) >= 0.8 else 'Large' if abs(d_a2c_ppo) >= 0.5 else 'Medium' if abs(d_a2c_ppo) >= 0.2 else 'Small'}Effect size)
+- t-test: t={t_stat:.3f}, p={p_value:.4f} {'✅ significant' if p_value < 0.05 else '❌ not significant'}
+- Cohen's d: {d_a2c_ppo:.3f} ({'very large' if abs(d_a2c_ppo) >= 0.8 else 'large' if abs(d_a2c_ppo) >= 0.5 else 'medium' if abs(d_a2c_ppo) >= 0.2 else 'small'} effect size)
 
 **Crash rate**:
 - A2C: {a2c_viable['crash_rate'].mean()*100:.1f}%
 - PPO: {ppo_viable['crash_rate'].mean()*100:.1f}%
 - Difference: {(a2c_viable['crash_rate'].mean() - ppo_viable['crash_rate'].mean())*100:.1f} percentage points
-- t-test: t={t_stat_crash:.3f}, p={p_value_crash:.4f} {'✅ 显著' if p_value_crash < 0.05 else '❌ Not significant'}
+- t-test: t={t_stat_crash:.3f}, p={p_value_crash:.4f} {'✅ significant' if p_value_crash < 0.05 else '❌ not significant'}
 
-**Paired analysis** (同配置下A2C vs PPO):
+**Paired analysis** (A2C vs PPO under same configuration):
 - A2Cwins: {a2c_wins}times
 - PPOwins: {ppo_wins}times
 - Tie: {ties}times
