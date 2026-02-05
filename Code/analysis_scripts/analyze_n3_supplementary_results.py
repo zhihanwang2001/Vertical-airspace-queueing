@@ -160,59 +160,59 @@ def welch_t_test(group1_stats, group2_stats):
 
 def analyze_structural_comparison():
     """
-    分析结构对比: Inverted vs Normal Pyramid
+    Analyze structural comparison: Inverted vs Normal Pyramid
 
-    对比:
+    Comparison:
     - A2C: inverted vs normal
     - PPO: inverted vs normal
     """
     print("\n" + "="*80)
-    print("结构对比分析: Inverted Pyramid vs Normal Pyramid")
+    print("Structural Comparison Analysis: Inverted Pyramid vs Normal Pyramid")
     print("="*80)
 
     for algorithm in ['A2C', 'PPO']:
         print(f"\n{'─'*80}")
-        print(f"算法: {algorithm}")
+        print(f"Algorithm: {algorithm}")
         print(f"{'─'*80}")
 
-        # 加载数据
+        # Load data
         inverted_results = load_experiment_results('inverted_pyramid', algorithm)
         normal_results = load_experiment_results('normal_pyramid', algorithm)
 
-        # 计算统计量
+        # Calculate statistics
         inverted_stats = compute_statistics_n3(inverted_results)
         normal_stats = compute_statistics_n3(normal_results)
 
         if inverted_stats is None or normal_stats is None:
-            print(f"❌ 跳过{algorithm}: 数据不完整")
+            print(f"❌ Skip {algorithm}: Incomplete data")
             continue
 
         # t-test
         test_results = welch_t_test(inverted_stats, normal_stats)
 
-        # 打印结果
-        print(f"\n【Inverted Pyramid】")
+        # Print results
+        print(f"\n[Inverted Pyramid]")
         print(f"  n = {inverted_stats['n']}, seeds = {inverted_stats['seeds']}")
         print(f"  Mean rewards: {inverted_stats['mean_rewards_per_run']}")
-        print(f"  平均奖励: {inverted_stats['mean_reward']:.2f} ± {inverted_stats['std_reward']:.2f} (SD)")
+        print(f"  Average reward: {inverted_stats['mean_reward']:.2f} ± {inverted_stats['std_reward']:.2f} (SD)")
         print(f"  95% CI: [{inverted_stats['ci_95_lower']:.2f}, {inverted_stats['ci_95_upper']:.2f}]")
-        print(f"  崩溃率: {inverted_stats['mean_crash_rate']*100:.1f}% ± {inverted_stats['std_crash_rate']*100:.1f}%")
+        print(f"  Crash rate: {inverted_stats['mean_crash_rate']*100:.1f}% ± {inverted_stats['std_crash_rate']*100:.1f}%")
 
-        print(f"\n【Normal Pyramid】")
+        print(f"\n[Normal Pyramid]")
         print(f"  n = {normal_stats['n']}, seeds = {normal_stats['seeds']}")
         print(f"  Mean rewards: {normal_stats['mean_rewards_per_run']}")
-        print(f"  平均奖励: {normal_stats['mean_reward']:.2f} ± {normal_stats['std_reward']:.2f} (SD)")
+        print(f"  Average reward: {normal_stats['mean_reward']:.2f} ± {normal_stats['std_reward']:.2f} (SD)")
         print(f"  95% CI: [{normal_stats['ci_95_lower']:.2f}, {normal_stats['ci_95_upper']:.2f}]")
-        print(f"  崩溃率: {normal_stats['mean_crash_rate']*100:.1f}% ± {normal_stats['std_crash_rate']*100:.1f}%")
+        print(f"  Crash rate: {normal_stats['mean_crash_rate']*100:.1f}% ± {normal_stats['std_crash_rate']*100:.1f}%")
 
-        print(f"\n【统计检验】")
+        print(f"\n[Statistical Test]")
         print(f"  Welch's t-test:")
         print(f"    t({test_results['df']:.2f}) = {test_results['t_statistic']:.3f}")
         print(f"    p = {test_results['p_value']:.6f} {'***' if test_results['p_value'] < 0.001 else '**' if test_results['p_value'] < 0.01 else '*' if test_results['p_value'] < 0.05 else 'ns'}")
         print(f"  Cohen's d = {test_results['cohen_d']:.3f}")
         print(f"  Cohen's d 95% CI: [{test_results['cohen_d_ci_lower']:.3f}, {test_results['cohen_d_ci_upper']:.3f}]")
 
-        # 效应量解释
+        # Effect size interpretation
         d_abs = abs(test_results['cohen_d'])
         if d_abs < 0.2:
             effect_size = "negligible"
@@ -223,70 +223,70 @@ def analyze_structural_comparison():
         else:
             effect_size = "large/very large"
 
-        print(f"  效应量大小: {effect_size} (|d| = {d_abs:.3f})")
+        print(f"  Effect size: {effect_size} (|d| = {d_abs:.3f})")
 
-        # 统计显著性解释
+        # Statistical significance interpretation
         if test_results['p_value'] < 0.05:
-            print(f"  ✅ 结论: Inverted pyramid在{algorithm}下显著优于Normal pyramid (α=0.05)")
+            print(f"  ✅ Conclusion: Inverted pyramid significantly outperforms Normal pyramid in {algorithm} (α=0.05)")
         else:
-            print(f"  ⚠️  结论: 差异不显著 (p={test_results['p_value']:.3f}), 但注意n=3的低power")
+            print(f"  ⚠️  Conclusion: Difference not significant (p={test_results['p_value']:.3f}), but note low power with n=3")
 
         print()
 
 
 def analyze_capacity_paradox():
     """
-    分析容量悖论: K=10 vs K=30 (A2C only)
+    Analyze capacity paradox: K=10 vs K=30 (A2C only)
     """
     print("\n" + "="*80)
-    print("容量悖论分析: K=10 (Optimal) vs K=30 (Collapse)")
+    print("Capacity Paradox Analysis: K=10 (Optimal) vs K=30 (Collapse)")
     print("="*80)
 
     algorithm = 'A2C'
-    print(f"\n算法: {algorithm}")
+    print(f"\nAlgorithm: {algorithm}")
 
-    # 加载数据
+    # Load data
     k10_results = load_experiment_results('low_capacity', algorithm)  # K=10
     k30_results = load_experiment_results('capacity_30', algorithm)   # K=30
 
-    # 计算统计量
+    # Calculate statistics
     k10_stats = compute_statistics_n3(k10_results)
     k30_stats = compute_statistics_n3(k30_results)
 
     if k10_stats is None or k30_stats is None:
-        print(f"❌ 数据不完整，跳过分析")
+        print(f"❌ Incomplete data, skip analysis")
         return
 
     # t-test
     test_results = welch_t_test(k10_stats, k30_stats)
 
-    # 打印结果
-    print(f"\n【K=10 (Low Capacity)】")
+    # Print results
+    print(f"\n[K=10 (Low Capacity)]")
     print(f"  n = {k10_stats['n']}, seeds = {k10_stats['seeds']}")
     print(f"  Mean rewards: {k10_stats['mean_rewards_per_run']}")
-    print(f"  平均奖励: {k10_stats['mean_reward']:.2f} ± {k10_stats['std_reward']:.2f} (SD)")
+    print(f"  Average reward: {k10_stats['mean_reward']:.2f} ± {k10_stats['std_reward']:.2f} (SD)")
     print(f"  95% CI: [{k10_stats['ci_95_lower']:.2f}, {k10_stats['ci_95_upper']:.2f}]")
-    print(f"  崩溃率: {k10_stats['mean_crash_rate']*100:.1f}% ± {k10_stats['std_crash_rate']*100:.1f}%")
+    print(f"  Crash rate: {k10_stats['mean_crash_rate']*100:.1f}% ± {k10_stats['std_crash_rate']*100:.1f}%")
 
-    print(f"\n【K=30 (High Capacity)】")
+    print(f"\n[K=30 (High Capacity)]")
     print(f"  n = {k30_stats['n']}, seeds = {k30_stats['seeds']}")
     print(f"  Mean rewards: {k30_stats['mean_rewards_per_run']}")
-    print(f"  平均奖励: {k30_stats['mean_reward']:.2f} ± {k30_stats['std_reward']:.2f} (SD)")
+    print(f"  Average reward: {k30_stats['mean_reward']:.2f} ± {k30_stats['std_reward']:.2f} (SD)")
     print(f"  95% CI: [{k30_stats['ci_95_lower']:.2f}, {k30_stats['ci_95_upper']:.2f}]")
-    print(f"  崩溃率: {k30_stats['mean_crash_rate']*100:.1f}% ± {k30_stats['std_crash_rate']*100:.1f}%")
+    print(f"  Crash rate: {k30_stats['mean_crash_rate']*100:.1f}% ± {k30_stats['std_crash_rate']*100:.1f}%")
 
-    print(f"\n【统计检验】")
+    print(f"\n[Statistical Test]")
     print(f"  Welch's t-test:")
     print(f"    t({test_results['df']:.2f}) = {test_results['t_statistic']:.3f}")
     print(f"    p = {test_results['p_value']:.6f} {'***' if test_results['p_value'] < 0.001 else '**' if test_results['p_value'] < 0.01 else '*' if test_results['p_value'] < 0.05 else 'ns'}")
     print(f"  Cohen's d = {test_results['cohen_d']:.3f}")
     print(f"  Cohen's d 95% CI: [{test_results['cohen_d_ci_lower']:.3f}, {test_results['cohen_d_ci_upper']:.3f}]")
 
-    # 百分比差异
+    # Percentage difference
     pct_diff = ((k10_stats['mean_reward'] - k30_stats['mean_reward']) / k30_stats['mean_reward']) * 100
-    print(f"  百分比差异: K=10 比 K=30 高 {pct_diff:.1f}%")
+    print(f"  Percentage difference: K=10 is {pct_diff:.1f}% higher than K=30")
 
-    # 效应量解释
+    # Effect size interpretation
     d_abs = abs(test_results['cohen_d'])
     if d_abs < 0.2:
         effect_size = "negligible"
@@ -297,49 +297,49 @@ def analyze_capacity_paradox():
     else:
         effect_size = "large/very large"
 
-    print(f"  效应量大小: {effect_size} (|d| = {d_abs:.3f})")
+    print(f"  Effect size: {effect_size} (|d| = {d_abs:.3f})")
 
-    # 统计显著性解释
+    # Statistical significance interpretation
     if test_results['p_value'] < 0.05:
-        print(f"  ✅ 结论: Capacity paradox显著存在 (K=10 >> K=30, p<0.05)")
+        print(f"  ✅ Conclusion: Capacity paradox significantly exists (K=10 >> K=30, p<0.05)")
     else:
-        print(f"  ⚠️  结论: 差异不显著 (p={test_results['p_value']:.3f}), 但效应量极大 (d={test_results['cohen_d']:.2f})")
+        print(f"  ⚠️  Conclusion: Difference not significant (p={test_results['p_value']:.3f}), but effect size is extremely large (d={test_results['cohen_d']:.2f})")
 
     print()
 
 
 def create_summary_table():
     """
-    创建汇总表 (LaTeX格式)
+    Create summary table (LaTeX format)
     """
     print("\n" + "="*80)
-    print("LaTeX汇总表生成")
+    print("LaTeX Summary Table Generation")
     print("="*80)
 
-    # 数据收集
+    # Data collection
     comparisons = [
-        # 结构对比
+        # Structural comparison
         {'name': 'Inverted vs Normal (A2C)', 'group1_config': 'inverted_pyramid', 'group2_config': 'normal_pyramid', 'algo': 'A2C'},
         {'name': 'Inverted vs Normal (PPO)', 'group1_config': 'inverted_pyramid', 'group2_config': 'normal_pyramid', 'algo': 'PPO'},
-        # 容量悖论
+        # Capacity paradox
         {'name': 'K=10 vs K=30 (A2C)', 'group1_config': 'low_capacity', 'group2_config': 'capacity_30', 'algo': 'A2C'},
     ]
 
     rows = []
 
     for comp in comparisons:
-        # 加载数据
+        # Load data
         group1_results = load_experiment_results(comp['group1_config'], comp['algo'])
         group2_results = load_experiment_results(comp['group2_config'], comp['algo'])
 
-        # 计算统计
+        # Calculate statistics
         group1_stats = compute_statistics_n3(group1_results)
         group2_stats = compute_statistics_n3(group2_results)
 
         if group1_stats and group2_stats:
             test_results = welch_t_test(group1_stats, group2_stats)
 
-            # 格式化行
+            # Format row
             row = {
                 'Comparison': comp['name'],
                 'Group1_Mean': f"{group1_stats['mean_reward']:.1f}",
@@ -354,13 +354,13 @@ def create_summary_table():
             }
             rows.append(row)
 
-    # 创建DataFrame
+    # Create DataFrame
     df = pd.DataFrame(rows)
 
-    print("\n【汇总表 (Markdown)】")
+    print("\n[Summary Table (Markdown)]")
     print(df.to_markdown(index=False))
 
-    print("\n\n【LaTeX代码】")
+    print("\n\n[LaTeX Code]")
     print("\\begin{table}[htbp]")
     print("\\centering")
     print("\\caption{Supplementary Experiments Statistical Analysis (n=3)}")
@@ -382,18 +382,18 @@ def create_summary_table():
 
 if __name__ == '__main__':
     print("\n" + "#"*80)
-    print("补充实验统计分析 (n=1→n=3)")
+    print("Supplementary Experiments Statistical Analysis (n=1→n=3)")
     print("#"*80)
 
-    # 分析1: 结构对比
+    # Analysis 1: Structural comparison
     analyze_structural_comparison()
 
-    # 分析2: 容量悖论
+    # Analysis 2: Capacity paradox
     analyze_capacity_paradox()
 
-    # 生成汇总表
+    # Generate summary table
     create_summary_table()
 
     print("\n" + "="*80)
-    print("分析完成!")
+    print("Analysis complete!")
     print("="*80)
