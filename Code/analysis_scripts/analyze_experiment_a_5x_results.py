@@ -225,7 +225,7 @@ def analyze_structural_comparison_5x():
             print(f"  ⚠️  Conclusion: Difference not significant (p={test_results['p_value']:.3f}), but note low power with n=3")
             verdict = "Difference not significant"
 
-        # 保存结果
+        # Save results
         results_summary.append({
             'algorithm': algorithm,
             'inverted_stats': inverted_stats,
