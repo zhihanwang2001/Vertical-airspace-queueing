@@ -221,7 +221,7 @@ elif abs(d_inv_rev) < 0.5:
 elif abs(d_inv_rev) < 0.8:
     print(f"  Effect size: Large")
 else:
-    print(f"  Effect size: 非常Large")
+    print(f"  Effect size: very large")
 
 # ============================================================================
 # 6. Confidence interval analysis
@@ -235,7 +235,7 @@ print("="*80 + "\n")
 inv_a2c = df[(df['config_name'] == 'inverted_pyramid') & (df['algorithm'] == 'A2C')].iloc[0]
 inv_ppo = df[(df['config_name'] == 'inverted_pyramid') & (df['algorithm'] == 'PPO')].iloc[0]
 
-# Assume50 episodes, CalculateSEM和95%CI
+# Assume 50 episodes, calculate SEM and 95% CI
 n_episodes = 50
 
 sem_a2c = inv_a2c['std_reward'] / np.sqrt(n_episodes)
@@ -318,44 +318,44 @@ Significance level: α = 0.05
 - A2Cwins: {a2c_wins}times
 - PPOwins: {ppo_wins}times
 - Tie: {ties}times
-- A2Cwins率: {a2c_wins/(a2c_wins+ppo_wins+ties)*100:.1f}%
+- A2C win rate: {a2c_wins/(a2c_wins+ppo_wins+ties)*100:.1f}%
 
-**Conclusion**: A2COverall in high-load UAM scenarios{'Significantly better than' if p_value_crash < 0.05 else 'Better than'}PPO
-
----
-
-## 3. Capacity效应Analysis
-
-**Kruskal-Wallis检验**: H={h_stat:.3f}, p={p_value_kw:.6f} {'✅ 显著' if p_value_kw < 0.05 else '❌ Not significant'}
-
-**Conclusion**: 不Same capacity配置的性能存In{'显著' if p_value_kw < 0.05 else ''}Difference
+**Conclusion**: A2C overall in high-load UAM scenarios {'significantly better than' if p_value_crash < 0.05 else 'better than'} PPO
 
 ---
 
-## 4. 关键统计发现
+## 3. Capacity Effect Analysis
 
-1. **结构优势**: Inverted PyramidCompared toNormal Pyramid提升124%奖励, 统计{'显著' if p_value < 0.05 else '上有Difference'}
-2. **算法对比**: A2CCompared toPPOCrash rateReduced{'显著' if p_value_crash < 0.05 else '有所'}Reduced (40.6% vs 56.3%)
-3. **Capacity效应**: 不Same capacity对性能影响{'显著' if p_value_kw < 0.05 else 'Obvious'} (Kruskal-Wallis p={p_value_kw:.6f})
-4. **Effect size**: Inverted PyramidvsNormal Pyramid的Cohen's d={d_inv_rev:.2f} (非常Large效应)
+**Kruskal-Wallis test**: H={h_stat:.3f}, p={p_value_kw:.6f} {'✅ significant' if p_value_kw < 0.05 else '❌ not significant'}
+
+**Conclusion**: Different capacity configurations show {'significant' if p_value_kw < 0.05 else ''} performance differences
+
+---
+
+## 4. Key Statistical Findings
+
+1. **Structural advantage**: Inverted pyramid compared to normal pyramid improves reward by 124%, statistically {'significant' if p_value < 0.05 else 'shows difference'}
+2. **Algorithm comparison**: A2C compared to PPO has {'significantly' if p_value_crash < 0.05 else 'somewhat'} reduced crash rate (40.6% vs 56.3%)
+3. **Capacity effect**: Different capacity has {'significant' if p_value_kw < 0.05 else 'obvious'} impact on performance (Kruskal-Wallis p={p_value_kw:.6f})
+4. **Effect size**: Inverted pyramid vs normal pyramid Cohen's d={d_inv_rev:.2f} (very large effect)
 
 ---
 
 ## 5. Statistical statements usable in the paper
 
-1. "Inverted Pyramid结构Compared toNormal PyramidSignificantly improved124%Average reward (p={p_value:.3f})"
-2. "A2CAlgorithm in high-load scenariosCompared toPPOReduced27.9%Crash rate (p={p_value_crash:.3f})"
-3. "Capacity配置Has a significant impact on system performance (Kruskal-Wallis H={h_stat:.2f}, p={p_value_kw:.6f})"
-4. "Paired analysis显示A2CIn{a2c_wins}configurationsBetter thanPPO (wins率{a2c_wins/(a2c_wins+ppo_wins+ties)*100:.0f}%)"
+1. "Inverted pyramid structure compared to normal pyramid significantly improved average reward by 124% (p={p_value:.3f})"
+2. "A2C algorithm in high-load scenarios compared to PPO reduced crash rate by 27.9% (p={p_value_crash:.3f})"
+3. "Capacity configuration has significant impact on system performance (Kruskal-Wallis H={h_stat:.2f}, p={p_value_kw:.6f})"
+4. "Paired analysis shows A2C better than PPO in {a2c_wins} configurations (win rate {a2c_wins/(a2c_wins+ppo_wins+ties)*100:.0f}%)"
 
 ---
 
-**报告Generation time**: 2026-01-05
+**Report generation time**: 2026-01-05
 **Confidence level**: 95%
 **Significance threshold**: p < 0.05
 """
 
-# 保存报告
+# Save report
 report_file = output_dir / 'statistical_test_results.md'
 with open(report_file, 'w', encoding='utf-8') as f:
     f.write(report)
