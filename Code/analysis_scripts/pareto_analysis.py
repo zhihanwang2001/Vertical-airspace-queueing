@@ -473,7 +473,7 @@ class ParetoAnalyzer:
             f.write(f"Pareto optimal solutions: {len(self.pareto_front)}\n")
             f.write(f"Pareto ratio: {len(self.pareto_front)/len(self.objective_values)*100:.2f}%\n")
             f.write(f"Hypervolume indicator: {hypervolume:.4f}\n")
-            f.write(f"Knee points数量: {len(knee_indices)}\n\n")
+            f.write(f"Number of knee points: {len(knee_indices)}\n\n")
             
             f.write("Objective statistics:\n")
             f.write("-"*40 + "\n")

@@ -49,7 +49,7 @@ def fix_import_statements(file_path):
     # 5. Fix heterogeneous_configs import
     # Remove dynamic import code block
     content = re.sub(
-        r'# Import异质性配置生成器\nimport importlib\.util\nspec = importlib\.util\.spec_from_file_location\(\s*"heterogeneous_configs",\s*os\.path\.join\(os\.path\.dirname\(__file__\), \'\.\.\'.*?\n\).*?\nheterogeneous_configs = importlib\.util\.module_from_spec\(spec\)\nspec\.loader\.exec_module\(heterogeneous_configs\)\n\nHeterogeneousRegionConfigs = heterogeneous_configs\.HeterogeneousRegionConfigs',
+        r'# Import heterogeneous config generator\nimport importlib\.util\nspec = importlib\.util\.spec_from_file_location\(\s*"heterogeneous_configs",\s*os\.path\.join\(os\.path\.dirname\(__file__\), \'\.\.\'.*?\n\).*?\nheterogeneous_configs = importlib\.util\.module_from_spec\(spec\)\nspec\.loader\.exec_module\(heterogeneous_configs\)\n\nHeterogeneousRegionConfigs = heterogeneous_configs\.HeterogeneousRegionConfigs',
         '# Import heterogeneous config generator\nfrom heterogeneous_configs import HeterogeneousRegionConfigs',
         content,
         flags=re.DOTALL

@@ -149,23 +149,23 @@ def measure_state_space(
     print(f"Sampling steps: {n_steps:,} × {n_runs} runs")
     print(f"{'='*80}\n")
 
-    # 理论估计
+    # Theoretical estimation
     K = sum(capacity_config)
     theoretical_states_3K = 3 ** K
     theoretical_states_product = np.prod([c + 1 for c in capacity_config])
 
-    print(f"理论估计:")
+    print(f"Theoretical estimation:")
     print(f"  3^K = 3^{K} = {theoretical_states_3K:,}")
     print(f"  ∏(C_l+1) = {theoretical_states_product:,}")
     print()
 
-    # 创建环境
+    # Create environment
     config = VerticalQueueConfig()
     config.layer_capacities = capacity_config
     config.arrival_weights = [0.3, 0.25, 0.2, 0.15, 0.1]
 
-    # 10× 高负载 (相对于baseline 0.5)
-    # Baseline = 0.5, 所以 10× baseline = 5.0
+    # 10x high load (relative to baseline 0.5)
+    # Baseline = 0.5, so 10x baseline = 5.0
     config.base_arrival_rate = 5.0
 
     all_unique_states = set()
@@ -181,32 +181,32 @@ def measure_state_space(
         obs, _ = env.reset()
         run_unique_states = set()
 
-        # 验证extract_queue_lengths是否工作
-        if run == 0:  # 只在第一次run时验证
+        # Verify extract_queue_lengths works
+        if run == 0:  # Only verify on first run
             test_state = extract_queue_lengths(env)
             if test_state is None:
-                print(f"⚠️  警告: extract_queue_lengths返回None!")
-                print(f"   环境类型: {type(env)}")
-                # 尝试手动检查环境结构
+                print(f"⚠️  Warning: extract_queue_lengths returns None!")
+                print(f"   Environment type: {type(env)}")
+                # Try to manually check environment structure
                 temp_env = env
                 depth = 0
-                print(f"   环境层次结构:")
+                print(f"   Environment hierarchy:")
                 while hasattr(temp_env, 'env'):
                     print(f"     [{depth}] {type(temp_env).__name__}")
                     temp_env = temp_env.env
                     depth += 1
                     if depth > 10:
                         break
-                print(f"     [{depth}] {type(temp_env).__name__} (底层)")
+                print(f"     [{depth}] {type(temp_env).__name__} (bottom layer)")
                 if hasattr(temp_env, 'queue_lengths'):
-                    print(f"   ✅ 底层有queue_lengths: {temp_env.queue_lengths}")
+                    print(f"   ✅ Bottom layer has queue_lengths: {temp_env.queue_lengths}")
                 else:
-                    print(f"   ❌ 底层没有queue_lengths属性!")
+                    print(f"   ❌ Bottom layer has no queue_lengths attribute!")
             else:
-                print(f"   ✅ extract_queue_lengths工作正常: {test_state}")
+                print(f"   ✅ extract_queue_lengths works normally: {test_state}")
 
         for step in range(n_steps):
-            # 提取队列长度状态
+            # Extract queue length state
             queue_state = extract_queue_lengths(env)
 
             if queue_state is not None:
@@ -214,7 +214,7 @@ def measure_state_space(
                 all_unique_states.add(queue_state)
                 state_frequencies[queue_state] += 1
 
-            # 随机动作（确保广泛探索）
+            # Random action (ensure broad exploration)
             action = env.action_space.sample()
             obs, reward, terminated, truncated, info = env.step(action)
 
@@ -226,20 +226,20 @@ def measure_state_space(
 
         env.close()
 
-        print(f"  Run {run+1} 完成: {len(run_unique_states):,} 新状态")
+        print(f"  Run {run+1} completed: {len(run_unique_states):,} new states")
 
-    # 分析结果
+    # Analyze results
     n_unique = len(all_unique_states)
     ratio_3K = n_unique / theoretical_states_3K if theoretical_states_3K > 0 else 0
     ratio_product = n_unique / theoretical_states_product if theoretical_states_product > 0 else 0
 
-    # 访问频率统计
+    # Visit frequency statistics
     frequencies = list(state_frequencies.values())
     top_states = sorted(state_frequencies.items(), key=lambda x: x[1], reverse=True)[:10]
 
-    # 检查是否有有效数据
+    # Check if there is valid data
     if len(frequencies) == 0:
-        print(f"⚠️  警告: 未收集到任何状态数据！")
+        print(f"⚠️  Warning: No state data collected!")
         frequency_stats = {
             'mean_visits': 0.0,
             'median_visits': 0.0,
@@ -285,23 +285,23 @@ def measure_state_space(
         }
     }
 
-    # 输出结果
+    # Output results
     print(f"\n{'='*80}")
-    print(f"测量结果:")
-    print(f"  唯一状态数: {n_unique:,}")
-    print(f"  理论 3^K: {theoretical_states_3K:,}" if theoretical_states_3K < 1e15 else f"  理论 3^K: {theoretical_states_3K:.2e}")
-    print(f"  实际/理论比率: {ratio_3K:.2%}")
+    print(f"Measurement results:")
+    print(f"  Unique states: {n_unique:,}")
+    print(f"  Theoretical 3^K: {theoretical_states_3K:,}" if theoretical_states_3K < 1e15 else f"  Theoretical 3^K: {theoretical_states_3K:.2e}")
+    print(f"  Actual/Theoretical ratio: {ratio_3K:.2%}")
 
     if len(frequencies) > 0:
-        print(f"\n  平均访问次数: {np.mean(frequencies):.1f}")
-        print(f"  中位数访问: {np.median(frequencies):.0f}")
-        print(f"  最高访问: {np.max(frequencies):,}")
+        print(f"\n  Average visits: {np.mean(frequencies):.1f}")
+        print(f"  Median visits: {np.median(frequencies):.0f}")
+        print(f"  Maximum visits: {np.max(frequencies):,}")
         print(f"\n  Top 3 most frequent states:")
         for i, (state, freq) in enumerate(top_states[:3]):
             pct = freq / (n_steps * n_runs) * 100
             print(f"    {i+1}. {list(state)} - {freq:,} visits ({pct:.2f}%)")
     else:
-        print(f"\n  ⚠️  无频率数据（未收集到状态）")
+        print(f"\n  ⚠️  No frequency data (no states collected)")
 
     print(f"{'='*80}\n")
 
