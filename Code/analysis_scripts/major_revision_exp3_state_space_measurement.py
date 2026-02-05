@@ -1,25 +1,25 @@
 """
 Major Revision Experiment 1.3: Empirical State Space Measurement
-实证测量状态空间大小
+Empirically measure state space size
 
-关键问题：
-- 论文使用 3^K 估算状态空间
-- 评审质疑：这只是理论上界，实际可达状态可能远小于此
-- 如果实际状态空间小得多，"状态空间爆炸"假说就不成立
+Key questions:
+- Paper uses 3^K to estimate state space
+- Reviewer questions: This is only theoretical upper bound, actual reachable states may be much smaller
+- If actual state space is much smaller, "state space explosion" hypothesis doesn't hold
 
-实验设计：
-1. 蒙特卡洛采样：运行100K步，记录所有访问的唯一状态
-2. 测试配置：K=10, K=20, K=23, K=30
-3. 使用random policy确保广泛探索
-4. 统计：
-   - 唯一状态数
-   - 状态访问频率分布
-   - 与3^K理论值的比率
+Experiment design:
+1. Monte Carlo sampling: Run 100K steps, record all visited unique states
+2. Test configurations: K=10, K=20, K=23, K=30
+3. Use random policy to ensure broad exploration
+4. Statistics:
+   - Number of unique states
+   - State visit frequency distribution
+   - Ratio to 3^K theoretical value
 
-预期结果：
-- Best case: 实际状态 ≈ 3^K → 理论正确
-- Worst case: 实际状态 << 3^K (如 0.01×) → 理论错误
-- Most likely: 实际状态 ≈ 0.1-0.5 × 3^K → 3^K是合理upper bound
+Expected results:
+- Best case: Actual states ≈ 3^K → Theory correct
+- Worst case: Actual states << 3^K (e.g. 0.01×) → Theory incorrect
+- Most likely: Actual states ≈ 0.1-0.5 × 3^K → 3^K is reasonable upper bound
 """
 
 import sys
@@ -43,16 +43,16 @@ from env.drl_wrapper_fixed import DictToBoxActionWrapperFixed, ObservationWrappe
 
 def state_to_hashable(state_dict):
     """
-    将状态字典转换为可哈希的字符串
+    Convert state dictionary to hashable string
 
-    状态关键组件（基于VerticalQueueConfig）：
-    - queue_lengths: [5] 每层队列长度
-    - service_classes: [3] 每类订单在系统中的数量
-    - 可能还有其他特征，但队列长度是核心
+    Key state components (based on VerticalQueueConfig):
+    - queue_lengths: [5] queue length per layer
+    - service_classes: [3] number of orders per class in system
+    - May have other features, but queue length is core
     """
-    # 提取队列长度（最关键的状态维度）
+    # Extract queue lengths (most critical state dimension)
     if isinstance(state_dict, dict):
-        # 如果是字典，尝试提取queue相关信息
+        # If dictionary, try to extract queue-related info
         queue_info = []
         for key in sorted(state_dict.keys()):
             if 'queue' in key.lower() or 'layer' in key.lower():
@@ -65,60 +65,60 @@ def state_to_hashable(state_dict):
         if queue_info:
             return tuple(queue_info)
 
-    # 如果是数组，直接使用
+    # If array, use directly
     if isinstance(state_dict, (list, np.ndarray)):
         return tuple([int(v) for v in state_dict])
 
-    # Fallback：使用hash
+    # Fallback: use hash
     return hashlib.md5(str(state_dict).encode()).hexdigest()
 
 
 def extract_queue_lengths(env):
     """
-    从环境中提取当前队列长度
+    Extract current queue lengths from environment
 
-    这是状态空间的核心维度
+    This is the core dimension of state space
     """
     try:
-        # 环境结构: ObservationWrapperFixed -> DictToBoxActionWrapperFixed -> ConfigurableEnvWrapper -> DRLOptimizedQueueEnvFixed
-        # 需要访问最底层的DRLOptimizedQueueEnvFixed
+        # Environment structure: ObservationWrapperFixed -> DictToBoxActionWrapperFixed -> ConfigurableEnvWrapper -> DRLOptimizedQueueEnvFixed
+        # Need to access the bottom-level DRLOptimizedQueueEnvFixed
 
         core_env = env
         depth = 0
-        # 逐层unwrap直到找到有queue_lengths的环境
+        # Unwrap layer by layer until finding environment with queue_lengths
         while hasattr(core_env, 'env'):
             depth += 1
             core_env = core_env.env
-            if depth > 10:  # 防止无限循环
-                print(f"⚠️ 环境嵌套层数过深 (>{depth})")
+            if depth > 10:  # Prevent infinite loop
+                print(f"⚠️ Environment nesting too deep (>{depth})")
                 break
 
-        # 现在core_env应该是DRLOptimizedQueueEnvFixed
+        # Now core_env should be DRLOptimizedQueueEnvFixed
         if hasattr(core_env, 'queue_lengths'):
-            # queue_lengths是numpy array，转换为整数tuple
+            # queue_lengths is numpy array, convert to integer tuple
             queue_lengths = core_env.queue_lengths
             if queue_lengths is not None and len(queue_lengths) > 0:
                 return tuple(int(x) for x in queue_lengths)
             else:
-                # 调试信息：queue_lengths存在但为空
+                # Debug info: queue_lengths exists but is empty
                 return None
 
-        # Fallback: 如果还找不到，尝试直接访问env的state
+        # Fallback: if still not found, try to access env's state directly
         if hasattr(core_env, 'state'):
             state = core_env.state
             if isinstance(state, dict) and 'queue_lengths' in state:
                 return tuple(int(x) for x in state['queue_lengths'])
 
-        # 最后尝试：检查是否有get_state方法
+        # Last attempt: check if there's a get_state method
         if hasattr(core_env, 'get_state'):
             state = core_env.get_state()
             if isinstance(state, dict) and 'queue_lengths' in state:
                 return tuple(int(x) for x in state['queue_lengths'])
 
-        # 完全失败 - 只在第一次时打印警告
+        # Complete failure - only print warning on first time
         return None
     except Exception as e:
-        print(f"⚠️ 提取队列长度失败: {e}")
+        print(f"⚠️ Failed to extract queue lengths: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -131,22 +131,22 @@ def measure_state_space(
     n_runs=3
 ):
     """
-    测量状态空间大小
+    Measure state space size
 
     Args:
-        capacity_config: 容量配置 list[int]
-        config_name: 配置名称 str
-        n_steps: 每次运行的步数
-        n_runs: 运行次数（多次采样确保覆盖率）
+        capacity_config: Capacity configuration list[int]
+        config_name: Configuration name str
+        n_steps: Number of steps per run
+        n_runs: Number of runs (multiple samples to ensure coverage)
 
     Returns:
-        dict: 测量结果
+        dict: Measurement results
     """
 
     print(f"\n{'='*80}")
-    print(f"测量状态空间: {config_name}")
-    print(f"容量配置: {capacity_config} (总计 K={sum(capacity_config)})")
-    print(f"采样步数: {n_steps:,} × {n_runs} runs")
+    print(f"Measuring state space: {config_name}")
+    print(f"Capacity config: {capacity_config} (Total K={sum(capacity_config)})")
+    print(f"Sampling steps: {n_steps:,} × {n_runs} runs")
     print(f"{'='*80}\n")
 
     # 理论估计

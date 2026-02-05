@@ -1,5 +1,4 @@
 """
-Beautiful Performance Ranking Figure (图3)
 Beautiful Performance Ranking Figure
 """
 

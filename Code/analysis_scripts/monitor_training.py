@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Training Monitor Script
-Training Monitor Script
 """
 
 import os
@@ -39,16 +38,16 @@ def monitor_training():
     print("=" * 60)
     print(f"Training Monitor - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
-    
-    # 检查TensorBoard
+
+    # Check TensorBoard
     tb_running = check_tensorboard()
     print(f"TensorBoard Status: {'🟢 Running' if tb_running else '🔴 Not Running'}")
-    
+
     # Check training processes
     training_count = check_training_processes()
     print(f"Training Processes: {training_count} running")
-    
-    # 检查Log Files
+
+    # Check log files
     log_files = get_log_files()
     print(f"Log Files: {len(log_files)} found")
     
