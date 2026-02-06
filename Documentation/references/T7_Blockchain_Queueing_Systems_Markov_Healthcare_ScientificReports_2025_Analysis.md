@@ -1,162 +1,162 @@
-# T7文献分析：基于马尔可夫过程的区块链排队建模
+# T7Literature Analysis: based onMarkov processblockchain queueing modeling
 
-**论文全引**: Siddiqui, S., Fatima, S., Ali, A., Gupta, S. K., Singh, H. K., & Kim, S. (2025). "Modelling of queuing systems using blockchain based on Markov process for smart healthcare systems." *Scientific Reports*, 15, Article 1652. DOI: 10.1038/s41598-025-01652-5.
-
----
-
-## 📄 论文基本信息
-
-* **标题**：Modelling of queuing systems using blockchain based on Markov process for smart healthcare systems（基于马尔可夫过程的区块链排队建模用于智慧医疗）【封面，p.1】
-* **作者**：Shadab Siddiqui, Shahin Fatima, Aleem Ali, Shashi Kant Gupta, Hemant Kumar Singh, SeongKi Kim【封面作者栏，p.1】
-* **发表 venue / 年份**：*Scientific Reports*（Nature Portfolio），2025；DOI: 10.1038/s41598-025-01652-5【页脚/题注，p.1】
-* **理论类型**：**综合建模**（提出基于**Markovian-arrival process**的区块链排队框架，给出**GI/M/1 型**矩阵几何解结构与**M/M/1、M/M/k**仿真评估，应用于医疗数据处理）【摘要p.1；方法p.9–11；实验p.14–19】
+**Full Citation**: Siddiqui, S., Fatima, S., Ali, A., Gupta, S. K., Singh, H. K., & Kim, S. (2025). "Modelling of queuing systems uses blockchain based on Markov process for smart healthcare systems." *Scientific Reports*, 15, Article 1652. DOI: 10.1038/s41598-025-01652-5.
 
 ---
 
-# 🎯 核心贡献分析 (重要性: ⭐⭐⭐⭐⭐)
+## 📄 Paper Basic Information
 
-1. **主要创新点**
-
-* 将**区块链医疗数据处理**抽象为**"区块生成—链构建"**两阶段队列，提出**六阶段**系统图并以**MkAP（Markovian arrival process）**刻画到达【Fig.8，p.11–12】；"区块生成阶段"采用**FCFS**并以区块为处理单元（隐含批处理）。
-* 形式化给出**GI/M/1 型连续时间马尔可夫过程**与**矩阵几何**（matrix‐geometric）结构，写出生成元的分块形式与**稳态向量**表达（式(19)–(24)）【p.10】。
-* 在**单/多服务器（M/M/1, M/M/k）**下，评估**平均等待/空闲、吞吐、时延、信道利用率**等指标，并与"现有区块链医疗系统"对比展示改进【表2–3与Figs.12–20，p.14–19】。
-* 讨论**可扩展性**并引入**负载均衡（H_FAC 混合萤火虫+布谷）**作为改进策略，展示随节点规模增长时延/吞吐/成功率的趋势与改进【Fig.21，p.20–21】。
-
-2. **理论突破**
-
-* 在**区块链—医疗**语境中，将**MkAP+GI/M/1**与**矩阵几何法**系统整合，给出**稳定性/稳态向量**与六阶段流程的结合示例；同时给出**"注释"**提示到**更新过程/一般服务**的扩展方向【注释1–2，p.11】。
-
-3. **技术突破**
-
-* 从**工程流程**（角色/权限→MkAP→区块生成→日志→链构建→合约）到底层**随机过程**（GI/M/1、M/M/1、M/M/k）给出端到端实现/仿真路径【p.9–12, p.14–19】。
-
-4. **方法论创新**
-
-* 将**区块链批处理（成块）**与**马尔可夫到达/指数服务**对接，形成**可度量**的医疗数据处理管线；并以**多指标**（吞吐/时延/利用率）验证队列设计抉择。
+* **Title**: Modelling of queuing systems uses blockchain based on Markov process for smart healthcare systems (based onMarkov processblockchain queueing modelingforsmart healthcare) [cover, p.1]
+* **Authors**: Shadab Siddiqui, Shahin Fatima, Aleem Ali, Shashi Kant Gupta, Hemant Kumar Singh, SeongKi Kim [coverAuthorscolumn, p.1]
+* **Publication Venue / Year**: *Scientific Reports* (Nature Portfolio), 2025; DOI: 10.1038/s41598-025-01652-5 [footer/caption, p.1]
+* **Theory Type**: **Comprehensive Modeling** (proposesbased on**Markovian-arrival process**blockchainqueueingframeworkunits, provides**GI/M/1 type**matrix-geometric solutionstructureand**M/M/1, M/M/k**simulation evaluation, shouldformedical data processing) [abstractp.1; methodp.9–11; experimentsp.14–19]
 
 ---
 
-# 🔬 技术方法详解
+# 🎯 Core Contribution Analysis (Importance: ⭐⭐⭐⭐⭐)
 
-1. **问题建模**
+1. **mainlyinnovationpoint**
 
-* **到达**：医疗交易至区块链的到达用**MkAP**建模（亦给出仿真中**Poisson**特例）【p.9, p.14】；
-* **服务**：区块生成/链构建阶段视为**指数服务**；区块生成采用**FCFS**【p.10–11, p.14】；
-* **流程**：六阶段系统（角色/权限、MkAP、区块生成、链上日志、链构建、智能合约）【Fig.8, p.11–12】。
+* Treats**blockchainmedical data processing**abstractis**"block generation—chain construction"**two-stage queue, proposes**six-stage**systemFig andwith**MkAP (Markovian arrival process)**momentdrawtoreach [Fig.8, p.11–12]; "block generation stage"adopting**FCFS** andwithareablockisprocessingsingleyuan (implicit batch processing). 
+* Formalizesprovides**GI/M/1 typecontinuouswhenbetweenMarkov process**and**matrixgeometric** (matrix‐geometric)structure, writes generator block formand**steady-state vector**expression (equation(19)–(24)) [p.10]. 
+* in**single/multi-server (M/M/1, M/M/k)**under, evaluates**averageetc.waiting/idle, throughput, whendelay, informationchannelbenefitusesrate**etc.Metrics, andand"existingblockchainmedicalsystem"Comparisonshowsimprovement [Table2–3andFigs.12–20, p.14–19]. 
+* Discusses**canextensionproperty** andintroducing**load balancing (H_FAC hybridfireflyfireworm+cuckoo)**asimprovementstrategy, showsfollowsectionpointscaleincreasegrowwhendelay/throughput/becomepowerratetendpotentialandimprovement [Fig.21, p.20–21]. 
 
-2. **理论框架（排队相关）**
+2. **Theoretical Breakthrough**
 
-* **GI/M/1 型链**：状态 ((X(t),Y(t)))，其中 (X\in{0,\dots,b})（区块相关相位）、(Y\in\mathbb{Z}_{\ge 0})（队长）；给出分块生成元与**矩阵几何**结构，稳态向量 (\Lambda) 显式（式(19)–(24)）【p.10】。
+* in**blockchain—medical**languageenvironmentin, Treats**MkAP+GI/M/1**and**matrixgeometricmethod**systemwholecombine, provides**stableproperty/steady-state vector**andsix-stageflowprocessresultcombineshowexample; samewhenprovides**"annotation"**proposeshowto**updateprocess/general service**extensiondirection [annotation1–2, p.11]. 
 
-3. **算法框架**
+3. **techniquebreakthroughbreak**
 
-* **单/多服务台**：M/M/1、M/M/k 架构；
-* **负载均衡**：H_FAC（Hybrid Firefly & Cuckoo Search）用于规模扩展时的任务分配【p.20–21】。
+* from**engineering process** (roles/permissions→MkAP→block generation→log→chain construction→combineapproximately)tobottomlayer**stochastic process** (GI/M/1, M/M/1, M/M/k)providesendtoendimplementation/simulationpathpath [p.9–12, p.14–19]. 
 
-4. **关键技术（3–5点）**
+4. **methoddiscussioninnovation**
 
-* **MkAP→GI/M/1** 的矩阵几何求解套路（稳定性与稳态向量）；
-* **区块批处理**（成块）+ FCFS 的阶段化服务建模（两阶段串联系统）；
-* **多指标评测**（(\text{Delay}=\text{Tsend}+T_{txn}+T_{proc}+T_{queue})；吞吐 TPS；信道利用率 (\eta=T_{job}/T_{all})）【式(25)–(27)，p.17–19】。
-
-5. **系统设计（S/A/R）**
-
-* **状态**：队长 (Y)、区块相位/大小、阶段标识（生成/构建）、服务器/节点占用等；
-* **动作**：到达/路由到某服务器、成块策略（隐含批量大小）、是否负载均衡分配；
-* **目标**：最小化时延/平均等待、最大化吞吐/利用率、保证日志与合约一致性【p.11–12, p.14–19】。
+* Treats**blockchainbatchprocessing (becomeblock)**and**Markovcanhusbandtoreach/indicatenumberservice**forreceive, formbecome**candegreequantity**medical data processingmanageline; andwith**multipleMetrics** (throughput/whendelay/benefitusesrate)verificationqueuedesignchoice. 
 
 ---
 
-# 📊 实验结果与性能
+# 🔬 Technical Method Details
 
-1. **基准对比**：对**现有区块链医疗系统**与**所提MkAP+队列模型**的**时延/吞吐/利用率**进行比较，展示新模型在较高负载/运行时间下更优的**时延**与**吞吐**【Fig.18–20，p.18–19】。
-2. **性能提升**：信道利用率**>80%**（新）对比**~55%**（既有）【Fig.20，p.19】；多服务器随服务率下降等待时间增大（符合直觉）【Fig.17，表3，p.17】。
-3. **消融/规模**：在网络规模扩展中，未均衡→**时延上升、吞吐/成功率下降**；加入**H_FAC**后时延**~20%**下降、吞吐**~10%**提升、成功率**~2%**提升（趋势图）【Fig.21，p.20–21】。
-4. **系统规模与复杂度**：仿真区域**400m×400m**、**250节点**、802.11 PHY，Matlab实现【表1，p.14】。
-5. **限制性**：作者自述**可扩展性与时间动态**未充分分析；建议未来引入**优先级服务**等【Limitations & Conclusion，p.21】。
+1. **Problem Modeling**
+
+* **toreach**: medicalexchangeeasytoblockchaintoreachuses**MkAP**modeling (alsoprovidessimulationin**Poisson**specialexample) [p.9, p.14]; 
+* **service**: block generation/chain constructionstagesegmentviewis**indicatenumberservice**; block generationadopting**FCFS** [p.10–11, p.14]; 
+* **flowprocess**: six-stagesystem (roles/permissions, MkAP, block generation, chainonlog, chain construction, intelligentcombineapproximately) [Fig.8, p.11–12]. 
+
+2. **theoryframeworkunits (queueingrelated)**
+
+* **GI/M/1 typechain**: state ((X(t),Y(t))), where (X\in{0,\dots,b}) (areablockrelatedphaseposition), (Y\in\mathbb{Z}_{\ge 0}) (teamgrow); providesscoreblockalivebecomeyuanand**matrixgeometric**structure, steady-state vector (\Lambda) showequation (equation(19)–(24)) [p.10]. 
+
+3. **Algorithm Framework**
+
+* **single/multipleserviceplatform**: M/M/1, M/M/k architecture; 
+* **load balancing**: H_FAC (Hybrid Firefly & Cuckoo Search)forscaleextensionwhentask allocation [p.20–21]. 
+
+4. **keytechnique (3–5point)**
+
+* **MkAP→GI/M/1** matrixgeometricrequestsolutionsetpath (stablepropertyandsteady-state vector); 
+* **areablockbatchprocessing** (becomeblock)+ FCFS stagesegmentizationservicemodeling (two-stage seriessystem); 
+* **multipleMetricsevaluatetest** ((\text{Delay}=\text{Tsend}+T_{txn}+T_{proc}+T_{queue}); throughput TPS; informationchannelbenefitusesrate (\eta=T_{job}/T_{all})) [equation(25)–(27), p.17–19]. 
+
+5. **systemdesign (S/A/R)**
+
+* **state**: teamgrow (Y), areablockphaseposition/largesmall, stagesegmentstandardrecognize (alivebecome/build), servicedevice/sectionpointoccupyusesetc.; 
+* **action**: toreach/pathbytocertainservicedevice, becomeblockstrategy (hiddencontainbatchquantitylargesmall), whetherload balancingscoreallocation; 
+* **objective**: minimizewhendelay/averageetc.waiting, maximizethroughput/benefitusesrate, maintainprooflogandcombineapproximatelyconsistency [p.11–12, p.14–19]. 
 
 ---
 
-# 🔄 与我们 MCRPS/D/K 理论的精确对比
+# 📊 Experimental Results and Performance
 
-> 我们：**MC**（多层相关到达）/**R**（随机批量）/**P**（泊松分流）/**S**（状态依赖）/**D**（动态转移）/**K**（有限容量）；五层垂直高度与**倒金字塔容量**。
+1. **baselineComparison**: for**existingblockchainmedicalsystem**and**placeproposeMkAP+queuemodel****whendelay/throughput/benefitusesrate**forcompare, showsnewmodelincomparehighload/operaterowwhenbetweenunderchangesuperior**whendelay**and**throughput** [Fig.18–20, p.18–19]. 
+2. **performanceproposerise**: informationchannelbenefitusesrate**>80%** (new)Comparison**~55%** (alreadyhave) [Fig.20, p.19]; multi-serverfollowservicerateunderfalletc.waitingwhenbetweenincreaselarge (conformstraightsense) [Fig.17, Table3, p.17]. 
+3. **Ablation/scale**: innetworkscaleextensionin, notmeanbalance→**whendelayonrise, throughput/becomepowerrateunderfall**; addinput**H_FAC**backwhendelay**~20%**underfall, throughput**~10%**proposerise, becomepowerrate**~2%**proposerise (tendpotentialFig) [Fig.21, p.20–21]. 
+4. **System Scaleandcomplexdegree**: simulationareadomain**400m×400m**, **250sectionpoint**, 802.11 PHY, Matlabimplementation [Table1, p.14]. 
+5. **limitationproperty**: Authorsselfdescription**canextensionpropertyandwhenbetweenmovestate**notfillscorescoreanalysis; suggestionnotcomeintroducing**prioritizedlevelservice**etc. [Limitations & Conclusion, p.21]. 
 
-| 维度     | 论文做法                                              | 与 MCRPS/D/K 的关系                   |
+---
+
+# 🔄 andour MCRPS/D/K theoryprecisecertainComparison
+
+> our: **MC** (multiplelayerrelatedtoreach)/**R** (randombatchquantity)/**P** (Poissonscoreflow)/**S** (statedependency)/**D** (movestatetransfer)/**K** (finitecapacity); fivelayerverticalhighdegreeand**inverted pyramidcapacity**. 
+
+| dimensionaldegree | discussionpaperdomethod | and MCRPS/D/K relationship |
 | ------ | ------------------------------------------------- | --------------------------------- |
-| 到达     | **MkAP（相关到达）**；仿真用 Poisson 特例【p.9, p.14】          | 有"相关到达"，但**非多层**；部分匹配"MC"。        |
-| 服务     | **指数服务**；区块生成隐含**批量（成块）**【p.10–12】                | 有"批量"意味，但**未建随机批量机制与分布**；弱匹配"R"。  |
-| 分流     | 未给出**泊松分流**或网络化分流公式                               | 与"P"不匹配。                          |
-| 状态依赖   | 主要为**到达/服务固定参数**；未给出服务率/路由**显式状态依赖**              | 与"S"弱相关（无显式状态依赖率）。                |
-| 动态转移   | 有**两阶段串联**与**负载均衡**，但**非压力触发跨层转移**【p.11, p.20–21】 | 与"D"思想近，但机制不同。                    |
-| 容量     | 单/多服务器**无限队列**为主；未给出**K 限制**稳态【p.2–3, p.14–17】    | 与"K"不匹配。                          |
-| 垂直分层   | **流程分阶段**，非**空间垂直层**【Fig.8，p.11】                  | 与我们的**空间层级**不匹配。                  |
-| 倒金字塔容量 | 未涉及                                               | 不匹配。                              |
+| toreach | **MkAP (relatedtoreach)**; simulationuses Poisson specialexample [p.9, p.14] | have"relatedtoreach", but**nonmultiplelayer**; partscorematchallocation"MC". |
+| service | **indicatenumberservice**; block generationhiddencontain**batchquantity (becomeblock)** [p.10–12] | have"batchquantity"mean, but**notbuildrandombatchquantitymechanismandscoredistribution**; weakmatchallocation"R". |
+| scoreflow | notprovides**Poissonscoreflow**ornetworkizationscoreflowpublicequation | and"P"mismatch. |
+| statedependency | mainlyis**toreach/servicefixedfixedparameternumber**; notprovidesservicerate/pathby**showequationstatedependency** | and"S"weakrelated (noshowequationstatedependencyrate). |
+| movestatetransfer | have**two-stage series**and**load balancing**, but**nonpressuretriggercrosslayertransfer** [p.11, p.20–21] | and"D"ideanear, butmechanismdifferent. |
+| capacity | single/multi-server**nolimitqueue**ismain; notprovides**K limitation**stablestate [p.2–3, p.14–17] | and"K"mismatch. |
+| verticalscorelayer | **flowprocessscorestagesegment**, non**spaceverticallayer** [Fig.8, p.11] | andour**spacelayerlevel**mismatch. |
+| inverted pyramidcapacity | notinvolveand | mismatch. |
 
-### 理论创新性验证（1–10分）
+### theoryinnovationpropertyverification (1–10score)
 
-1. **完全相同的 MCRPS/D/K 系统**：**0/10**（无多层+分流+K限制+压力转移的组合）。
-2. **垂直空间分层排队**：**0/10**（仅流程分阶段）。
-3. **倒金字塔容量**：**0/10**。
-4. **相关到达+批量+泊松分流**：**3/10**（有相关到达/MkAP与成块，但缺泊松分流与随机批量机制）。
-5. **压力触发动态转移**：**2/10**（有负载均衡，但非**拥堵压力触发的跨层**）。
+1. **completeallphasesame MCRPS/D/K system**: **0/10** (nomultiplelayer+scoreflow+Klimitation+pressuretransfercombination). 
+2. **verticalspacescorelayerqueueing**: **0/10** (onlyflowprocessscorestagesegment). 
+3. **inverted pyramidcapacity**: **0/10**. 
+4. **relatedtoreach+batchquantity+Poissonscoreflow**: **3/10** (haverelatedtoreach/MkAPandbecomeblock, butlackPoissonscoreflowandrandombatchquantitymechanism). 
+5. **pressuretriggermovestatetransfer**: **2/10** (haveload balancing, butnon**congestionpressuretriggercrosslayer**). 
 
-**验证结果**
+**verificationresults**
 
-* ✅ **完全原创**：我们的**"多层相关到达+随机批量+泊松分流+有限容量+压力触发跨层+垂直倒金字塔"**组合在本文**均未出现**，因此对我方主张的**新型排队网络**构成有力佐证。
-* ⚠️ **部分相似**：本文的**MkAP（相关到达）**与"成块=批处理"思想可与我方"MC/R"**局部呼应**，但**缺少分流、K 限制、空间层级与压力转移**等关键要素。
-* 🔄 **可借鉴理论**：**矩阵几何法**（GI/M/1）、**MkAP 建模**、**多指标评测模板**、**规模扩展下的负载均衡评测**。
-* ❌ **存在冲突**：无直接冲突；需在文中明确区分**流程分阶段**（本文）与**空间垂直分层**（我方）。
-
----
-
-# 💡 对我们理论的价值
-
-1. **理论基础支撑**
-
-* 以**MkAP+矩阵几何**为我方**相关到达（MC）**与**层内稳态近似**的解析工具；将其**分块生成元**写法迁移到**分层状态/相位**建模。
-
-2. **差异化验证**
-
-* 在 Related Work 指出：本文**无**泊松分流/有限容量/空间层级/压力转移 → 我方**MCRPS/D/K**为**正交扩展**而非复现。
-
-3. **数学工具借鉴**
-
-* **矩阵几何**与**稳定性漂移法**（文中"mean drift"与稳态向量推导）用于我们**小规模层内截断**解析；
-* 将**区块成块**类比为**随机批量服务**的一个工程场景，便于写出**批量大小分布**并嵌入我方模型。
-
-4. **引用策略**
-
-* 在"到达建模"小节引用**MkAP**段落（p.9–11）；在"层内解析"小节引用**式(19)-(24)**；在"评测指标"小节引用**式(25)-(27)、Figs.18–20**，对照我方多目标。
-
-**理论创新度确认**：**9/10（基于此文验证）**
-**我们创新的独特性**：**完全独特**
+* ✅ **completealloriginal**: our**"multiplelayerrelatedtoreach+randombatchquantity+Poissonscoreflow+finitecapacity+pressuretriggercrosslayer+verticalinverted pyramid"**combinationinthis paper**meannotexitappear**, thereforeforour sidemainsheet**newtypequeueingnetwork**constructbecomehaveforceassistproof. 
+* ⚠️ **partscorephasesimilar**: this paper**MkAP (relatedtoreach)**and"becomeblock=batchprocessing"ideacanandour side"MC/R"**localcallshould**, but**lackfewscoreflow, K limitation, spacelayerlevelandpressuretransfer**etc.keyelement. 
+* 🔄 **canreferencetheory**: **matrixgeometricmethod** (GI/M/1), **MkAP modeling**, **multipleMetricsevaluatetesttemplate**, **scaleextensionunderload balancingevaluatetest**. 
+* ❌ **existinconflict**: nodirectconflict; requiresinpaperinclearcertainareascore**flowprocessscorestagesegment** (this paper)and**spaceverticalscorelayer** (our side). 
 
 ---
 
-# 🎨 理论创新差异化优势（基于此文对照）
+# 💡 forourtheoryvaluevalue
 
-1. **从流程阶段到空间层级**：本文仅"生成→构建"流程分阶段；我们提出**五层垂直空域**与**跨层转移律**（压力触发）。
-2. **从成块到随机批量**：本文隐含批处理但未建**随机批量机制**；我们给出**随机批量服务**与**泊松分流**的网络化刻画。
-3. **从无限到K限制**：本文多为**无限缓冲**；我们在**有限容量K**与**倒金字塔配置**下给出**可分析稳定性与调度策略**。
+1. **theoryfoundationsupport**
+
+* with**MkAP+matrixgeometric**isour side**relatedtoreach (MC)**and**layerinnerstablestateapproximate**solutionanalysisworktool; Treatsits**scoreblockalivebecomeyuan**writemethodmigrationshiftto**scorelayerstate/phaseposition**modeling. 
+
+2. **poordifferenceizationverification**
+
+* in Related Work indicateexit: this paper**no**Poissonscoreflow/finitecapacity/spacelayerlevel/pressuretransfer → our side**MCRPS/D/K**is**positiveexchangeextension**whilenonreproduce. 
+
+3. **numberlearningworktoolreference**
+
+* **matrixgeometric**and**stablepropertydriftshiftmethod** (paperin"mean drift"andsteady-state vectorderive)forour**small-scalelayerinnertruncatebreak**solutionanalysis; 
+* Treats**areablockbecomeblock**typeratiois**randombatchquantityservice**an engineering scenario, convenientinwriteexit**batchquantitylargesmallscoredistribution** andembeddingour sidemodel. 
+
+4. **citeusesstrategy**
+
+* in"toreachmodeling"sectionciteuses**MkAP**segmentimplement (p.9–11); in"layerinnersolutionanalysis"sectionciteuses**equation(19)-(24)**; in"evaluatetestMetrics"sectionciteuses**equation(25)-(27), Figs.18–20**, foraccordingour sidemulti-objective. 
+
+**theoryinnovationdegreecertainrecognize**: **9/10 (based onthispaperverification)**
+**ourinnovationuniqueproperty**: **completeallunique**
 
 ---
 
-# 📋 核心要点摘录（便于后续引用）
+# 🎨 theoryinnovationpoordifferenceizationsuperiorpotential (based onthispaperforaccording)
 
-1. **六阶段区块链排队系统**：角色/权限→MkAP→区块生成（FCFS）→日志→链构建→合约【Fig.8，p.11–12】。
-2. **GI/M/1 型矩阵几何框架**：生成元分块、稳态向量与稳定性讨论【式(19)–(24)，p.10】。
-3. **到达/服务设定**：提出**MkAP**；仿真用**Poisson 到达、指数服务**（M/M/1, M/M/k）【p.9, p.14–17】。
-4. **性能度量与结果**：时延/吞吐/利用率公式与对比（新模型利用率**>80%** vs 既有**~55%**）【式(25)–(27)，Figs.18–20，p.17–19】。
-5. **扩展与限制**：规模扩展+负载均衡（H_FAC）改进趋势；局限与未来工作（优先级服务等）【Fig.21，p.20–21；Limitations，p.21】。
+1. **fromflowprocessstagesegmenttospacelayerlevel**: this paperonly"alivebecome→build"flowprocessscorestagesegment; ourproposes**fivelayerverticalairspace**and**crosslayertransferlaw** (pressuretrigger). 
+2. **frombecomeblocktorandombatchquantity**: this paperimplicit batch processingbutnotbuild**randombatchquantitymechanism**; ourprovides**randombatchquantityservice**and**Poissonscoreflow**networkizationmomentdraw. 
+3. **fromnolimittoKlimitation**: this papermultipleis**nolimitslowrush**; ourin**finitecapacityK**and**inverted pyramidallocationplacement**underprovides**canscoreanalysisstablepropertyandschedulingstrategy**. 
 
 ---
 
-**理论创新相关度**：**中**（到达相关/矩阵几何强，空间分层/分流/有限容量弱）
-**我们创新的独特性确认**：**完全独特**
-**建议调研优先级**：**重要**（作为**MC 与层内解析工具**与**评测指标模板**的参考）
+# 📋 Core Points Summary (convenientinbackcontinueciteuses)
+
+1. **six-stageblockchainqueueingsystem**: roles/permissions→MkAP→block generation (FCFS)→log→chain construction→combineapproximately [Fig.8, p.11–12]. 
+2. **GI/M/1 typematrixgeometricframeworkunits**: alivebecomeyuanscoreblock, steady-state vectorandstablepropertyDiscusses [equation(19)–(24), p.10]. 
+3. **toreach/servicesetting**: proposes**MkAP**; simulationuses**Poisson toreach, indicatenumberservice** (M/M/1, M/M/k) [p.9, p.14–17]. 
+4. **performancedegreequantityandresults**: whendelay/throughput/benefitusesratepublicequationandComparison (newmodelbenefitusesrate**>80%** vs alreadyhave**~55%**) [equation(25)–(27), Figs.18–20, p.17–19]. 
+5. **extensionandlimitation**: scaleextension+load balancing (H_FAC)improvementtendpotential; bureaulimitandnotcomeworkwork (prioritizedlevelserviceetc.) [Fig.21, p.20–21; Limitations, p.21]. 
 
 ---
 
-**分析完成日期**: 2025-01-28  
-**分析质量**: 详细分析，包含MkAP相关到达建模和矩阵几何解析方法  
-**建议用途**: 作为相关到达建模的工具参考，借鉴MkAP建模和矩阵几何解析技术
+**theoryinnovationrelateddegree**: **in** (toreachrelated/matrixgeometricstrong, spacescorelayer/scoreflow/finitecapacityweak)
+**ourinnovationuniquepropertycertainrecognize**: **completeallunique**
+**suggestionadjuststudyprioritizedlevel**: **important** (as**MC andlayerinnersolutionanalysisworktool**and**evaluatetestMetricstemplate**reference)
+
+---
+
+**Analysis Completion Date**: 2025-01-28 
+**Analysis Quality**: Detailed analysis withMkAPrelatedtoreachmodelingandmatrix-geometric solutionanalysismethod 
+**Recommended Use**: asrelatedtoreachmodelingworktoolreference, referenceMkAPmodelingandmatrix-geometric solutionanalysistechnique

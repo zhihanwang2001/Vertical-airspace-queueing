@@ -1,119 +1,119 @@
-# T12文献分析：服务进行中反复离线的M/G/1排队
+# T12Literature Analysis: serviceforinreverserepeatdistancelineM/G/1queueing
 
-**论文全引**: Hanukov, G., Barron, Y., & Yechiali, U. (2024). "An M/G/1 Queue with Repeated Orbit While in Service." *Mathematics*, 12(22), 3574. DOI: 10.3390/math12223574.
-
----
-
-## 📄 论文基本信息
-
-* **标题**：**An M/G/1 Queue with Repeated Orbit While in Service**（服务进行中反复离线的 M/G/1 排队）
-* **作者**：**Gabi Hanukov, Yonit Barron, Uri Yechiali**（Ariel Univ. & Tel Aviv Univ.）
-* **发表 venue**：**MDPI Mathematics**（开放获取）
-* **年份**：**2024**（接收/发表：2024-11；文首给出）
-* **理论类型**：**纯理论**（基于补充变量法 SVT 与 LST/PGF 的解析推导，辅以数值对比）
+**Full Citation**: Hanukov, G., Barron, Y., & Yechiali, U. (2024). "An M/G/1 Queue with Repeated Orbit While in Service." *Mathematics*, 12(22), 3574. DOI: 10.3390/math12223574.
 
 ---
 
-# 🔬 核心理论框架分析 (⭐⭐⭐⭐⭐)
+## 📄 Paper Basic Information
 
-## 1) 排队系统类型
-
-* **标准模型**：单服务台 **M/G/1**，其独特处在于"**服务进行中**"顾客可反复离开系统至"orbit"（离线）再返回；与传统"到达受阻后进入重试群"不同（§1–§3）。
-* **到达过程**：**Poisson(λ)**（§3，p.5）。
-* **服务过程**：一般分布 **G**，LST 记为 (\tilde B(s))，并用**服务时间风险率** (\mu(u)) 入式（§3–§4，p.5–8）。
-* **耐心/离线机制**：耐心时间 (T\sim \text{Exp}(\alpha))；若在 (T) 内未服务完则离线 (X\sim \text{Exp}(\beta)) 后返查，期间**服务器持续服务该顾客**（§3，**图1 p.5**"Flow scheme"）。
-* **系统容量**：**无限缓冲**（图1标注"Unlimited queue"）；轨道（orbit）**人数无限**（§3–§4）。
-* **系统结构**：单队列/单服务台；状态含 ((L,S,U))：系统内人数 (L)、服务顾客状态 (S\in{在系/离线})、自开服起的**已逝时间** (U)（§4，p.6）。
-
-## 2) 分层/垂直结构
-
-* **是否分层**：**无空间/垂直分层**；仅有"在系统/在离线"的**逻辑二态**（图1 p.5）。
-* **层间关系**：不适用（无层）。状态中仅记录服务顾客是否处于离线（S=2），服务器仍推进其服务（§3–§4）。
-* **容量配置**：不适用（无层）；系统整体为无限容量设置。
-
-## 3) 系统动态机制
-
-* **动态转移**：**有（条件转移）**——触发条件是"耐心计时到且服务未毕"，顾客转入离线；返查后若已完成则离开，否则再经历一轮 (T) 与 (X)（§3，图1）。
-* **状态依赖**：转移逻辑**依赖已逝服务时间** (U)（通过风险率 (\mu(u)) 入方程），但到达率 λ 与参数 (\alpha,\beta) 为常数；服务器**服务率本身不随队长/拥堵变化**（§4，式(3)–(8)）。
-* **负载均衡**：**无**（单服务台，无路由/均衡策略）。
-
-> 解析主线：通过 **SVT** 写出 (p(n,m,u)) 的微分方程并得到两类部分 PGF (G_1(z,u),G_2(z,u))（式(7)–(12)），再由边界与平衡得 (G_1(z,0))（式(24)），进而推出总体 PGF（定理1，式(27)–(28)）与均值 (E[L])（定理2，式(33)）；稳定性条件仍为 **λE[B]<1**（p.9）。
+* **Title**: **An M/G/1 Queue with Repeated Orbit While in Service** (serviceforinreverserepeatdistanceline M/G/1 queueing)
+* **Authors**: **Gabi Hanukov, Yonit Barron, Uri Yechiali** (Ariel Univ. & Tel Aviv Univ.)
+* **Publication Venue**: **MDPI Mathematics** (openreleaseobtaintake)
+* **Year**: **2024** (received/sendTable: 2024-11; paperfirstprovides)
+* **Theory Type**: **puretheory** (based onsupplementfillchangequantitymethod SVT and LST/PGF solutionanalysisderive, assistwithnumbervalueComparison)
 
 ---
 
-# 🔍 与 MCRPS/D/K 理论的精确对比
+# 🔬 coretheoryframeworkunitsscoreanalysis (⭐⭐⭐⭐⭐)
 
-> 我们的 MCRPS/D/K：多层相关到达、随机**批量**服务、泊松分流、状态依赖、**压力触发**的跨层动态转移、**有限容量**；并具有**5层垂直空域**与**倒金字塔容量 {8,6,4,3,2}** 等设定。
+## 1) queueingsystemtypetype
 
-| 维度            | 本文                                | 与 MCRPS/D/K 关系                 |
+* **standardmodel**: singleserviceplatform **M/G/1**, itsuniqueplaceinin"**serviceforin**"customercanreverserepeatdistanceopensystemto"orbit" (distanceline)againreturnreturn; andtransmitsystem"toreachreceiveblockbackenterinputweighttrialcluster"different (§1–§3). 
+* **toreachprocess**: **Poisson(λ)** (§3, p.5). 
+* **serviceprocess**: onegeneralscoredistribution **G**, LST recordis (\tilde B(s)), anduses**servicewhenbetweenriskrate** (\mu(u)) inputequation (§3–§4, p.5–8). 
+* **endurecenter/distancelinemechanism**: endurecenterwhenbetween (T\sim \text{Exp}(\alpha)); ifin (T) innernotservicecompletethendistanceline (X\sim \text{Exp}(\beta)) backreturncheck, periodbetween**servicedeviceholdcontinueservicethiscustomer** (§3, **Fig1 p.5**"Flow scheme"). 
+* **systemcapacity**: **nolimitslowrush** (Fig1standardfocus"Unlimited queue"); trackchannel (orbit)**personnumbernolimit** (§3–§4). 
+* **systemstructure**: singlequeue/singleserviceplatform; statecontain ((L,S,U)): systeminnerpersonnumber (L), servicecustomerstate (S\in{insystem/distanceline}), selfopenservicestart**alreadypasswhenbetween** (U) (§4, p.6). 
+
+## 2) scorelayer/verticalstructure
+
+* **whetherscorelayer**: **nospace/verticalscorelayer**; onlyhave"insystem/indistanceline"**logictwostate** (Fig1 p.5). 
+* **layerbetweenrelationship**: notsuitableuses (nolayer). stateinonlyrecordservicecustomerwhetherplaceindistanceline (S=2), servicedevicestillpushenteritsservice (§3–§4). 
+* **capacityallocationplacement**: notsuitableuses (nolayer); systemoverallisnolimitcapacitysetplacement. 
+
+## 3) systemmovestatemechanism
+
+* **movestatetransfer**: **have (conditiontransfer)**——triggerconditionis"endurecenterplanwhentoandservicenotfinish", customerturninputdistanceline; returncheckbackifalreadycompletethendistanceopen, nothenagainthroughhistoryoneround (T) and (X) (§3, Fig1). 
+* **statedependency**: transferlogic**dependencyalreadypassservicewhenbetween** (U) (throughriskrate (\mu(u)) inputmethodprocess), buttoreachrate λ andparameternumber (\alpha,\beta) isconstantnumber; servicedevice**serviceratebookbodynotfollowteamgrow/congestionchangeization** (§4, equation(3)–(8)). 
+* **load balancing**: **no** (singleserviceplatform, nopathby/meanbalancestrategy). 
+
+> solutionanalysismainline: through **SVT** writeexit (p(n,m,u)) microscoremethodprocess andgettotwotypepartscore PGF (G_1(z,u),G_2(z,u)) (equation(7)–(12)), againbyedgeboundaryandaveragebalanceget (G_1(z,0)) (equation(24)), enterwhilepushexittotalbody PGF (fixedmanage1, equation(27)–(28))andmeanvalue (E[L]) (fixedmanage2, equation(33)); stablepropertyconditionstillis **λE[B]<1** (p.9). 
+
+---
+
+# 🔍 and MCRPS/D/K theoryprecisecertainComparison
+
+> our MCRPS/D/K: multiplelayerrelatedtoreach, random**batchquantity**service, Poissonscoreflow, statedependency, **pressuretrigger**crosslayermovestatetransfer, **finitecapacity**; andhas**5layerverticalairspace**and**inverted pyramidcapacity {8,6,4,3,2}** etc.setting. 
+
+| dimensionaldegree | this paper | and MCRPS/D/K relationship |
 | ------------- | --------------------------------- | ------------------------------ |
-| **MC** 多层相关到达 | 到达 Poisson；未设多层/相关到达              | **不匹配**。                       |
-| **R** 随机批量服务  | 单个体服务（非批量）                        | **不匹配**。                       |
-| **P** 泊松分流    | 无分流网络结构                           | **不匹配**。                       |
-| **S** 状态依赖    | 转移依赖已逝时间 U（经 (\mu(u))）；λ, α, β 常参 | **部分匹配**（非拥堵/压力型）。             |
-| **D** 动态转移    | 有"耐心到→离线/返查"循环；**服务器不中断**         | **机制不同**（**时间触发**≠**压力触发跨层**）。 |
-| **K** 有限容量    | **无限**缓冲/无限轨道                     | **不匹配**。                       |
-| **垂直分层**（5层）  | 无                                 | **不匹配**。                       |
-| **倒金字塔容量**    | 无                                 | **不匹配**。                       |
+| **MC** multiplelayerrelatedtoreach | toreach Poisson; notsetmultiplelayer/relatedtoreach | **mismatch**. |
+| **R** randombatchquantityservice | singleindividualbodyservice (nonbatchquantity) | **mismatch**. |
+| **P** Poissonscoreflow | noscoreflownetworkstructure | **mismatch**. |
+| **S** statedependency | transferdependencyalreadypasswhenbetween U (through (\mu(u))); λ, α, β constantparameter | **partscorematchallocation** (noncongestion/pressuretype). |
+| **D** movestatetransfer | have"endurecenterto→distanceline/returncheck"followloop; **servicedevicenotinbreak** | **mechanismdifferent** (**whenbetweentrigger**≠**pressuretriggercrosslayer**). |
+| **K** finitecapacity | **nolimit**slowrush/nolimittrackchannel | **mismatch**. |
+| **verticalscorelayer** (5layer) | no | **mismatch**. |
+| **inverted pyramidcapacity** | no | **mismatch**. |
 
 ---
 
-## 🧪 理论创新性验证（1–10分）
+## 🧪 theoryinnovationpropertyverification (1–10score)
 
-1. 存在**完全相同**的 MCRPS/D/K 系统？**0/10**（单台 M/G/1 + 离线返查，与我们"垂直多层+批量+分流+有限容量+压力跨层转移"的组合差距极大）。
-2. **垂直空间分层**建模？**0/10**（图1仅平面逻辑二态）。
-3. **倒金字塔容量配置**理论？**0/10**。
-4. **相关到达+批量服务+泊松分流**组合？**0/10**。
-5. **压力触发动态转移**机制？**2/10**（存在"条件转移"，但为**耐心计时**触发，非层间拥堵/压力触发）。
+1. existin**completeallphasesame** MCRPS/D/K system？**0/10** (singleplatform M/G/1 + distancelinereturncheck, andour"verticalmultiplelayer+batchquantity+scoreflow+finitecapacity+pressurecrosslayertransfer"combinationpoordistanceextremelarge). 
+2. **verticalspacescorelayer**modeling？**0/10** (Fig1onlyplanelogictwostate). 
+3. **inverted pyramidcapacityallocationplacement**theory？**0/10**. 
+4. **relatedtoreach+batchquantityservice+Poissonscoreflow**combination？**0/10**. 
+5. **pressuretriggermovestatetransfer**mechanism？**2/10** (existin"conditiontransfer", butis**endurecenterplanwhen**trigger, nonlayerbetweencongestion/pressuretrigger). 
 
-**验证结果**
+**verificationresults**
 
-* ✅ **完全原创（相对本文）**：我们的**垂直五层+倒金字塔容量+压力触发的下向转移+有限容量+随机批量+泊松分流**的**组合体**在本文**均未出现**；本文聚焦单台 M/G/1 的"服务进行中离线"机制，与我们的**空域分层—调度优化**范式本质不同。
-* ⚠️ **部分相似**：两者均含**状态驱动的动态机制**（本文是"耐心到→离线/返查"；我们是"层内/层间受状态与压力触发的转移与控制"）。
-* 🔄 **可借鉴理论**：
+* ✅ **completealloriginal (phaseforthis paper)**: our**verticalfivelayer+inverted pyramidcapacity+pressuretriggerundertowardtransfer+finitecapacity+randombatchquantity+Poissonscoreflow****combinationbody**inthis paper**meannotexitappear**; this papergatherfocussingleplatform M/G/1 "serviceforindistanceline"mechanism, andour**airspacescorelayer—schedulingoptimization**rangeequationbookqualitydifferent. 
+* ⚠️ **partscorephasesimilar**: twopersonmeancontain**statedrivemovemovestatemechanism** (this paperis"endurecenterto→distanceline/returncheck"; ouris"layerinner/layerbetweenreceivestateandpressuretriggertransferandcontrol"). 
+* 🔄 **canreferencetheory**: 
 
-  * **补充变量法（SVT）**与**PGF/LST**推导链路（§4–§5），含 (G_1,G_2) 的闭式表达与 (E[L])（式(27)–(33)）；
-  * **稳定性 λE[B]<1** 的证明思路（p.9），用于我们各层"服务不中断"的局部近似；
-  * **多分布敏感性**与图示报告范式（图2–图12，p.12–17），便于我们做**服务/到达分布**鲁棒性对比。
-* ❌ **潜在冲突**：无直接理论冲突；但本文为**单节点—无限容量—时间触发**，而我们为**多层网络—有限容量—压力触发**，需在文献综述中明确区隔。
-
----
-
-## 💡 对我们理论的价值
-
-1. **理论基础支撑**
-
-* 借鉴其 **SVT + LST/PGF** 技术，构造我们"**层内（在系）/层外（驻空等待）**"的二态子模型解析；特别是**服务不中断**假设与稳定性判据的处理方式，可为我们层内近似提供**可证明的参照**。
-
-2. **差异化验证**
-
-* 在 **Related Work** 中，将本文定位为"**服务进行中离线/返查**"的现代解析代表；对照指出：**无垂直分层、无有限层容量、无倒金字塔、无批量/分流、无压力触发跨层**，从而凸显我们在**空间结构与机制组合**上的原创性。
-
-3. **数学工具借鉴**
-
-* 采用其对 **已逝服务时间** (U) 的处理（风险率 (\mu(u)) 入式）来刻画我们"**跨层过程中服务进度**"；
-* 参照 **定理3–4** 的**逗留时间 LST**写法，把"在层时间+跨层时间"的总逗留分解到**重复阶段和触发条件**上，以获得可对比的**解析基线**；
-* 将其 **数值敏感性套路**（对 (\alpha,\beta,\mu) 的响应曲线）移植到我们对"层容量形状/重力下转/到达相关性"的**消融与稳健性**实验。
-
-4. **引用策略**
-
-* **方法论**：在"理论工具"小节引用其 **SVT 与 PGF/LST** 推导为我们子模块解析的先例；
-* **模型边界**：在综述中说明其与传统"重试队列"不同点（**服务进行中离线**），并进一步说明与我们"**垂直多层—压力跨层**"的差异；
-* **图示范式**：引用 **图1（p.5）** 流程图与 **图2–12（p.12–17）** 的报告形式，作为我们实验可视化的参考模板。
+ * **supplementfillchangequantitymethod (SVT)**and**PGF/LST**derivechainpath (§4–§5), contain (G_1,G_2) closedequationexpressionand (E[L]) (equation(27)–(33)); 
+ * **stableproperty λE[B]<1** proofclearapproach (p.9), foroureachlayer"servicenotinbreak"localapproximate; 
+ * **multiplescoredistributionsensitivefeelproperty**andFigshowreportrangeequation (Fig2–Fig12, p.12–17), convenientinourdo**service/toreachscoredistribution**robustpropertyComparison. 
+* ❌ **potentialinconflict**: nodirecttheoryconflict; butthis paperis**singlesectionpoint—nolimitcapacity—whenbetweentrigger**, whileouris**multiplelayernetwork—finitecapacity—pressuretrigger**, requiresinpapercontributereviewinclearcertainareaseparate. 
 
 ---
 
-**理论创新度确认（基于此文验证）**：**9/10**
-**我们创新的独特性**：**完全独特**（相对本文范式）。我们的 **MCRPS/D/K** 在**垂直分层、倒金字塔有限容量、相关到达+批量+分流的组合、压力触发的跨层动态转移与多目标优化**等方面均为本文未涉之处，二者范式正交。
+## 💡 forourtheoryvaluevalue
+
+1. **theoryfoundationsupport**
+
+* referenceits **SVT + LST/PGF** technique, constructour"**layerinner (insystem)/layerouter (stationemptyetc.waiting)**"twostatesubmodelsolutionanalysis; specialdistinguishis**servicenotinbreak**assumptionandstablepropertyjudgedataprocessingmethodequation, canisourlayerinnerapproximateprovide**canproofclearparameteraccording**. 
+
+2. **poordifferenceizationverification**
+
+* in **Related Work** in, Treatsthis paperfixedpositionis"**serviceforindistanceline/returncheck**"appearsubstitutesolutionanalysissubstituteTable; foraccordingindicateexit: **noverticalscorelayer, nofinitelayercapacity, noinverted pyramid, nobatchquantity/scoreflow, nopressuretriggercrosslayer**, fromwhileconvexshowourin**spacestructureandmechanismcombination**onoriginalproperty. 
+
+3. **numberlearningworktoolreference**
+
+* adoptingitsfor **alreadypassservicewhenbetween** (U) processing (riskrate (\mu(u)) inputequation)comemomentdrawour"**crosslayerprocessinserviceenterdegree**"; 
+* parameteraccording **fixedmanage3–4** **teaseretainwhenbetween LST**writemethod, treat"inlayerwhenbetween+crosslayerwhenbetween"totalteaseretainscoresolutionto**weightrepeatstagesegmentandtriggercondition**on, withobtaincanComparison**solutionanalysisbaseline**; 
+* Treatsits **numbervaluesensitivefeelpropertysetpath** (for (\alpha,\beta,\mu) responseshouldcurves)shiftplanttoourfor"layercapacityformstate/weightforceunderturn/toreachrelatedproperty"**Ablationandstablehealthyproperty**experiments. 
+
+4. **citeusesstrategy**
+
+* **methoddiscussion**: in"theoryworktool"sectionciteusesits **SVT and PGF/LST** deriveisoursubmodulesolutionanalysisfirstexample; 
+* **modeledgeboundary**: inreviewinexplainitsandtransmitsystem"weighttrialqueue"differentpoint (**serviceforindistanceline**), andenteronestepsexplainandour"**verticalmultiplelayer—pressurecrosslayer**"poordifference; 
+* **Figshowrangeequation**: citeuses **Fig1 (p.5)** flowprocessFigand **Fig2–12 (p.12–17)** reportformequation, asourexperimentscanviewizationreferencetemplate. 
 
 ---
 
-**理论创新相关度**：**低**（解析方法学有一定借鉴价值，但系统模型完全不同）
-**我们创新的独特性确认**：**完全独特**（相对本文范式）
-**建议调研优先级**：**中等**（主要作为SVT解析技术和稳定性分析的方法参考）
+**theoryinnovationdegreecertainrecognize (based onthispaperverification)**: **9/10**
+**ourinnovationuniqueproperty**: **completeallunique** (phaseforthis paperrangeequation). our **MCRPS/D/K** in**verticalscorelayer, inverted pyramidfinitecapacity, relatedtoreach+batchquantity+scoreflowcombination, pressuretriggercrosslayermovestatetransferandmulti-objectiveoptimization**etc.methodaspectmeanisthis papernotinvolveofplace, twopersonrangeequationpositiveexchange. 
 
 ---
 
-**分析完成日期**: 2025-01-28  
-**分析质量**: 详细分析，包含补充变量法和LST/PGF解析技术  
-**建议用途**: 作为单队列解析理论的技术参考，借鉴SVT方法和稳定性分析技术
+**theoryinnovationrelateddegree**: **low** (solutionanalysismethodlearninghaveonefixedreferencevaluevalue, butsystemmodelcompletealldifferent)
+**ourinnovationuniquepropertycertainrecognize**: **completeallunique** (phaseforthis paperrangeequation)
+**suggestionadjuststudyprioritizedlevel**: **inetc.** (mainlyasSVTsolutionanalysistechniqueandstablepropertyscoreanalysismethodreference)
+
+---
+
+**Analysis Completion Date**: 2025-01-28 
+**Analysis Quality**: Detailed analysis withsupplementfillchangequantitymethodandLST/PGFsolutionanalysistechnique 
+**Recommended Use**: assinglequeuesolutionanalysistheorytechniquereference, referenceSVTmethodandstablepropertyscoreanalysistechnique

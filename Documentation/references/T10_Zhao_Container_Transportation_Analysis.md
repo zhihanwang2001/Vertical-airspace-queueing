@@ -1,131 +1,131 @@
-# T10文献分析：平衡卡车调度策略用于需求外包的码头间集装箱运输
+# T10Literature Analysis: averagebalancecardvehicleschedulingstrategyforrequiresrequestouterincludecodeheadbetweensetinstallboxoperatetransport
 
-**论文全引**: Zhao, Y., Ji, Y., & Zheng, Y. (2025). "Balanced Truck Dispatching Strategy for Inter-Terminal Container Transportation with Demand Outsourcing." *Mathematics*, 13(2), 287. DOI: 10.3390/math13020287.
+**Full Citation**: Zhao, Y., Ji, Y., & Zheng, Y. (2025). "Balanced Truck Dispatching Strategy for Inter-Terminal Container Transportation with Demand Outsourcing." *Mathematics*, 13(2), 287. DOI: 10.3390/math13020287.
 
 ---
 
-## 📄 论文基本信息（自动提取）
+## 📄 Paper Basic Information (selfmoveproposetake)
 
-* 标题：Balanced Truck Dispatching Strategy for Inter-Terminal Container Transportation with Demand Outsourcing
-* 作者：Yucheng Zhao, Yuxiong Ji, Yujing Zheng
-* 发表 venue：MDPI Mathematics
-* 年份：2025
-* 理论类型：综合建模（闭式 Jackson 网络 + 成本最小化优化 + MVA 解析 + 演化算法）
+* Title: Balanced Truck Dispatching Strategy for Inter-Terminal Container Transportation with Demand Outsourcing
+* Authors: Yucheng Zhao, Yuxiong Ji, Yujing Zheng
+* Publication Venue: MDPI Mathematics
+* Year: 2025
+* Theory Type: Comprehensive Modeling (closedequation Jackson network + costminimizeoptimization + MVA solutionanalysis + evolveizationalgorithm)
 
-# 🔬 核心理论框架分析
+# 🔬 coretheoryframeworkunitsscoreanalysis
 
-1. **排队系统类型**
+1. **queueingsystemtypetype**
 
-* 标准模型：**Closed Jackson network**（闭式 Jackson 网络；卡车为顾客、终端/路段为服务节点）。见图2（p.6）与 §3.1–3.2。
-* 到达过程：**Poisson**（任务生成服从泊松；§3.1"Task generation"要点，p.4–5）。
-* 服务过程：**一般/确定参数的指数化表述**
+* standardmodel: **Closed Jackson network** (closedequation Jackson network; cardvehicleiscustomer, endend/pathsegmentisservicesectionpoint). seeFig2 (p.6)and §3.1–3.2. 
+* toreachprocess: **Poisson** (taskalivebecomeservicefromPoisson; §3.1"Task generation"needpoint, p.4–5). 
+* serviceprocess: **onegeneral/certainfixedparameternumberindicatenumberizationTabledescription**
 
-  * 终端节点：单服务台，服务率 μ= d_i（等价于指数服务假设）；
-  * 路由节点：多服务台 c_i=a_r，服务率 μ=1/b_r（由行程时间决定）。见式(1)(2)（p.5–6）。
-* 系统容量：**有限容量/拥堵惩罚**
+ * endendsectionpoint: singleserviceplatform, servicerate μ= d_i (etc.valueinindicatenumberserviceassumption); 
+ * pathbysectionpoint: multipleserviceplatform c_i=a_r, servicerate μ=1/b_r (byrowprocesswhenbetweendecidefixed). seeequation(1)(2) (p.5–6). 
+* systemcapacity: **finitecapacity/congestionpenalty**
 
-  * 终端容量 h_i、路段"服务器数" a_r；且目标函数含拥堵惩罚项与容量约束（式(5)(6)，p.6–7，表1 p.5）。
-* 系统结构：**网络排队**（终端与路段两类节点构成网络；图2 p.6）。
+ * endendcapacity h_i, pathsegment"servicedevicenumber" a_r; andobjectivefunctionnumbercontaincongestionpenaltyitemandcapacityconstraint (equation(5)(6), p.6–7, Table1 p.5). 
+* systemstructure: **networkqueueing** (endendandpathsegmenttwotypesectionpointconstructbecomenetwork; Fig2 p.6). 
 
-2. **分层/垂直结构**
+2. **scorelayer/verticalstructure**
 
-* 层级定义：无"物理垂直层"定义；仅有**逻辑上的两类节点**（终端层 vs 路由层）。见图2（p.6）。
-* 层间关系：**相关/转移**（卡车在终端与路由节点间转移，转移概率 γ_ij 由( r_ij − s_ij )诱导；式(3)(4)与图2注释，p.6）。
-* 容量配置：**非均匀、静态给定**（h_i、a_r 非均匀；式(6)与表1，p.5–7）。
+* layerlevelfixedmeaning: no"objectmanageverticallayer"fixedmeaning; onlyhave**logicontwotypesectionpoint** (endendlayer vs pathbylayer). seeFig2 (p.6). 
+* layerbetweenrelationship: **related/transfer** (cardvehicleinendendandpathbysectionpointbetweentransfer, transfergeneralrate γ_ij by(r_ij − s_ij)induceguide; equation(3)(4)andFig2annotation, p.6). 
+* capacityallocationplacement: **nonmeanuniform, staticstategivefixed** (h_i, a_r nonmeanuniform; equation(6)andTable1, p.5–7). 
 
-3. **系统动态机制**
+3. **systemmovestatemechanism**
 
-* 动态转移：**有**（车辆在网络中的转移由 γ_ij 决定，γ 受主动外包 s_ij 调整，见图2与 §3.1–3.2，p.5–6）。
-* 状态依赖：**部分存在**
+* movestatetransfer: **have** (vehiclevehicleinnetworkintransferby γ_ij decidefixed, γ receivemainmoveouterinclude s_ij adjust, seeFig2and §3.1–3.2, p.5–6). 
+* statedependency: **partscoreexistin**
 
-  * 服务率 μ 固定；
-  * 但"反应式外包"发生在**无可用车**时（状态驱动），且拥堵惩罚随在场车辆数变化（式(5)，p.6–7；§3.1，p.4–5）。
-* 负载均衡：**基于外包比例的静态—准动态调度**（s_ij 主动外包比率作为决策变量；与车队规模 F 联合优化。§3.2–3.4；表6给出最优 s_ij/ r_ij，p.11）。
+ * servicerate μ fixedfixed; 
+ * but"reverseshouldequationouterinclude"sendalivein**nocanusesvehicle**when (statedrivemove), andcongestionpenaltyfollowinvenuevehiclevehiclecount variation (equation(5), p.6–7; §3.1, p.4–5). 
+* load balancing: **based onouterincluderatiostaticstate—standardmovestatescheduling** (s_ij mainmoveouterincluderatiorateasdecisionchangequantity; andvehicleteamscale F connectcombineoptimization. §3.2–3.4; Table6providesmostsuperior s_ij/ r_ij, p.11). 
 
-# 🔍 与 MCRPS/D/K 理论的精确对比
+# 🔍 and MCRPS/D/K theoryprecisecertainComparison
 
-**我们理论（MCRPS/D/K）要点回顾**：多层相关到达、随机批量服务、泊松分流、状态依赖、压力触发动态转移、有限容量、垂直5层与倒金字塔容量等。
+**ourtheory (MCRPS/D/K)needpointreturncustomer**: multiplelayerrelatedtoreach, randombatchquantityservice, Poissonscoreflow, statedependency, pressuretriggermovestatetransfer, finitecapacity, vertical5layerandinverted pyramidcapacityetc.. 
 
-| 维度                                   | 论文做法                                  | 与 MCRPS/D/K 的关系                 |
+| dimensionaldegree | discussionpaperdomethod | and MCRPS/D/K relationship |
 | ------------------------------------ | ------------------------------------- | ------------------------------- |
-| Multi-layer correlated arrivals (MC) | 任务到达为泊松，各 OD 比例 r_ij 固定；未显式构造"多层相关到达" | **不匹配**（无多层相关到达）                |
-| Random batch service (R)             | 无批量服务；终端单服务台、路段多服务台但非批服务              | **不匹配**                         |
-| Poisson splitting (P)                | r_ij 与 s_ij 可视作对泊松流的**比例分流/稀疏化**（外包）  | **部分相似**（概念上有泊松分流/稀释）           |
-| State-dependent (S)                  | 反应式外包受"是否有空车"影响；拥堵惩罚随在场数变             | **部分匹配**（代价/外包呈状态依赖；服务率本身不随状态变） |
-| Dynamic transfer (D)                 | 车辆在网络中按 γ_ij 转移；无"压力触发"的**策略性转移**机制   | **不匹配**（无压力触发转移逻辑）              |
-| Finite capacity (K)                  | 终端容量 h_i、路段服务器数 a_r 与总体 F 约束          | **匹配**                          |
-| 垂直分层（5层高空）                           | **无**垂直空间分层，仅逻辑两层节点                   | **不匹配**                         |
-| 倒金字塔容量 {8,6,4,3,2}                   | **无**，容量为场站给定                         | **不匹配**                         |
+| Multi-layer correlated arrivals (MC) | tasktoreachisPoisson, each OD ratio r_ij fixedfixed; notshowequationconstruct"multiplelayerrelatedtoreach" | **mismatch** (nomultiplelayerrelatedtoreach) |
+| Random batch service (R) | nobatchquantityservice; endendsingleserviceplatform, pathsegmentmultipleserviceplatformbutnonbatchservice | **mismatch** |
+| Poisson splitting (P) | r_ij and s_ij canviewworkforPoissonflow**ratioscoreflow/sparsesparseization** (outerinclude) | **partscorephasesimilar** (conceptonhavePoissonscoreflow/sparseexplain) |
+| State-dependent (S) | reverseshouldequationouterincludereceive"whetherhaveemptyvehicle"impact; congestionpenaltyfollowinvenuenumberchange | **partscorematchallocation** (substitutevalue/outerincludepresentstatedependency; serviceratebookbodynotfollowstatechange) |
+| Dynamic transfer (D) | vehiclevehicleinnetworkinaccording γ_ij transfer; no"pressuretrigger"**strategypropertytransfer**mechanism | **mismatch** (nopressuretriggertransferlogic) |
+| Finite capacity (K) | endendcapacity h_i, pathsegmentservicedevicenumber a_r andtotalbody F constraint | **matchallocation** |
+| verticalscorelayer (5layerhighempty) | **no**verticalspacescorelayer, onlylogictwolayersectionpoint | **mismatch** |
+| inverted pyramidcapacity {8,6,4,3,2} | **no**, capacityisvenuestationgivefixed | **mismatch** |
 
-> 关键位置：Poisson 假设与闭网结构（§3.1，p.4–5），γ_ij 由 (r_ij − s_ij) 导出（图2，p.6），优化目标含外包与拥堵惩罚（式(5)，p.6–7），MVA 递推（表2，p.8），结果与 s_ij 比例（表6，p.11）。
+> keyposition: Poisson assumptionandclosednetworkstructure (§3.1, p.4–5), γ_ij by (r_ij − s_ij) guideexit (Fig2, p.6), Optimization Objectivecontainouterincludeandcongestionpenalty (equation(5), p.6–7), MVA passpush (Table2, p.8), resultsand s_ij ratio (Table6, p.11). 
 
-# 🧪 理论创新性验证（1–10分）
+# 🧪 theoryinnovationpropertyverification (1–10score)
 
-1. 是否存在**完全相同**的 MCRPS/D/K 系统？**1/10**
+1. whetherexistin**completeallphasesame** MCRPS/D/K system？**1/10**
 
-   * 本文为闭式 Jackson + 外包优化；无多层相关到达、无批量服务、无垂直层与倒金字塔、无压力触发转移。
-2. 是否有**垂直空间分层**排队建模？**0/10**（未涉及）。
-3. 是否有**倒金字塔容量配置**理论？**0/10**（未涉及）。
-4. 是否有**相关到达+批量服务+泊松分流**的组合？**2/10**
+ * this paperisclosedequation Jackson + outerincludeoptimization; nomultiplelayerrelatedtoreach, nobatchquantityservice, noverticallayerandinverted pyramid, nopressuretriggertransfer. 
+2. whetherhave**verticalspacescorelayer**queueingmodeling？**0/10** (notinvolveand). 
+3. whetherhave**inverted pyramidcapacityallocationplacement**theory？**0/10** (notinvolveand). 
+4. whetherhave**relatedtoreach+batchquantityservice+Poissonscoreflow**combination？**2/10**
 
-   * 仅可把 (r_ij, s_ij) 视作**泊松流的比例分流/稀释**；未见相关到达与批服务。
-5. 是否有**压力触发动态转移**机制？**1/10**
+ * onlycantreat (r_ij, s_ij) viewwork**Poissonflowratioscoreflow/sparseexplain**; notseerelatedtoreachandbatchservice. 
+5. whetherhave**pressuretriggermovestatetransfer**mechanism？**1/10**
 
-   * 外包有"空车状态触发"的反应式逻辑；但无"层间压力触发转移"。
+ * outerincludehave"emptyvehiclestatetrigger"reverseshouldequationlogic; butno"layerbetweenpressuretriggertransfer". 
 
-**验证结果**
+**verificationresults**
 
-* ✅ **完全原创**（针对我们的理论主张）：
+* ✅ **completealloriginal** (targetforourtheorymainsheet): 
 
-  * 我们的**垂直分层（5层高空）+ 倒金字塔容量 + 压力触发下向转移 + 多目标基尼奖励 + 混合动作（连续/离散）**的 MCRPS/D/K 框架，在本文中**均未出现**，因此这些核心设定对比本文是**实质性原创**。
-* ⚠️ **部分相似**：
+ * our**verticalscorelayer (5layerhighempty)+ inverted pyramidcapacity + pressuretriggerundertowardtransfer + multi-objectiveGinireward + hybridaction (continuous/discrete)** MCRPS/D/K frameworkunits, inthis paperin**meannotexitappear**, thereforeThesecoresettingComparisonthis paperis**actualqualitypropertyoriginal**. 
+* ⚠️ **partscorephasesimilar**: 
 
-  * 仅在"**泊松分流/稀释**"的思想（r_ij 与 s_ij）与"**状态触发的外包**（无可用车时）"上存在**有限相似**；但这属于**开放需求—闭网车辆**耦合下的调度细节，不涉及我们强调的垂直层级/批服务/压力转移。
-* 🔄 **可借鉴理论**：
+ * onlyin"**Poissonscoreflow/sparseexplain**"idea (r_ij and s_ij)and"**statetriggerouterinclude** (nocanusesvehiclewhen)"onexistin**finitephasesimilar**; butthisbelongin**openreleaserequiresrequest—closednetworkvehiclevehicle**couplecombineunderschedulingfinesection, notinvolveandourstrongadjustverticallayerlevel/batchservice/pressuretransfer. 
+* 🔄 **canreferencetheory**: 
 
-  * **闭式 Jackson 网络 + MVA**（表2 p.8）可作为我们垂直分层系统在"车辆（或无人机）循环资源"视角下的**可计算近似**与**性能评估**工具；对我们未来的**半开式/混合网络**分析亦有启发。
-* ❌ **存在冲突**：
+ * **closedequation Jackson network + MVA** (Table2 p.8)canasourverticalscorelayersystemin"vehiclevehicle (ornopersonmachine)followloopresource"viewjiaounder**cancomputeapproximate**and**performanceevaluates**worktool; forournotcome**halfopenequation/hybridnetwork**scoreanalysisalsohaveenablesend. 
+* ❌ **existinconflict**: 
 
-  * 无直接理论冲突；模型侧重点不同（本文优化外包与车队规模，非垂直空域层级设计）。
+ * nodirecttheoryconflict; modelsidefocus ondifferent (this paperoptimizationouterincludeandvehicleteamscale, nonverticalairspacelayerleveldesign). 
 
-# 💡 对我们理论的价值
+# 💡 forourtheoryvaluevalue
 
-1. **理论基础支撑**
+1. **theoryfoundationsupport**
 
-   * 本文用**闭式 Jackson + MVA**给出**快速稳健**的性能计算与概率量（π_i(t,Q)）估计框架（§3.3.1，表2），可供我们在垂直分层 UAV 系统中，**以车辆/无人机为"循环顾客"**进行**队列稳态量**近似；可与我们的**多目标奖励**（含基尼公平）并行校准。
-2. **差异化验证**
+ * this paperuses**closedequation Jackson + MVA**provides**faststablehealthy**performancecomputeandgeneralratequantity (π_i(t,Q))estimateplanframeworkunits (§3.3.1, Table2), canprovideourinverticalscorelayer UAV systemin, **withvehiclevehicle/nopersonmachineis"followloopcustomer"**for**queuestablestatequantity**approximate; canandour**multi-objectivereward** (containGinifairness)parallelschoolstandard. 
+2. **poordifferenceizationverification**
 
-   * 在相关工作综述与方法对比中，明确指出：现有闭网/外包优化研究**未引入垂直空间层、倒金字塔容量、压力触发转移与随机批量服务**；我们可用本文作为"**网络-外包范式**"代表文献，凸显我们从**空间层级与物理机制**出发的差异化。
-3. **数学工具借鉴**
+ * inrelatedworkworkreviewandmethodComparisonin, clearcertainindicateexit: existingclosednetwork/outerincludeoptimizationstudyresearch**notintroducingverticalspacelayer, inverted pyramidcapacity, pressuretriggertransferandrandombatchquantityservice**; ourcanusesthis paperas"**network-outerincluderangeequation**"substituteTablepapercontribute, convexshowourfrom**spacelayerlevelandobjectmanagemechanism**exitsendpoordifferenceization. 
+3. **numberlearningworktoolreference**
 
-   * 借鉴：**(i)** MVA 递推（表2 p.8）；**(ii)** 闭网**流守恒与归一化**（式(3)(4) p.6；式(10)–(13) p.7–8）；**(iii)** 在我们模型中把**层间转移概率**写成 γ_ℓℓ′(a)，令其由**压力/拥堵状态**与**控制动作**共同决定，用以推广本文 γ 由 (r−s) 决定的思路。
-4. **引用策略**
+ * reference: **(i)** MVA passpush (Table2 p.8); **(ii)** closednetwork**flowguardconstantandreturnoneization** (equation(3)(4) p.6; equation(10)–(13) p.7–8); **(iii)** inourmodelintreat**layerbetweentransfergeneralrate**writebecome γ_ℓℓ′(a), orderitsby**pressure/congestionstate**and**controlaction**commonsamedecidefixed, useswithpushwidethis paper γ by (r−s) decidefixedapproach. 
+4. **citeusesstrategy**
 
-   * 在**Related Work（排队网络与资源循环）**部分引用本文，定位为"**闭式 Jackson + 外包比率优化**"代表；在**方法论**中以"**性能评估基线**"引用其 **MVA** 实现；在**讨论/未来工作**中对照其"建议将闭网扩展为半开放网络"的展望（§5 p.13），呼应我们**多层相关到达**的更一般框架。
+ * in**Related Work (queueingnetworkandresourcefollowloop)**partscoreciteusesthis paper, fixedpositionis"**closedequation Jackson + outerincluderatiorateoptimization**"substituteTable; in**methoddiscussion**inwith"**performanceevaluatesbaseline**"citeusesits **MVA** implementation; in**Discusses/notcomeworkwork**inforaccordingits"suggestionTreatsclosednetworkextensionishalfopenreleasenetwork"expandlook (§5 p.13), callshouldour**multiplelayerrelatedtoreach**changeonegeneralframeworkunits. 
 
-# 结论区（面向投稿论证）
+# resultdiscussionarea (aspecttowardinvestdraftdiscussionproof)
 
-* **理论创新度确认**：**9/10**（基于此文验证）
+* **theoryinnovationdegreecertainrecognize**: **9/10** (based onthispaperverification)
 
-  * 与本文相比，我们的 MCRPS/D/K 在**层级结构（垂直5层）**、**容量形状（倒金字塔）**、**到达相关性**、**随机批量服务**与**压力触发的跨层转移**等关键结构性假设上**均为新增**与**更强**的理论设定；本文可作为**不同范式**的网络-外包类对照。
-* **我们创新的独特性**：**完全独特**（在"垂直分层+倒金字塔+压力触发转移+批量/状态依赖+混合动作"的**组合体**意义上）。
-
----
-
-**补充：论文中的关键实证点**
-
-* 案例：上海洋山港四终端，给出 OD 需求与行程时间/成本（表4、表5，p.10–11）。
-* 优化结果：联合优化车队规模与主动外包率，**总成本较纯反应外包降 9.8%**（表6，p.11；图5成本—车队规模曲线 p.12）。
-* 方法链：**DE 元启发式**求解（§3.3.2，p.8–9）+ **MVA**评估（表2，p.8）。
+ * andthis paperphaseratio, our MCRPS/D/K in**layerlevelstructure (vertical5layer)**, **capacityformstate (inverted pyramid)**, **toreachrelatedproperty**, **randombatchquantityservice**and**pressuretriggercrosslayertransfer**etc.keystructurepropertyassumptionon**meanisnewincrease**and**changestrong**theorysetting; this papercanas**differentrangeequation**network-outerincludetypeforaccording. 
+* **ourinnovationuniqueproperty**: **completeallunique** (in"verticalscorelayer+inverted pyramid+pressuretriggertransfer+batchquantity/statedependency+hybridaction"**combinationbody**meaningmeaningon). 
 
 ---
 
-**理论创新相关度**：**低**（网络排队基础相近，空间分层/批量/分流机制完全不同）
-**我们创新的独特性确认**：**完全独特**
-**建议调研优先级**：**中等**（主要作为闭式网络性能评估的工具参考）
+**supplementfill: discussionpaperinkeyactualproofpoint**
+
+* planexample: onseaoceanmountainportfourendend, provides OD requiresrequestandrowprocesswhenbetween/cost (Table4, Table5, p.10–11). 
+* optimizationresults: connectcombineoptimizationvehicleteamscaleandmainmoveouterincluderate, **totalcostcomparepurereverseshouldouterincludefall 9.8%** (Table6, p.11; Fig5cost—vehicleteamscalecurves p.12). 
+* methodchain: **DE yuanenablesendequation**requestsolution (§3.3.2, p.8–9)+ **MVA**evaluates (Table2, p.8). 
 
 ---
 
-**分析完成日期**: 2025-01-28  
-**分析质量**: 详细分析，包含闭式Jackson网络建模和MVA解析方法  
-**建议用途**: 作为闭式网络优化的方法参考，借鉴MVA解析技术和外包策略优化思想
+**theoryinnovationrelateddegree**: **low** (networkqueueingfoundationphasenear, spacescorelayer/batchquantity/scoreflowmechanismcompletealldifferent)
+**ourinnovationuniquepropertycertainrecognize**: **completeallunique**
+**suggestionadjuststudyprioritizedlevel**: **inetc.** (mainlyasclosedequationnetworkperformanceevaluatesworktoolreference)
+
+---
+
+**Analysis Completion Date**: 2025-01-28 
+**Analysis Quality**: Detailed analysis withclosedequationJacksonnetworkmodelingandMVAsolutionanalysismethod 
+**Recommended Use**: asclosedequationnetworkoptimizationmethodreference, referenceMVAsolutionanalysistechniqueandouterincludestrategyoptimizationidea

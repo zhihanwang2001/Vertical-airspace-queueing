@@ -1,183 +1,183 @@
-# S4文献分析：电力物联网公平感知任务卸载与负载均衡
+# S4Literature Analysis: electricforceobjectconnectnetworkfairnessfeelknowtaskunloadloadandload balancing
 
-**论文全引**: Xue Li, Xiaojuan Chen, Guohua Li, "Fairness-aware task offloading and load balancing with delay constraints for Power Internet of Things," Ad Hoc Networks, vol. 153, 2024, 103333, DOI: 10.1016/j.adhoc.2023.103333.
+**Full Citation**: Xue Li, Xiaojuan Chen, Guohua Li, "Fairness-aware task offloading and load balancing with delay constraints for Power Internet of Things," Ad Hoc Networks, vol. 153, 2024, 103333, DOI: 10.1016/j.adhoc.2023.103333.
 
 ---
 
-# 📄 论文基本信息
+# 📄 Paper Basic Information
 
 * **URL**: https://doi.org/10.1016/j.adhoc.2023.103333
-* **期刊/会议**: *Ad Hoc Networks*（Elsevier）
-* **发表年份**: 2024（Online 2023-10-25）
-* **优化类型**: **公平性约束的负载均衡与任务卸载**（两层协同边缘网络 + FDG问题 + LWOA算法）
+* **journal/conference**: *Ad Hoc Networks* (Elsevier)
+* **sendTableYear**: 2024 (Online 2023-10-25)
+* **optimizationtypetype**: **fairnesspropertyconstraintload balancingandtaskunloadload** (twolayercooperativeedgeedgenetwork + FDGproblem + LWOAalgorithm)
 
 ---
 
-# ⚙️ 系统优化技术分析
+# ⚙️ systemoptimizationtechniquescoreanalysis
 
-## 优化目标设计
+## Optimization Objectivedesign
 
-**单目标优化（主目标+约束）**
+**single-objectiveoptimization (mainobjective+constraint)**
 
-* **优化指标**: 最小化**全系统时间平均配置差异**（F̄），基于**Theil指数的可分解形式**（群间+群内）
-* **约束条件**: 
-  - 队列稳定性约束（C1）
-  - 多任务长期延迟约束，引入补偿因子βk（C2）
-  - 二进制均衡决策γ与计算能力上限（C3-C6）
-* **优化方法**: **Lyapunov优化**将长期问题转换为漂移+罚项最小化，参数V权衡稳定性-公平性
+* **optimizationMetrics**: minimize**allsystemwhenbetweenaverageallocationplacementpoordifference** (F̄), based on**Theilindicatenumbercanscoresolutionformequation** (clusterbetween+clusterinner)
+* **constraintcondition**: 
+ - queuestablepropertyconstraint (C1)
+ - multipletaskgrowperioddelaydelayconstraint, introducingsupplementcompensatefactorβk (C2)
+ - twoentercontrolmeanbalancedecisionγandcomputecapabilityonlimit (C3-C6)
+* **optimizationmethod**: **Lyapunovoptimization**Treatsgrowperiodproblemturnchangeisdriftshift+penaltyitemminimize, parameternumberVtradeoffstableproperty-fairnessproperty
 
-**Theil指数公平性度量**
+**Theilindicatenumberfairnesspropertydegreequantity**
 
-* **群间/群内分解**: F = Fb（群间）+ Fw（群内），精确刻画子系统内AP/ES不均衡与子系统间不均衡
-* **时间平均目标**: min F̄ = (1/T)∑F(t)，确保长期公平性
-* **动态权衡**: 通过参数V在队列稳定性与公平性之间平衡
+* **clusterbetween/clusterinnerscoresolution**: F = Fb (clusterbetween)+ Fw (clusterinner), precisecertainmomentdrawsubsysteminnerAP/ESnotmeanbalanceandsubsystembetweennotmeanbalance
+* **whenbetweenaverageobjective**: min F̄ = (1/T)∑F(t), certainmaintaingrowperiodfairnessproperty
+* **movestatetradeoff**: throughparameternumberVinqueuestablepropertyandfairnesspropertyofbetweenaveragebalance
 
-## 调度策略设计
+## schedulingstrategydesign
 
-**两层协同边缘架构**
+**twolayercooperativeedgeedgearchitecture**
 
-* **任务分割机制**: 任务在AP与ES间按比例α切分，允许ES邻居转移（γ参数控制）
-* **反乒乓约束**: 避免二次转发，防止"乒乓效应"
-* **队列建模**: 延迟分解为排队+计算+传输三部分
+* **taskscorecutmechanism**: taskinAPandESbetweenaccordingratioαswitchscore, allowallowESneighborresidetransfer (γparameternumbercontrol)
+* **reverseping-pongconstraint**: avoidtwotimesturnsend, preventstop"ping-pongefficiencyshould"
+* **queuemodeling**: delaydelayscoresolutionisqueueing+compute+transmittransportthreepartscore
 
-**动态调度机制**
+**movestateschedulingmechanism**
 
-* **触发方式**: 时间触发+状态触发（基于当前队列Q/H、信道、工作量状态）
-* **虚拟队列**: 延迟约束通过虚拟队列H转化为队列稳定性问题
-* **增量调整**: 限于相邻ES均衡，MES接收NES转入后不再转出
+* **triggermethodequation**: whenbetweentrigger+statetrigger (based onwhenfirstqueueQ/H, informationchannel, workworkquantitystate)
+* **virtualqueue**: delaydelayconstraintthroughvirtualqueueHturnizationisqueuestablepropertyproblem
+* **increasequantityadjust**: limitinphaseneighborESmeanbalance, MESreceivedNESturninputbacknotagainturnexit
 
-## LWOA求解算法
+## LWOArequestsolutionalgorithm
 
-**算法框架**
+**Algorithm Framework**
 
-* **理论基础**: 证明时隙级问题P2为NP-hard（由多背包MKP归约）
-* **WOA优化**: 鲸鱼优化算法搜索α/γ/f的联合解
-* **Lyapunov集成**: 漂移+罚项驱动的在线优化框架
+* **theoryfoundation**: proofclearwhengaplevelproblemP2isNP-hard (bymultiplebackincludeMKPreturnapproximately)
+* **WOAoptimization**: whaleoptimizationalgorithmSearchα/γ/fconnectcombinesolution
+* **Lyapunovsetbecome**: driftshift+penaltyitemdrivemoveinlineoptimizationframeworkunits
 
-**性能特征**
+**performancefeature**
 
-* **收敛性**: 三阶段搜索（收缩/螺旋/全局）保证解质量
-* **计算复杂度**: 单时隙约0.69s（相比其他元启发式算法）
-* **适应性**: 基于当前系统状态动态调整决策
+* **receiveconvergeproperty**: threestagesegmentSearch (receiveshrink/spiral/allbureau)maintainproofsolutionqualityquantity
+* **Computational Complexity**: singlewhengapapproximately0.69s (phaseratioOtheryuanenablesendequationalgorithm)
+* **suitableshouldproperty**: based onwhenfirstsystemstatemovestateadjustdecision
 
-## 公平性与负载均衡
+## fairnesspropertyandload balancing
 
-**Theil指数优势**
+**Theilindicatenumbersuperiorpotential**
 
-* **可分解性**: 清晰区分层内公平与层间公平
-* **敏感性**: 对资源分配不均衡更敏感
-* **层次化**: 支持多层系统的公平性分析
+* **canscoresolutionproperty**: clearclearareascorelayerinnerfairnessandlayerbetweenfairness
+* **sensitivefeelproperty**: forresourcescoreallocationnotmeanbalancechangesensitivefeel
+* **layertimesization**: supportmultiplelayersystemfairnesspropertyscoreanalysis
 
-**实验验证**
+**experimentsverification**
 
-* **性能提升**: FDG vs NonB方案
-  - 时间平均配置差异↓10%和35%
-  - 子系统内配置差异↓5%和6% 
-  - 时间平均延迟↓约5%和7%
-  - 队列积压↓约30%和40%
-
----
-
-# 🔄 与我们MCRPS/D/K系统对比
-
-**我们的系统特征**
-
-* **7维奖励**: 吞吐/时延/公平(Gini)/稳定/安全/传输效益/拥塞惩罚
-* **垂直分层**: 5层倒金字塔容量[8,6,4,3,2]
-* **压力触发**: 跨层动态转移机制
-* **实时优化**: 29维状态空间 + DRL混合动作
-
-## 系统架构对比（1–10分）
-
-* **优化目标创新**: **7/10**（Theil指数可分解性强，但单目标+约束模式，无显式多目标结构）
-* **公平性度量创新**: **8/10**（Theil指数的群内/群间分解能力超越单一Gini指标，值得融合）
-* **动态调度创新**: **7/10**（两层协同+虚拟队列机制完整，但缺少跨层（>2层）扩展能力）
-* **负载均衡创新**: **8/10**（邻域均衡+反乒乓约束设计巧妙，可直接借鉴）
-* **实时性能创新**: **5/10**（LWOA约0.69s/时隙，与毫秒级要求有差距）
-
-## 技术路线对比
-
-* **他们解决的问题**: 电力物联边缘计算的公平性约束任务卸载与负载均衡
-* **我们解决的问题**: UAV垂直空域的多层队列负载均衡与跨层转移优化
-* **方法论差异**: 他们用**Lyapunov+WOA元启发式**；我们用**多目标DRL+压力触发控制**
-* **应用场景**: 他们面向电力IoT边缘协同；我们面向空域多层网络实时调度
-
-## 实用性分析
-
-* **部署复杂度**: **中等**（需要两层边缘架构、虚拟队列管理、参数调优）
-* **扩展性**: **中等**（支持多ES协同，但受限于两层结构）
-* **实时性**: **准实时**（0.69s时隙级优化，非毫秒级）
-* **可靠性**: **高**（理论证明+仿真验证，性能提升显著）
+* **performanceproposerise**: FDG vs NonBmethodplan
+ - whenbetweenaverageallocationplacementpoordifference↓10%and35%
+ - subsysteminnerallocationplacementpoordifference↓5%and6% 
+ - whenbetweenaveragedelaydelay↓approximately5%and7%
+ - queueproductpressure↓approximately30%and40%
 
 ---
 
-# 💡 应用价值评估
+# 🔄 andourMCRPS/D/KsystemComparison
 
-## 技术借鉴价值（可直接嵌入）
+**Our System Features**
 
-1. **Theil指数公平性**: 在现有Gini基础上增加Theil(Fth)分量，专门约束"层内/层间"公平
-2. **反乒乓约束**: 邻域均衡只转一次的约束机制，防止跨层转移震荡
-3. **虚拟队列机制**: 将延迟约束转化为队列稳定性问题的技巧
-4. **漂移+罚项框架**: Lyapunov优化的权衡机制可作为DRL奖励设计参考
+* **7dimensionalreward**: throughput/whendelay/fairness(Gini)/stable/safeall/transmittransportefficiencybenefit/congestionpenalty
+* **verticalscorelayer**: 5layerinverted pyramidcapacity[8,6,4,3,2]
+* **pressuretrigger**: crosslayermovestatetransfermechanism
+* **actualwhenoptimization**: 29dimensionalstatespace + DRLhybridaction
 
-## 架构参考价值
+## systemarchitectureComparison (1–10score)
 
-* **两层协同模式**: AP/ES划分与队列建模可作为我们"层-单元"抽象样板
-* **参数化权衡**: V参数在稳定性与公平性间的权衡机制
+* **Optimization Objectiveinnovation**: **7/10** (Theilindicatenumbercanscoresolutionpropertystrong, butsingle-objective+constraintmodelequation, noshowequationmulti-objectivestructure)
+* **fairnesspropertydegreequantityinnovation**: **8/10** (Theilindicatenumberclusterinner/clusterbetweenscoresolutioncapabilityexceedssingleoneGiniMetrics, valuegetfusioncombine)
+* **movestateschedulinginnovation**: **7/10** (twolayercooperative+virtualqueuemechanismcompletewhole, butlackfewcrosslayer (>2layer)extensioncapability)
+* **load balancinginnovation**: **8/10** (neighbordomainmeanbalance+reverseping-pongconstraintdesignclever, candirectreference)
+* **actualwhenperformanceinnovation**: **5/10** (LWOAapproximately0.69s/whengap, andhaosecondlevelrequirehavepoordistance)
 
-## 验证方法价值
+## techniquepathlineComparison
 
-* **多维度评估**: 群内/群间公平性、延迟、队列积压的综合评估框架
-* **对比基线**: FDG vs NonB的性能对比方法
+* **theysolutiondecideproblem**: electricforceobjectconnectedgeedgecomputefairnesspropertyconstrainttaskunloadloadandload balancing
+* **oursolutiondecideproblem**: UAVverticalairspacemultiplelayerqueueload balancingandcrosslayertransferoptimization
+* **methoddiscussionpoordifference**: theyuses**Lyapunov+WOAyuanenablesendequation**; ouruses**multi-objectiveDRL+pressuretriggercontrol**
+* **shouldusesscenario**: theyaspecttowardelectricforceIoTedgeedgecooperative; ouraspecttowardairspacemultiplelayernetworkactualwhenscheduling
 
-## 对比价值
+## actualusespropertyscoreanalysis
 
-* 作为**Lyapunov+元启发式**基线，能突出我们在**多目标+硬实时+跨层网络**方面的技术优势
-
-* **应用先进性**: **7/10**（理论-算法-仿真闭环完整，Theil分解创新，但时效性和规模化有提升空间）
-* **引用优先级**: **高**（公平性度量、调度机制、实验评估均可直接引用）
+* **partdeploycomplexdegree**: **inetc.** (requiresneedtwolayeredgeedgearchitecture, virtualqueuemanagement, parameternumberadjustsuperior)
+* **extensionproperty**: **inetc.** (supportmultipleEScooperative, butreceivelimitintwolayerstructure)
+* **actualwhenproperty**: **standardactualwhen** (0.69swhengapleveloptimization, nonhaosecondlevel)
+* **canrelyproperty**: **high** (theoryproofclear+simulationverification, performanceproposerisesignificantly)
 
 ---
 
-## 📚 Related Work 引用模板
+# 💡 shouldusesvaluevalueevaluates
 
-### 引用写法
+## Technical Reference Value (candirectembedding)
+
+1. **Theilindicatenumberfairnessproperty**: inexistingGinifoundationonincreaseaddTheil(Fth)scorequantity, specialgateconstraint"layerinner/layerbetween"fairness
+2. **reverseping-pongconstraint**: neighbordomainmeanbalanceonlyturnonetimesconstraintmechanism, preventstopcrosslayertransferoscillation
+3. **virtualqueuemechanism**: Treatsdelaydelayconstraintturnizationisqueuestablepropertyproblemskill
+4. **driftshift+penaltyitemframeworkunits**: LyapunovoptimizationtradeoffmechanismcanasDRLrewarddesignreference
+
+## architecturereferencevaluevalue
+
+* **twolayercooperativemodelequation**: AP/ESplanscoreandqueuemodelingcanasour"layer-singleyuan"abstractsampleboard
+* **parameterizedtradeoff**: Vparameternumberinstablepropertyandfairnesspropertybetweentradeoffmechanism
+
+## verificationmethodvaluevalue
+
+* **multipledimensionaldegreeevaluates**: clusterinner/clusterbetweenfairnessproperty, delaydelay, queueproductpressurecomprehensivecombineevaluatesframeworkunits
+* **Comparisonbaseline**: FDG vs NonBperformanceComparisonmethod
+
+## Comparisonvaluevalue
+
+* as**Lyapunov+yuanenablesendequation**baseline, canbreakthroughexitourin**multi-objective+hardenactualwhen+crosslayernetwork**methodaspecttechniquesuperiorpotential
+
+* **shouldusesfirstenterproperty**: **7/10** (theory-algorithm-simulationclosedloopcompletewhole, Theilscoresolutioninnovation, butwhenefficiencypropertyandscaleizationhaveproposerisespace)
+* **citeusesprioritizedlevel**: **high** (fairnesspropertydegreequantity, schedulingmechanism, experimentsevaluatesmeancandirectciteuses)
+
+---
+
+## 📚 Related Work citeusestemplate
+
+### citeuseswritemethod
 ```
 Recent research in edge computing has explored fairness-aware optimization for task offloading and load balancing. Li et al. developed a comprehensive framework combining two-tier cooperative edge networks with Theil index-based fairness measurement, formulating a Fairness and Delay Guaranteed (FDG) optimization problem solved through Lyapunov optimization and whale optimization algorithm (LWOA), achieving 10-35% reduction in allocation differences and 30-40% reduction in queue backlog [S4]. While their approach demonstrates excellent performance in edge computing scenarios through decomposable fairness metrics (within-group and between-group) and anti-ping-pong constraints for neighbor load balancing, it focuses on two-tier architectures with scalar optimization without the vertical spatial stratification, pressure-triggered inter-layer dynamics, and real-time multi-objective deep reinforcement learning optimization that characterize our MCRPS/D/K framework.
 ```
 
-### 创新对比
+### innovationComparison
 ```
 Unlike existing edge computing approaches that employ Lyapunov optimization with metaheuristic algorithms for two-tier load balancing and Theil index fairness [S4], our MCRPS/D/K theory introduces fundamental innovations: physical vertical airspace stratification with inverted pyramid capacity allocation, pressure-triggered dynamic transfers between altitude layers, and real-time multi-objective deep reinforcement learning optimization with Gini coefficient fairness measures, representing a paradigm shift from edge computing load balancing to spatial-capacity-aware vertical network management with autonomous adaptive control.
 ```
 
 ---
 
-## 🔑 关键技术组件总结
+## 🔑 keytechniquecomponenttotalresult
 
-### Theil指数公平性框架
-- **群间公平性**: Fb测量子系统间资源分配差异
-- **群内公平性**: Fw测量子系统内资源分配差异  
-- **可分解性**: F = Fb + Fw提供层次化公平性分析
+### Theilindicatenumberfairnesspropertyframeworkunits
+- **clusterbetweenfairnessproperty**: Fbtestquantitysubsystembetweenresourcescoreallocationpoordifference
+- **clusterinnerfairnessproperty**: Fwtestquantitysubsysteminnerresourcescoreallocationpoordifference 
+- **canscoresolutionproperty**: F = Fb + Fwprovidelayertimesizationfairnesspropertyscoreanalysis
 
-### LWOA优化算法
-- **Lyapunov框架**: 漂移+罚项将长期约束转化为时隙优化
-- **鲸鱼优化**: WOA搜索α/γ/f联合决策变量
-- **NP-hard证明**: 通过多背包问题归约的复杂度分析
+### LWOAoptimizationalgorithm
+- **Lyapunovframeworkunits**: driftshift+penaltyitemTreatsgrowperiodconstraintturnizationiswhengapoptimization
+- **whaleoptimization**: WOASearchα/γ/fconnectcombinedecisionchangequantity
+- **NP-hardproofclear**: throughmultiplebackincludeproblemreturnapproximatelycomplexdegreescoreanalysis
 
-### 两层协同架构
-- **任务分割**: α参数控制AP-ES任务分配比例
-- **邻域均衡**: γ参数控制ES间负载转移
-- **反乒乓约束**: 避免二次转发的稳定性机制
+### twolayercooperativearchitecture
+- **taskscorecut**: αparameternumbercontrolAP-EStask allocationratio
+- **neighbordomainmeanbalance**: γparameternumbercontrolESbetweenloadtransfer
+- **reverseping-pongconstraint**: avoidtwotimesturnsendstability mechanisms
 
-### 可直接借鉴的技术点
-1. **Theil分解公平性** → 我们的层内/层间公平性评估
-2. **反乒乓约束** → 我们的跨层转移稳定性设计  
-3. **虚拟队列技术** → 我们的约束转换机制
-4. **V参数权衡** → 我们的多目标权重自适应
+### candirectreferencetechniquepoint
+1. **Theilscoresolutionfairnessproperty** → ourlayerinner/layerbetweenfairnesspropertyevaluates
+2. **reverseping-pongconstraint** → ourcrosslayertransferstablepropertydesign 
+3. **virtualqueuetechnique** → ourconstraintturnchangemechanism
+4. **Vparameternumbertradeoff** → ourmulti-objectiveauthorityweightselfsuitableshould
 
 ---
 
-**分析完成日期**: 2025-01-28  
-**分析质量**: 详细分析，包含Theil指数框架和可直接使用的Related Work模板  
-**建议用途**: 作为公平性感知优化的重要参考，支撑我们公平性度量方法的技术先进性
+**Analysis Completion Date**: 2025-01-28 
+**Analysis Quality**: Detailed analysis withTheilindicatenumberframeworkunitsandcandirectusesRelated Worktemplate 
+**Recommended Use**: asfairnesspropertyfeelknowoptimizationimportantreference, supportourfairnesspropertydegreequantitymethodtechniquefirstenterproperty

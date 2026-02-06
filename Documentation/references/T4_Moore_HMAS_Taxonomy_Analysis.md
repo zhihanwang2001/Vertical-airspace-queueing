@@ -1,160 +1,160 @@
-# T4文献分析：分层多智能体系统的分类学
+# T4Literature Analysis: scorelayermultipleintelligentbodysystemscoretypelearning
 
-**论文全引**: Moore, D. J. (2025). "A Taxonomy of Hierarchical Multi-Agent Systems: Design Patterns, Coordination Mechanisms, and Industrial Applications." arXiv preprint arXiv:cs.MA/2025-08-19.
-
----
-
-## 📄 论文基本信息
-
-* **标题**：A Taxonomy of Hierarchical Multi-Agent Systems: Design Patterns, Coordination Mechanisms, and Industrial Applications（分层多智能体系统的分类学）
-* **作者**：David J. Moore（Houston, TX, USA）
-* **发表 venue**：arXiv（cs.MA），v1，2025-08-19（封面/摘要）
-* **年份**：2025 
-* **研究类型**：**综合集成/方法综述**（提出五维度 HMAS 分类学，映射典型协调机制与工业场景）
+**Full Citation**: Moore, D. J. (2025). "A Taxonomy of Hierarchical Multi-Agent Systems: Design Patterns, Coordination Mechanisms, and Industrial Applications." arXiv preprint arXiv:cs.MA/2025-08-19.
 
 ---
 
-# 🎯 核心贡献分析 (重要性: ⭐⭐⭐⭐⭐)
+## 📄 Paper Basic Information
 
-1. **主要创新点**
-
-* 提出**五轴分类学**：控制层级、信息流、角色/任务委派、时间层级、通信结构（Sec.2，pp.3-10），声称首次统一"结构-时间-通信"维度并联通经典协调机制与现代RL/LLM代理（摘要/导论）。
-* 构建**机制×轴的对照表**（Table 1，Sec.3，pp.10-13），涵盖CNP、拍卖、共识、分层/封建式MARL（FMH）、组织建模（GAIA/AGR）、平台（JADE/SPADE）。
-* 给出**工业应用纵览**：电力/能源、油气、仓储/物流、人-机协作（Sec.4，pp.16-22）。
-* 指出**开放挑战**：可解释性/信任、可扩展性与混合协同、LLM代理安全集成（Sec.5，pp.22-25）。
-
-2. **理论突破**
-
-* 非严格数学理论；属**概念-方法论框架**的系统化梳理，而非新的排队论或马氏过程模型。
-
-3. **技术突破**
-
-* 将**层级强化学习（FMH/选项）**、**分布式共识**、**市场/拍卖**与**组织范式**放入统一设计坐标系，明确与**信息流/时间尺度/通信拓扑**的耦合关系（Sec.2–3）。
-
-4. **方法论创新**
-
-* 提供**设计镜头**：如何依据五轴做体系结构与协调机制的"搭配选择"，并以工程案例验证其可操作性（Sec.2–4）。
+* **Title**: A Taxonomy of Hierarchical Multi-Agent Systems: Design Patterns, Coordination Mechanisms, and Industrial Applications (scorelayermultipleintelligentbodysystemscoretypelearning)
+* **Authors**: David J. Moore (Houston, TX, USA)
+* **Publication Venue**: arXiv (cs.MA), v1, 2025-08-19 (cover/abstract)
+* **Year**: 2025 
+* **studyresearchtypetype**: **comprehensivecombinesetbecome/methodreview** (proposesfivedimensionaldegree HMAS scoretypelearning, mappingclassictypecooperateadjustmechanismandworkindustryscenario)
 
 ---
 
-# 🔬 技术方法详解
+# 🎯 Core Contribution Analysis (Importance: ⭐⭐⭐⭐⭐)
 
-1. **问题建模**
+1. **mainlyinnovationpoint**
 
-* 目标是**对HMAS架构**给出分类法与设计指引；不建立具体排队网络或马尔可夫链模型。
+* proposes**fiveaxisscoretypelearning**: controllayerlevel, informationflow, roles/taskcommitteedispatch, whenbetweenlayerlevel, throughinformationstructure (Sec.2, pp.3-10), soundcallfirsttimessystemone"structure-whenbetween-throughinformation"dimensionaldegree andconnectthroughthroughclassiccooperateadjustmechanismandappearsubstituteRL/LLMsubstitutemanage (abstract/guidediscussion). 
+* build**mechanism×axisforaccordingTable** (Table 1, Sec.3, pp.10-13), covercoverCNP, auction, commonrecognize, scorelayer/sealbuildequationMARL (FMH), grouporganizemodeling (GAIA/AGR), averageplatform (JADE/SPADE). 
+* provides**workindustryshouldusesverticalview**: electricforce/cansource, oilgas, warehousestore/objectflow, person-machinecooperatework (Sec.4, pp.16-22). 
+* indicateexit**openreleasechallenge**: cansolutionexplainproperty/informationtask, canextensionpropertyandhybridcooperative, LLMsubstitutemanagesafeallsetbecome (Sec.5, pp.22-25). 
 
-2. **理论框架（与排队论相关关注）**
+2. **Theoretical Breakthrough**
 
-* 核心为**五轴分类学**：
+* nonstrictgridnumberlearningtheory; belong**concept-methoddiscussionframeworkunits**systemizationcombmanage, whilenonnewqueueingdiscussionorMarkovprocessmodel. 
 
-  * **控制层级**：集中/去中心/混合（2.1）
-  * **信息流**：自上而下/自下而上/同层点对点（2.2）
-  * **角色与任务委派**：固定/涌现（ROMA 等，2.3）
-  * **时间层级**：长/短时域分层（HTN、选项、FMH，2.4）
-  * **通信结构**：静态/动态网络（2.5）
-    → 为**调度与协同**建模提供组织学层面的"先验"，但**未涉及排队过程（到达/服务/容量）**的随机建模。
+3. **techniquebreakthroughbreak**
 
-3. **算法框架**
+* Treats**layerlevelstrongizationlearning (FMH/selectitem)**, **distributedcommonrecognize**, **marketvenue/auction**and**grouporganizerangeequation**releaseinputsystemonedesignsitstandardsystem, clearcertainand**informationflow/whenbetweenscaledegree/throughinformationtopology**couplecombinerelationship (Sec.2–3). 
 
-* **机制映射**：CNP/拍卖（中央经纪）、共识（P2P）、分层MARL（经理-工人/选项）、组织范式（GAIA/AGR）、多Agent平台（JADE/SPADE）（Sec.3, Table 1）。
+4. **methoddiscussioninnovation**
 
-4. **关键技术（3–5点）**
-
-* **层级-去中心混合控制**与**多源信息流合成**（2.1–2.2）。
-* **角色涌现/学习化分工**（ROMA等，2.3）。
-* **时间尺度分离**（HTN、选项、FMH；管理者慢、工人快，2.4）。
-* **动态通信图下的鲁棒共识与重构**（2.5）。
-
-5. **系统设计（状态/动作/奖励）**
-
-* 本文为**结构与协同层**综述，不定义具体 (S,A,R)；但建议将高层**目标/宏动作**与低层**原子动作**解耦，并配套**上行反馈+下行目标**（2.4-2.5, Sec.3）。
+* provide**designmirrorhead**: e.g.whatdependdatafiveaxisdobodysystemstructureandcooperateadjustmechanism"buildallocationselection", andwithworkprocessplanexampleverificationitscanoperationproperty (Sec.2–4). 
 
 ---
 
-# 📊 实验结果与性能
+# 🔬 Technical Method Details
 
-* **基准对比/数值提升/消融**：**无统一数值实验**；以案例论证（电网/油气/仓储/人机协作），强调可扩展、弹性与可解释需求。方法学为**设计学与机制映射**，非可重复数值基准。
-* **系统规模**：讨论从局部到大规模群体（智慧电网、仓储机器人群、无人机群等）的层级化实践，但**不给具体规模指标**。
-* **限制**：**缺少形式化性能上界/收敛证明**与**队列层面的流量-容量分析**；对UAV空域仅作宏观讨论。
+1. **Problem Modeling**
 
----
+* objectiveis**forHMASarchitecture**providesscoretypemethodanddesignindicatecite; notbuildestablishtoolbodyqueueingnetworkorMarkovcanhusbandchainmodel. 
 
-# 🔄 与我们 MCRPS/D/K 理论的关联分析
+2. **theoryframeworkunits (andqueueingdiscussionrelatedclosefocus)**
 
-### 直接相关性 (1–10)
+* coreis**fiveaxisscoretypelearning**: 
 
-* **排队论相关性**：**2/10**（无到达/服务/容量的随机过程建模）。
-* **垂直分层相关性**：**8/10**（提供**分层/时间/通信**的系统化坐标，对我们"垂直分层"有强结构学参考，但**非空间-排队意义**）。
-* **多目标优化相关性**：**5/10**（多目标在应用叙述中出现，但非数学建模主线）。
-* **DRL应用相关性**：**7/10**（层级/共识-MARL、CTDE 的讨论较充分）。
-* **UAV/空域管理相关性**：**6/10**（提及无人机/物流/交通的层级协同思路，但非空域排队化）。
+ * **controllayerlevel**: setin/removeincenter/hybrid (2.1)
+ * **informationflow**: selfonwhileunder/selfunderwhileon/samelayerpointforpoint (2.2)
+ * **rolesandtaskcommitteedispatch**: fixedfixed/surgeappear (ROMA etc., 2.3)
+ * **whenbetweenlayerlevel**: grow/shortenwhendomainscorelayer (HTN, selectitem, FMH, 2.4)
+ * **throughinformationstructure**: staticstate/movestatenetwork (2.5)
+ → is**schedulingandcooperative**modelingprovidegrouporganizelearninglayeraspect"firstverify", but**notinvolveandqueueingprocess (toreach/service/capacity)**randommodeling. 
 
-### 对我们理论创新的验证分析
+3. **Algorithm Framework**
 
-**我们的核心创新**（MCRPS/D/K + 垂直分层 + 倒金字塔容量 + 29维观测 + 基尼奖励）属于**排队网络+DRL耦合**。该文：
+* **mechanismmapping**: CNP/auction (incenterthroughdiscipline), commonrecognize (P2P), scorelayerMARL (throughmanage-workperson/selectitem), grouporganizerangeequation (GAIA/AGR), multipleAgentaverageplatform (JADE/SPADE) (Sec.3, Table 1). 
 
-* **是否存在类似的MCRPS/D/K排队系统？** 无 → **✅ 完全原创**（本文不触及"多层相关到达/随机批量/泊松分流/有限容量/压力触发跨层"的排队结构）。
-* **是否有垂直分层的排队理论建模？** 无（仅**组织/控制**层面的层级，不建模**空间/容量/队列**）→ **✅ 我们在排队层面的垂直建模保持原创**。
-* **是否有倒金字塔容量结构先例？** 无 → **✅ 原创**。
-* **相关到达+批量服务组合？** 无 → **✅ 原创**。
-* **压力触发动态转移机制？** 讨论"动态通信/动态角色/紧急模式"等概念，但**无排队-压力触发跨层转移的形式化** → **⚠️ 部分相似但本质不同**。
+4. **keytechnique (3–5point)**
 
-**综合判定**
+* **layerlevel-removeincenterhybridcontrol**and**multiplesourceinformationflowcombinebecome** (2.1–2.2). 
+* **rolessurgeappear/learningizationscorework** (ROMAetc., 2.3). 
+* **whenbetweenscaledegreescoredistance** (HTN, selectitem, FMH; managementpersonslow down, workpersonspeed up, 2.4). 
+* **movestatethroughinformationFigunderrobustcommonrecognizeandweightconstruct** (2.5). 
 
-* ✅ **完全原创**：我们在**队列-空域-跨层转移-容量结构**上的数学建模与奖励设计未见于该文。
-* 🔄 **相关工作可借鉴**：用其**五轴分类学**定位我们系统（控制=混合；信息流=下行目标/上行汇总；角色=固定+应急涌现；时间=宏/微分层；通信=静/动混合），并借其**机制基线**（CNP/拍卖/共识/分层MARL）构造**可解释对照策略**。
+5. **systemdesign (state/action/reward)**
 
----
-
-# 💡 对我们研究的价值
-
-### 引用价值 (⭐⭐⭐⭐⭐)
-
-1. **理论基础支撑**：将我们工作放入**HMAS设计空间**，论证"为什么需要分层/混合控制与多源信息流"以支撑**垂直空域调度**的可扩展性与可解释性（Sec.2）。
-2. **差异化对比**：指出该文**无排队-容量-到达/服务随机性**，凸显我们在**排队理论创新**与**UAV空域专属机制**上的独特性（Sec.1/5）。
-3. **方法借鉴**：把**CNP/拍卖/共识/分层MARL**做为**符号/规则基线**与**学习基线**，对照我们TD7/SALE策略（Table 1）。
-4. **创新验证**：采用其**时间层级/信息流**论述，解释我们为何使用"**高层优先+下行转移**"与"**上行状态汇总**"并行的设计。
-
-### 理论定位价值
-
-* **理论空白确认**：HMAS分类学**未覆盖排队网络层面的垂直建模**→我们填补"**垂直分层排队理论**"空白。
-* **创新程度评估**：在**排队/容量/到达-服务-分流**组合与**压力触发跨层**方面，我们的创新度**高**。
-* **学术影响预测**：将**HMAS架构学**与**队列-DRL一体化**结合，具备跨学科影响潜力（系统/运筹/强化学习/空域管理）。
-* **发表建议**：Related Work 先以本分类学文**界定分层与协同语境**，随后强调我们在**随机网络与容量几何**上的新理论；实验节加入**CNP/共识/分层MARL**可解释基线。
-
-### 具体建议
-
-1. **论文写作如何引用**：在**体系结构设计**小节引用Sec.2（五轴），在**方法基线**小节援引Sec.3（CNP/拍卖/共识/分层MARL），在**应用场景**小节对照Sec.4（UAV/物流）。
-2. **理论完善建议**：把我们的垂直层映射到五轴：**控制=混合**（顶层策略/底层执行）、**信息流=上下行闭环**、**角色=固定+应急角色提升**、**时间=宏/微分层**、**通信=动态网格+父子链路**，并给出**形式化接口**（层间消息/门控）。
-3. **实验对比建议**：新增**规则型基线**（CNP/分层拍卖/领导-跟随共识）与**分层MARL基线**（FMH/HC-MARL），评估在**延迟通信/拓扑切换/上行噪声**下的鲁棒性。
-4. **创新点突出**：明确"该文只给**组织分层**，我们给**排队-容量-跨层动力学**；该文建议**混合协同**，我们在此上**加入数学可证的容量几何与压力转移**"。
+* this paperis**structureandcooperativelayer**review, notfixedmeaningtoolbody (S,A,R); butsuggestionTreatshighlayer**objective/macroaction**andlowlayer**originalsubaction**solutioncouple, andallocationset**onrowreversefeedback+underrowobjective** (2.4-2.5, Sec.3). 
 
 ---
 
-# 🎨 理论创新差异化优势（基于此文对照）
+# 📊 Experimental Results and Performance
 
-1. **从组织分层到随机分层**：我们把**层级**具体化为**垂直空域的随机队列网络**（到达-服务-分流-容量-转移可证），超出该文的架构学层面。
-2. **容量几何与压力转移**：提出**倒金字塔容量**与**压力触发的下向转移**，形成**层间动力学律**，该文无对应抽象。
-3. **DRL-可解释耦合**：在其"层级/混合控制"的建议上，我们进一步以**基尼公平等多目标奖励**与**TD7/SALE**实现高维可学、可解释的调度策略。
-
----
-
-# 📋 核心要点摘录（用于引用）
-
-1. **五轴分类学定义与动机**（控制/信息/角色/时间/通信），Sec.2，pp.3-10。
-2. **控制层级：集中-去中心-混合的权衡**，Sec.2.1，pp.3-4（CNP、FMH示例）。
-3. **信息流：自上而下与自下而上闭环 + 同层P2P**，Sec.2.2，pp.4-6。
-4. **机制×轴映射（Table 1）**：CNP/拍卖/共识/分层MARL/组织/平台，Sec.3，pp.10-13。
-5. **开放挑战**：可解释、规模化、LLM集成的层级安全与对齐，Sec.5，pp.22-25。
+* **baselineComparison/numbervalueproposerise/Ablation**: **nosystemonenumbervalueexperiments**; withplanexamplediscussionproof (electricnetwork/oilgas/warehousestore/personmachinecooperatework), strongadjustcanextension, elasticpropertyandcansolutionexplainrequiresrequest. methodlearningis**designlearningandmechanismmapping**, noncanweightrepeatnumbervaluebaseline. 
+* **System Scale**: Discussesfromlocaltolargescaleclusterbody (wisdomelectricnetwork, warehousestoremachinedevicepersoncluster, nopersonmachineclusteretc.)layerlevelizationactualpractice, but**notgivetoolbodyscaleMetrics**. 
+* **limitation**: **lackfewFormalizesperformanceonboundary/receiveconvergeproofclear**and**queuelayeraspectflowquantity-capacityscoreanalysis**; forUAVairspaceonlyworkmacroobserveDiscusses. 
 
 ---
 
-**理论创新相关度**：**中**（架构/协同层强，排队层弱）
-**我们创新的独特性确认**：**完全独特**（就**MCRPS/D/K与垂直排队-容量-压力转移**而言）
-**建议调研优先级**：**重要**（用于**Related Work/方法基线/实验对照**的支撑与定位）
+# 🔄 andour MCRPS/D/K theoryassociationscoreanalysis
+
+### directrelatedproperty (1–10)
+
+* **queueingdiscussionrelatedproperty**: **2/10** (notoreach/service/capacitystochastic processmodeling). 
+* **verticalscorelayerrelatedproperty**: **8/10** (provide**scorelayer/whenbetween/throughinformation**systemizationsitstandard, forour"verticalscorelayer"havestrongstructurelearningreference, but**nonspace-queueingmeaningmeaning**). 
+* **multi-objectiveoptimizationrelatedproperty**: **5/10** (multi-objectiveinshouldusesnarratedescriptioninexitappear, butnonnumberlearningmodelingmainline). 
+* **DRLshouldusesrelatedproperty**: **7/10** (layerlevel/commonrecognize-MARL, CTDE Discussescomparefillscore). 
+* **UAV/airspacemanagementrelatedproperty**: **6/10** (proposeandnopersonmachine/objectflow/exchangethroughlayerlevelcooperativeapproach, butnonairspacequeueingization). 
+
+### forourtheoryinnovationverificationscoreanalysis
+
+**ourcoreinnovation** (MCRPS/D/K + verticalscorelayer + inverted pyramidcapacity + 29dimensionalobservation + Ginireward)belongin**queueingnetwork+DRLcouplecombine**. thispaper: 
+
+* **whetherexistintypesimilarMCRPS/D/Kqueueingsystem？** no → **✅ completealloriginal** (this papernottouchand"multiplelayerrelatedtoreach/randombatchquantity/Poissonscoreflow/finitecapacity/pressuretriggercrosslayer"queueingstructure). 
+* **whetherhaveverticalscorelayerqueueingtheorymodeling？** no (only**grouporganize/control**layeraspectlayerlevel, notmodeling**space/capacity/queue**)→ **✅ ourinqueueinglayeraspectverticalmodelingmaintainholdoriginal**. 
+* **whetherhaveinverted pyramidcapacitystructurefirstexample？** no → **✅ original**. 
+* **relatedtoreach+batchquantityservicecombination？** no → **✅ original**. 
+* **pressuretriggermovestatetransfermechanism？** Discusses"movestatethroughinformation/movestateroles/tighturgentmodelequation"etc.concept, but**noqueueing-pressuretriggercrosslayertransferFormalizes** → **⚠️ partscorephasesimilarbutbookqualitydifferent**. 
+
+**comprehensivecombinejudgefixed**
+
+* ✅ **completealloriginal**: ourin**queue-airspace-crosslayertransfer-capacitystructure**onnumberlearningmodelingandrewarddesignnotseeinthispaper. 
+* 🔄 **relatedworkworkcanreference**: usesits**fiveaxisscoretypelearning**fixedpositionoursystem (control=hybrid; informationflow=underrowobjective/onrowconvergetotal; roles=fixedfixed+shouldurgentsurgeappear; whenbetween=macro/microscorelayer; throughinformation=static/movehybrid), andborrowits**mechanismbaseline** (CNP/auction/commonrecognize/scorelayerMARL)construct**cansolutionexplainforaccordingstrategy**. 
 
 ---
 
-**分析完成日期**: 2025-01-28  
-**分析质量**: 详细分析，包含五轴分类学和层级协调机制  
-**建议用途**: 作为HMAS架构设计的理论基础，借鉴五轴分类学和机制映射框架
+# 💡 forourstudyresearchvaluevalue
+
+### citeusesvaluevalue (⭐⭐⭐⭐⭐)
+
+1. **theoryfoundationsupport**: Treatsourworkworkreleaseinput**HMASdesignspace**, discussionproof"iswhatrequiresneedscorelayer/hybridcontrolandmultiplesourceinformationflow"withsupport**verticalairspacescheduling**canextensionpropertyandcansolutionexplainproperty (Sec.2). 
+2. **poordifferenceizationComparison**: indicateexitthispaper**noqueueing-capacity-toreach/servicerandomproperty**, convexshowourin**queueingtheoryinnovation**and**UAVairspacespecialbelongmechanism**onuniqueproperty (Sec.1/5). 
+3. **methodreference**: treat**CNP/auction/commonrecognize/scorelayerMARL**dois**symbolnumber/rulesbaseline**and**learningbaseline**, foraccordingourTD7/SALEstrategy (Table 1). 
+4. **innovationverification**: adoptingits**whenbetweenlayerlevel/informationflow**discussiondescription, solutionexplainouriswhatuses"**highlayerprioritized+underrowtransfer**"and"**onrowstateconvergetotal**"paralleldesign. 
+
+### theoryfixedpositionvaluevalue
+
+* **theoryemptywhitecertainrecognize**: HMASscoretypelearning**notcovercoverqueueingnetworklayeraspectverticalmodeling**→ourfillsupplement"**verticalscorelayerqueueingtheory**"emptywhite. 
+* **innovationprocessdegreeevaluates**: in**queueing/capacity/toreach-service-scoreflow**combinationand**pressuretriggercrosslayer**methodaspect, ourinnovationdegree**high**. 
+* **learningtechniqueimpactprediction**: Treats**HMASarchitecturelearning**and**queue-DRLonebodyization**resultcombine, possessescrosslearningscienceimpactpotentialforce (system/operateplan/strongizationlearning/airspacemanagement). 
+* **sendTablesuggestion**: Related Work firstwithbookscoretypelearningpaper**boundaryfixedscorelayerandcooperativelanguageenvironment**, followbackstrongadjustourin**randomnetworkandcapacitygeometric**onnewtheory; experimentssectionaddinput**CNP/commonrecognize/scorelayerMARL**cansolutionexplainbaseline. 
+
+### toolbodysuggestion
+
+1. **discussionpaperwriteworke.g.whatciteuses**: in**bodysystemstructuredesign**sectionciteusesSec.2 (fiveaxis), in**methodbaseline**sectionaidciteSec.3 (CNP/auction/commonrecognize/scorelayerMARL), in**shouldusesscenario**sectionforaccordingSec.4 (UAV/objectflow). 
+2. **theorycompleteimprovesuggestion**: treatourverticallayermappingtofiveaxis: **control=hybrid** (toplayerstrategy/bottomlayerexecuterow), **informationflow=onunderrowclosedloop**, **roles=fixedfixed+shouldurgentrolesproposerise**, **whenbetween=macro/microscorelayer**, **throughinformation=movestategrid+fathersubchainpath**, andprovides**Formalizesreceiveport** (layerbetweendisappearinformation/gating). 
+3. **experimentsComparisonsuggestion**: newincrease**rulestypebaseline** (CNP/scorelayerauction/leadguide-followfollowcommonrecognize)and**scorelayerMARLbaseline** (FMH/HC-MARL), evaluatesin**delaydelaythroughinformation/topologyswitchchange/onrownoisesound**underrobustproperty. 
+4. **innovationpointbreakthroughexit**: clearcertain"thispaperonlygive**grouporganizescorelayer**, ourgive**queueing-capacity-crosslayerdynamics**; thispapersuggestion**hybridcooperative**, ourinthison**addinputnumberlearningcanproofcapacitygeometricandpressuretransfer**". 
+
+---
+
+# 🎨 theoryinnovationpoordifferenceizationsuperiorpotential (based onthispaperforaccording)
+
+1. **fromgrouporganizescorelayertorandomscorelayer**: ourtreat**layerlevel**toolbodyizationis**verticalairspacerandomqueuenetwork** (toreach-service-scoreflow-capacity-transfercanproof), exceedexitthispaperarchitecturelearninglayeraspect. 
+2. **capacitygeometricandpressuretransfer**: proposes**inverted pyramidcapacity**and**pressuretriggerundertowardtransfer**, formbecome**layerbetweendynamicslaw**, thispapernoforshouldabstract. 
+3. **DRL-cansolutionexplaincouplecombine**: inits"layerlevel/hybridcontrol"suggestionon, ourenteronestepswith**Ginifairnessetc.multi-objectivereward**and**TD7/SALE**implementationhighdimensionalcanlearning, cansolutionexplainschedulingstrategy. 
+
+---
+
+# 📋 Core Points Summary (forciteuses)
+
+1. **fiveaxisscoretypelearningfixedmeaningandmovemachine** (control/information/roles/whenbetween/throughinformation), Sec.2, pp.3-10. 
+2. **controllayerlevel: setin-removeincenter-hybridtradeoff**, Sec.2.1, pp.3-4 (CNP, FMHshowexample). 
+3. **informationflow: selfonwhileunderandselfunderwhileonclosedloop + samelayerP2P**, Sec.2.2, pp.4-6. 
+4. **mechanism×axismapping (Table 1)**: CNP/auction/commonrecognize/scorelayerMARL/grouporganize/averageplatform, Sec.3, pp.10-13. 
+5. **openreleasechallenge**: cansolutionexplain, scaleization, LLMsetbecomelayerlevelsafeallandforuniform, Sec.5, pp.22-25. 
+
+---
+
+**theoryinnovationrelateddegree**: **in** (architecture/cooperativelayerstrong, queueinglayerweak)
+**ourinnovationuniquepropertycertainrecognize**: **completeallunique** (then**MCRPS/D/Kandverticalqueueing-capacity-pressuretransfer**whilelanguage)
+**suggestionadjuststudyprioritizedlevel**: **important** (for**Related Work/methodbaseline/experimentsforaccording**supportandfixedposition)
+
+---
+
+**Analysis Completion Date**: 2025-01-28 
+**Analysis Quality**: Detailed analysis withfiveaxisscoretypelearningandlayerlevelcooperateadjustmechanism 
+**Recommended Use**: asHMASarchitecturedesigntheoryfoundation, referencefiveaxisscoretypelearningandmechanismmappingframeworkunits
