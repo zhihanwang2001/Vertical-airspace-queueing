@@ -128,14 +128,14 @@ Successfully completed comprehensive repository cleanup and translation work:
 
 ### Consistency
 ✅ Standardized terminology across all files:
-- 倒金字塔 → Inverted pyramid
-- 正金字塔 → Normal pyramid
-- 崩溃率 → Crash rate
-- 完成率 → Completion rate
-- 鲁棒性 → Robustness
-- 容量悖论 → Capacity paradox
-- 训练步数 → Training steps
-- 评估轮次 → Evaluation episodes
+- Inverted pyramid (structure type)
+- Normal pyramid (structure type)
+- Crash rate (performance metric)
+- Completion rate (performance metric)
+- Robustness (system property)
+- Capacity paradox (key finding)
+- Training steps (experimental parameter)
+- Evaluation episodes (experimental parameter)
 
 ---
 
