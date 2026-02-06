@@ -59,3 +59,4 @@ logs/
 *.toc
 *.synctex.gz
 texput.log
+.venv/
