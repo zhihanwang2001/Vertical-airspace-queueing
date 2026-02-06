@@ -1,227 +1,227 @@
-# Batch 4 深度再审查计划
-## 审查日期: 2026-01-06
+# Batch 4 Deep Re-Review Plan
+## Review Date: 2026-01-06
 
-## 背景
-已完成的审查：
-- ✅ 数据验证 (BATCH4_VERIFICATION.md): 10/10数据点验证通过
-- ✅ 逻辑审查 (BATCH4_LOGIC_REVIEW.md): 2个关键问题已修复
-- ✅ 质量评估 (BATCH4_FINAL_CHECK.md): 总分9.6/10
+## Background
+Completed reviews:
+- ✅ Data Verification (BATCH4_VERIFICATION.md): 10/10 data points verified
+- ✅ Logic Review (BATCH4_LOGIC_REVIEW.md): 2 critical issues fixed
+- ✅ Quality Assessment (BATCH4_FINAL_CHECK.md): Total score 9.6/10
 
-用户要求"再次审查"，需要从不同维度进行深度检查。
+User requested "re-review", requiring in-depth inspection from different dimensions.
 
 ---
 
-## 审查目标
-本次审查将聚焦于以下**未充分覆盖**的维度：
+## Review Objectives
+This review will focus on the following **insufficiently covered** dimensions:
 
-### 1. **跨批次一致性检查** (Cross-Batch Consistency)
-**目标**: 确保Batch 1-4在术语、符号、数据引用上完全一致
+### 1. **Cross-Batch Consistency Check**
+**Objective**: Ensure Batch 1-4 are completely consistent in terminology, symbols, and data references
 
-**检查项**:
-- [ ] 符号一致性：Batch 3定义的符号在Batch 4中是否一致使用
-  - 例如：$U_\ell$ vs $U_i$, $\rho_\ell$ vs $\rho_i$
-  - $G_t$ vs $G^t_\ell$ 在不同批次中的使用
-- [ ] 术语一致性：相同概念在不同批次的表述
+**Check Items**:
+- [ ] Symbol consistency: Are symbols defined in Batch 3 used consistently in Batch 4
+  - Example: $U_\ell$ vs $U_i$, $\rho_\ell$ vs $\rho_i$
+  - Usage of $G_t$ vs $G^t_\ell$ across different batches
+- [ ] Terminology consistency: Same concepts expressed in different batches
   - "occupancy rate" vs "utilization rate"
   - "pressure" vs "workload"
   - "emergency transfer" vs "downward transfer"
-- [ ] 数据交叉引用：Batch 4引用的数据是否与Batch 3一致
-  - 容量 [2,3,4,6,8]
-  - 服务率 [0.4, 0.6, 0.8, 1.0, 1.2]
-  - 到达权重 [0.10, 0.15, 0.20, 0.25, 0.30]
-- [ ] 章节引用准确性：§4.1引用§4.3是否形成逻辑闭环
+- [ ] Data cross-reference: Is data referenced in Batch 4 consistent with Batch 3
+  - Capacity [2,3,4,6,8]
+  - Service rates [0.4, 0.6, 0.8, 1.0, 1.2]
+  - Arrival weights [0.10, 0.15, 0.20, 0.25, 0.30]
+- [ ] Section reference accuracy: Does §4.1 referencing §4.3 form a logical loop
 
-**工具**:
-- 并行读取 paper_batch1, batch2, batch3, batch4
-- 使用Grep搜索关键术语在各批次中的定义
-
----
-
-### 2. **叙事连贯性审查** (Narrative Coherence)
-**目标**: 检查Batch 4各小节之间的逻辑过渡和叙事流畅性
-
-**检查项**:
-- [ ] §4.1 → §4.2 过渡：压力触发机制如何引出Pareto优化
-- [ ] §4.2 → §4.3 过渡：Pareto目标如何转化为DRL奖励函数
-- [ ] 每个subsection的开头是否有足够的motivating context
-- [ ] 技术细节的呈现顺序是否符合读者理解逻辑
-
-**方法**:
-- 逐段阅读，标记突兀的逻辑跳跃
-- 检查每个新概念引入时是否有充分铺垫
+**Tools**:
+- Read paper_batch1, batch2, batch3, batch4 in parallel
+- Use Grep to search for key term definitions across batches
 
 ---
 
-### 3. **数学严谨性复核** (Mathematical Rigor)
-**目标**: 超越公式正确性，检查数学表述的完整性和严谨性
+### 2. **Narrative Coherence Review**
+**Objective**: Check logical transitions and narrative fluency between Batch 4 subsections
 
-**检查项**:
-- [ ] 所有变量在首次出现时是否有定义
-  - $f^*$ (ideal point) 在第69行未定义
-  - $y$ (dominated solutions) 在HV公式中未定义
-  - $m$ (arrival_multiplier value) 在投影公式中的角色
-- [ ] 公式的定义域和值域是否明确
-  - Gini系数的范围 [0,1]
-  - Pressure $P^t_\ell$ 的理论范围
-  - HV的归一化是否正确
-- [ ] 不等式和约束的严格性
+**Check Items**:
+- [ ] §4.1 → §4.2 transition: How pressure trigger mechanism leads to Pareto optimization
+- [ ] §4.2 → §4.3 transition: How Pareto objectives transform into DRL reward function
+- [ ] Does each subsection opening have sufficient motivating context
+- [ ] Does technical detail presentation order follow reader understanding logic
+
+**Method**:
+- Read paragraph by paragraph, mark abrupt logical jumps
+- Check if each new concept introduction has sufficient groundwork
+
+---
+
+### 3. **Mathematical Rigor Review**
+**Objective**: Beyond formula correctness, check mathematical expression completeness and rigor
+
+**Check Items**:
+- [ ] Are all variables defined at first appearance
+  - $f^*$ (ideal point) undefined at line 69
+  - $y$ (dominated solutions) undefined in HV formula
+  - Role of $m$ (arrival_multiplier value) in projection formula
+- [ ] Are formula domains and ranges clear
+  - Gini coefficient range [0,1]
+  - Theoretical range of Pressure $P^t_\ell$
+  - Is HV normalization correct
+- [ ] Strictness of inequalities and constraints
   - $\rho_\ell < 1$ vs $\rho_\ell \leq 1$
-  - $G_t \leq G_{target} + \epsilon$ 中的 $G_{target}$ 和 $\epsilon$ 值
-- [ ] 符号的粗体/非粗体使用是否一致
+  - Values of $G_{target}$ and $\epsilon$ in $G_t \leq G_{target} + \epsilon$
+- [ ] Is bold/non-bold symbol usage consistent
   - $\mathbf{f}(\mathbf{x})$ vs $f(x)$
 
-**方法**:
-- 逐公式检查
-- 创建符号表对照
+**Method**:
+- Check formula by formula
+- Create symbol reference table
 
 ---
 
-### 4. **实现可行性验证** (Implementation Feasibility)
-**目标**: 确保描述的算法在代码实现层面可行且无歧义
+### 4. **Implementation Feasibility Verification**
+**Objective**: Ensure described algorithms are feasible and unambiguous at code implementation level
 
-**检查项**:
-- [ ] 状态空间维度计算是否可从描述推导
-  - 29维 = 5(队列) + 5(占用率) + 5(服务率) + 5(到达权重) + 5(转移标志) + 1(时间步) + 3(全局指标)
-  - 验证每一项的来源
-- [ ] 动作空间的连续/离散划分是否清晰
-  - 6维连续 (5个service_intensities + 1个arrival_multiplier)
-  - 5维离散 (emergency_transfers)
-- [ ] 投影算法步骤是否完整
-  - Algorithm第112-117行的伪代码是否可直接实现
-  - 边界条件处理
-- [ ] 奖励函数计算是否无歧义
-  - 每个奖励项的输入变量是否在状态空间中
-  - transfer_benefit的条件判断 `upper_pressure > lower_util` 是否可计算
+**Check Items**:
+- [ ] Can state space dimension calculation be derived from description
+  - 29 dimensions = 5(queues) + 5(occupancy rates) + 5(service rates) + 5(arrival weights) + 5(transfer flags) + 1(timestep) + 3(global metrics)
+  - Verify source of each item
+- [ ] Is continuous/discrete division of action space clear
+  - 6D continuous (5 service_intensities + 1 arrival_multiplier)
+  - 5D discrete (emergency_transfers)
+- [ ] Are projection algorithm steps complete
+  - Can pseudocode at Algorithm lines 112-117 be directly implemented
+  - Boundary condition handling
+- [ ] Is reward function calculation unambiguous
+  - Are input variables for each reward term in state space
+  - Can transfer_benefit condition `upper_pressure > lower_util` be computed
 
-**方法**:
-- 模拟手工计算一个时间步
-- 检查是否所有needed variables都在state中
-
----
-
-### 5. **引用和证据支撑** (Citations and Evidence)
-**目标**: 确保所有claims都有适当的支撑
-
-**检查项**:
-- [ ] 经验性陈述是否有数据支撑
-  - "<0.2% transfer frequency" 来源何处
-  - "37% peak reduction" 是否来自实验（但实验章节在Batch 6）
-- [ ] 设计选择是否有合理解释
-  - 为何β₃=0简化压力公式
-  - 为何Gini阈值选择 $G_{target}$
-  - 奖励权重 [10:5:3:2:2:-20:-15] 的设计理由
-- [ ] 未来章节引用的合理性
-  - §4.1引用§4.3（同章节内，合理）
-  - 引用§6.5是否存在（Batch 3已修复）
-  - 引用Appendix C是否标记为"未来补充"
-
-**方法**:
-- 标记所有定量claim
-- 检查每个claim的来源
+**Method**:
+- Simulate manual calculation of one timestep
+- Check if all needed variables are in state
 
 ---
 
-### 6. **英文学术规范性** (Academic English Quality)
-**目标**: 确保符合高水平学术写作标准
+### 5. **Citations and Evidence Support**
+**Objective**: Ensure all claims have appropriate support
 
-**检查项**:
-- [ ] 被动语态 vs 主动语态的合理使用
-- [ ] 技术术语的一致性（不在同一句中切换同义词）
-- [ ] 句子长度和复杂度（避免过长从句）
-- [ ] 段落结构：Topic sentence → Supporting details → Transition
-- [ ] 避免口语化表达
-- [ ] 时态一致性（描述系统用现在时，描述实验用过去时）
+**Check Items**:
+- [ ] Are empirical statements supported by data
+  - Where does "<0.2% transfer frequency" come from
+  - Does "37% peak reduction" come from experiments (but experiment section is in Batch 6)
+- [ ] Are design choices reasonably explained
+  - Why β₃=0 simplifies pressure formula
+  - Why Gini threshold chooses $G_{target}$
+  - Design rationale for reward weights [10:5:3:2:2:-20:-15]
+- [ ] Reasonableness of future section references
+  - §4.1 references §4.3 (within same chapter, reasonable)
+  - Does reference to §6.5 exist (fixed in Batch 3)
+  - Is reference to Appendix C marked as "future supplement"
 
-**方法**:
-- 逐段阅读
-- 标记冗长或模糊的句子
-
----
-
-### 7. **4个遗留建议的快速评估** (Quick Win Improvements)
-**目标**: 评估BATCH4_FINAL_CHECK.md中的4个建议是否值得立即修复
-
-**建议列表**:
-1. 澄清 $G^t_\ell$ 局部公平性定义
-2. 改进能效模型表述（"高μ对应低能耗"的因果关系）
-3. 精确化 transfer_benefit 计算条件变量
-4. 说明为何只约束 arrival_multiplier 而非 service_intensities
-
-**评估标准**:
-- 修复工作量（1行 vs 1段）
-- 对读者理解的影响程度
-- 是否可能引入新问题
+**Method**:
+- Mark all quantitative claims
+- Check source of each claim
 
 ---
 
-## 审查流程
+### 6. **Academic English Quality**
+**Objective**: Ensure compliance with high-level academic writing standards
 
-### Phase 1: 并行数据收集 (5分钟)
-- 同时读取 Batch 1-4 的 .tex 文件
-- 用Grep搜索关键术语在各批次中的定义
-- 提取所有公式和符号
+**Check Items**:
+- [ ] Reasonable use of passive vs active voice
+- [ ] Technical terminology consistency (no switching synonyms in same sentence)
+- [ ] Sentence length and complexity (avoid overly long clauses)
+- [ ] Paragraph structure: Topic sentence → Supporting details → Transition
+- [ ] Avoid colloquial expressions
+- [ ] Tense consistency (present tense for system description, past tense for experiments)
 
-### Phase 2: 跨批次一致性检查 (10分钟)
-- 创建符号对照表
-- 标记不一致之处
-- 检查数据引用
-
-### Phase 3: 深度逻辑审查 (15分钟)
-- 逐段检查叙事流
-- 验证数学严谨性
-- 检查实现可行性
-
-### Phase 4: 质量提升 (10分钟)
-- 评估4个遗留建议
-- 检查英文学术规范
-- 验证引用和证据
-
-### Phase 5: 生成报告 (5分钟)
-- 整合所有发现
-- 分类：关键问题 vs 改进建议
-- 给出明确的"可推进"或"需修复"结论
+**Method**:
+- Read paragraph by paragraph
+- Mark verbose or ambiguous sentences
 
 ---
 
-## 预期输出
+### 7. **Quick Assessment of 4 Remaining Suggestions**
+**Objective**: Assess whether 4 suggestions in BATCH4_FINAL_CHECK.md are worth immediate fixing
+
+**Suggestion List**:
+1. Clarify $G^t_\ell$ local fairness definition
+2. Improve energy efficiency model expression (causality of "high μ corresponds to low energy consumption")
+3. Refine transfer_benefit calculation condition variables
+4. Explain why only arrival_multiplier is constrained, not service_intensities
+
+**Assessment Criteria**:
+- Fix workload (1 line vs 1 paragraph)
+- Impact on reader understanding
+- Potential to introduce new issues
+
+---
+
+## Review Process
+
+### Phase 1: Parallel Data Collection (5 minutes)
+- Read Batch 1-4 .tex files simultaneously
+- Use Grep to search key term definitions across batches
+- Extract all formulas and symbols
+
+### Phase 2: Cross-Batch Consistency Check (10 minutes)
+- Create symbol reference table
+- Mark inconsistencies
+- Check data references
+
+### Phase 3: Deep Logic Review (15 minutes)
+- Check narrative flow paragraph by paragraph
+- Verify mathematical rigor
+- Check implementation feasibility
+
+### Phase 4: Quality Enhancement (10 minutes)
+- Assess 4 remaining suggestions
+- Check academic English standards
+- Verify citations and evidence
+
+### Phase 5: Generate Report (5 minutes)
+- Integrate all findings
+- Categorize: Critical issues vs improvement suggestions
+- Give clear "proceed" or "needs fixing" conclusion
+
+---
+
+## Expected Output
 
 1. **BATCH4_DEEP_CONSISTENCY_CHECK.md**
-   - 跨批次一致性问题列表
-   - 符号对照表
+   - Cross-batch consistency issue list
+   - Symbol reference table
 
 2. **BATCH4_NARRATIVE_REVIEW.md**
-   - 叙事流问题
-   - 英文质量改进建议
+   - Narrative flow issues
+   - English quality improvement suggestions
 
 3. **BATCH4_MATH_RIGOR_CHECK.md**
-   - 未定义变量列表
-   - 数学表述改进
+   - Undefined variable list
+   - Mathematical expression improvements
 
 4. **BATCH4_FINAL_DECISION.md**
-   - 综合所有审查结果
-   - 明确"推进"或"阻塞"决策
-   - 如果推进，列出可选改进清单
+   - Integrate all review results
+   - Clear "proceed" or "blocking" decision
+   - If proceeding, list optional improvement checklist
 
 ---
 
-## 成功标准
+## Success Criteria
 
-本次审查成功的标志：
-- ✅ 发现所有跨批次不一致（如果有）
-- ✅ 识别所有未定义的数学变量
-- ✅ 给出清晰的推进决策
-- ✅ 如果发现阻塞问题，立即修复并验证
-- ✅ 如果没有阻塞问题，提供优先级排序的改进清单
-
----
-
-## 时间估算
-- **总时长**: 约45分钟
-- **关键路径**: Phase 2 (跨批次一致性) → Phase 3 (深度逻辑) → Phase 5 (决策)
+Markers of successful review:
+- ✅ Discover all cross-batch inconsistencies (if any)
+- ✅ Identify all undefined mathematical variables
+- ✅ Provide clear proceed decision
+- ✅ If blocking issues found, fix immediately and verify
+- ✅ If no blocking issues, provide priority-sorted improvement checklist
 
 ---
 
-## 备注
-- 本次审查是Batch 4推进前的**最后一道关卡**
-- 用户强调"所有内容容不得马虎"，需要绝对准确
-- 如发现任何阻塞性问题，必须立即修复并重新编译验证
+## Time Estimate
+- **Total Duration**: Approximately 45 minutes
+- **Critical Path**: Phase 2 (Cross-batch consistency) → Phase 3 (Deep logic) → Phase 5 (Decision)
+
+---
+
+## Notes
+- This review is the **final checkpoint** before Batch 4 proceeds
+- User emphasizes "all content must be meticulous", requires absolute accuracy
+- If any blocking issues found, must fix immediately and recompile for verification

@@ -1,516 +1,515 @@
-# RP1 项目实验结果汇总
 # RP1 Project Experimental Results Summary
 
-**创建时间**: 2025-09-28  
-**项目**: 面向无人机配送系统的垂直分层队列理论与高级深度强化学习优化研究  
-**训练配置**: 500k timesteps, 统一实验环境
+**Creation Date**: 2025-09-28
+**Project**: Vertical Layered Queue Theory and Advanced Deep Reinforcement Learning Optimization for UAV Delivery Systems
+**Training Configuration**: 500k timesteps, unified experimental environment
 
 ---
 
-## 📊 实验结果总览
+## 📊 Experimental Results Overview
 
-### 🔵 SB3基线算法 (Stable-Baselines3)
+### 🔵 SB3 Baseline Algorithms (Stable-Baselines3)
 
-| 算法 | 状态 | 平均奖励 | 标准差 | 训练时间 | 平均回合长度 | 算法类型 |
+| Algorithm | Status | Avg Reward | Std Dev | Training Time | Avg Episode Length | Algorithm Type |
 |------|------|----------|--------|----------|-------------|----------|
-| SB3_TD3 | ✅ 完成 | 3972.69 | 168.56 | 13472.9s | 200.0 | Twin Delayed DDPG |
-| SB3_A2C | ✅ 完成 (优化v3) 🏆 | 4437.86 | 128.41 | 413.8s | 200.0 | Advantage Actor-Critic (延迟余弦退火) |
-| SB3_SAC | ✅ 完成 | 3659.63 | 1386.03 | 15903.0s | 200.0 | Soft Actor-Critic |
-| SB3_PPO | ✅ 完成 | 4419.98 | 135.71 | 1848.4s | 197.0 | Proximal Policy Optimization |
-| SB3_DDPG | ✅ 完成 (优化后) | 1490.48 | 102.20 | 13842.5s | 200.0 | Deep Deterministic Policy Gradient (放弃) |
+| SB3_TD3 | ✅ Complete | 3972.69 | 168.56 | 13472.9s | 200.0 | Twin Delayed DDPG |
+| SB3_A2C | ✅ Complete (Optimized v3) 🏆 | 4437.86 | 128.41 | 413.8s | 200.0 | Advantage Actor-Critic (Delayed Cosine Annealing) |
+| SB3_SAC | ✅ Complete | 3659.63 | 1386.03 | 15903.0s | 200.0 | Soft Actor-Critic |
+| SB3_PPO | ✅ Complete | 4419.98 | 135.71 | 1848.4s | 197.0 | Proximal Policy Optimization |
+| SB3_DDPG | ✅ Complete (Optimized) | 1490.48 | 102.20 | 13842.5s | 200.0 | Deep Deterministic Policy Gradient (Abandoned) |
 
-### 🟡 传统基线算法
+### 🟡 Traditional Baseline Algorithms
 
-| 算法 | 状态 | 平均奖励 | 标准差 | 训练时间 | 平均回合长度 | 算法类型 |
+| Algorithm | Status | Avg Reward | Std Dev | Training Time | Avg Episode Length | Algorithm Type |
 |------|------|----------|--------|----------|-------------|----------|
-| Random | ✅ 完成 | 294.75 | 308.75 | 57.90s | 21.9 | 随机策略基线 |
-| Heuristic | ✅ 完成 | 2860.69 | 87.96 | 67.49s | 200.0 | 启发式策略 |
-| FCFS | ✅ 完成 | 2024.75 | 66.64 | 68.47s | 200.0 | 先来先服务 |
-| SJF | ✅ 完成 | 2011.16 | 66.58 | 86.80s | 200.0 | 短任务优先 |
-| Priority | ✅ 完成 | 2040.04 | 67.63 | 99.94s | 200.0 | 优先级调度 |
+| Random | ✅ Complete | 294.75 | 308.75 | 57.90s | 21.9 | Random Policy Baseline |
+| Heuristic | ✅ Complete | 2860.69 | 87.96 | 67.49s | 200.0 | Heuristic Strategy |
+| FCFS | ✅ Complete | 2024.75 | 66.64 | 68.47s | 200.0 | First Come First Serve |
+| SJF | ✅ Complete | 2011.16 | 66.58 | 86.80s | 200.0 | Shortest Job First |
+| Priority | ✅ Complete | 2040.04 | 67.63 | 99.94s | 200.0 | Priority Scheduling |
 
-### 🟢 高级DRL算法 (Advanced Algorithms)
+### 🟢 Advanced DRL Algorithms
 
-| 算法 | 状态 | 平均奖励 | 标准差 | 训练时间 | 平均回合长度 | 算法类型 |
+| Algorithm | Status | Avg Reward | Std Dev | Training Time | Avg Episode Length | Algorithm Type |
 |------|------|----------|--------|----------|-------------|----------|
-| Rainbow DQN | ✅ 完成 (优化v2) | 2360.53 | 45.50 | 39355.9s | 200.0 | 6项DQN改进集成 (稳定版) |
-| IMPALA | ✅ 完成 (优化v2) | 1682.19 | 73.85 | 3682.1s | 200.0 | 分布式重要性加权 (保守V-trace) |
-| R2D2 | ✅ 完成 | 4289.22 | 82.23 | 6939.9s | 200.0 | 循环经验回放DQN |
-| SAC v2 | ✅ 完成 | 4282.94 | 80.70 | 17217.1s | 200.0 | 自动熵调节SAC |
-| TD7 | ✅ 完成 | 4351.84 | 51.07 | 7566.4s | 200.0 | SALE表示学习+检查点 |
+| Rainbow DQN | ✅ Complete (Optimized v2) | 2360.53 | 45.50 | 39355.9s | 200.0 | 6 DQN Improvements Integrated (Stable Version) |
+| IMPALA | ✅ Complete (Optimized v2) | 1682.19 | 73.85 | 3682.1s | 200.0 | Distributed Importance Weighted (Conservative V-trace) |
+| R2D2 | ✅ Complete | 4289.22 | 82.23 | 6939.9s | 200.0 | Recurrent Experience Replay DQN |
+| SAC v2 | ✅ Complete | 4282.94 | 80.70 | 17217.1s | 200.0 | Automatic Entropy Tuning SAC |
+| TD7 | ✅ Complete | 4351.84 | 51.07 | 7566.4s | 200.0 | SALE Representation Learning + Checkpoints |
 
 ---
 
-## 📈 详细实验记录
+## 📈 Detailed Experimental Records
 
-### SB3基线算法详细结果
+### SB3 Baseline Algorithm Detailed Results
 
 #### SB3_TD3
 ```bash
-命令: python run_baseline_comparison.py --algorithms SB3_TD3 --timesteps 500000
-状态: ✅ 完成
-训练时间: 13472.9秒 (224.5分钟)
-评估结果: 
-  - 平均奖励: 3972.69 ± 168.56 🥉🥉
-  - 平均回合长度: 200.0
-  - 评估回合数: 20
-  - 总训练步数: 500,000步
-  - 相比Random提升: +1248%！！
-  - 相比Heuristic提升: +38.9%！
-  - 学习率: 余弦退火 0.0001 → 1e-06
-  - 更新次数: 498,432次
-算法特点: Twin Delayed DDPG (双延迟深度确定性策略梯度)
-性能分析: 🎉 **优秀表现！** 第三名成绩，显著超越传统算法！
-突破意义: 验证了off-policy算法在复杂调度系统中的强大能力！
+Command: python run_baseline_comparison.py --algorithms SB3_TD3 --timesteps 500000
+Status: ✅ Complete
+Training Time: 13472.9 seconds (224.5 minutes)
+Evaluation Results:
+  - Average Reward: 3972.69 ± 168.56 🥉🥉
+  - Average Episode Length: 200.0
+  - Evaluation Episodes: 20
+  - Total Training Steps: 500,000 steps
+  - Improvement vs Random: +1248%!!
+  - Improvement vs Heuristic: +38.9%!
+  - Learning Rate: Cosine annealing 0.0001 → 1e-06
+  - Update Count: 498,432 updates
+Algorithm Features: Twin Delayed DDPG (Twin Delayed Deep Deterministic Policy Gradient)
+Performance Analysis: 🎉 **Excellent Performance!** Third place, significantly surpassing traditional algorithms!
+Breakthrough Significance: Verified the powerful capability of off-policy algorithms in complex scheduling systems!
 ```
 
 #### SB3_A2C
 ```bash
-命令: python run_baseline_comparison.py --algorithms SB3_A2C --timesteps 500000
-状态: ✅ 完成 (优化v3 - 延迟余弦退火) 🏆
-训练时间: 413.76秒 (6.9分钟)
-评估结果:
-  - 平均奖励: 4437.86 ± 128.41 🏆🏆🏆
-  - 平均回合长度: 200.0
-  - 评估回合数: 20
-  - 总训练步数: 500,000步
-  - 相比Random提升: +1406%！
-  - 相比Heuristic提升: +55.1%
-  - 性能范围: 4238.51 - 4641.13
+Command: python run_baseline_comparison.py --algorithms SB3_A2C --timesteps 500000
+Status: ✅ Complete (Optimized v3 - Delayed Cosine Annealing) 🏆
+Training Time: 413.76 seconds (6.9 minutes)
+Evaluation Results:
+  - Average Reward: 4437.86 ± 128.41 🏆🏆🏆
+  - Average Episode Length: 200.0
+  - Evaluation Episodes: 20
+  - Total Training Steps: 500,000 steps
+  - Improvement vs Random: +1406%!
+  - Improvement vs Heuristic: +55.1%
+  - Performance Range: 4238.51 - 4641.13
 
-优化策略 (v3):
-  - 🔑 延迟余弦退火学习率调度（核心突破！）
-  - 前300k步: 固定lr=7e-4（充分探索策略空间）
-  - 300k-500k步: 余弦退火降至1e-5（稳定收敛到最优策略）
-  - 网络架构: [512, 512, 256]（增大网络容量）
-  - n_steps: 32（更长rollout改进优势估计）
-  - GAE λ: 0.95（bias-variance平衡）
-  - 熵系数: 0.01（促进探索）
-  - 优势归一化: True（减少方差）
+Optimization Strategy (v3):
+  - 🔑 Delayed Cosine Annealing Learning Rate Schedule (Core Breakthrough!)
+  - First 300k steps: Fixed lr=7e-4 (Sufficient exploration of policy space)
+  - 300k-500k steps: Cosine annealing to 1e-5 (Stable convergence to optimal policy)
+  - Network Architecture: [512, 512, 256] (Increased network capacity)
+  - n_steps: 32 (Longer rollout improves advantage estimation)
+  - GAE λ: 0.95 (Bias-variance balance)
+  - Entropy Coefficient: 0.01 (Promote exploration)
+  - Advantage Normalization: True (Reduce variance)
 
-训练曲线分析:
-  - 阶段1 (0-100k): 均值423, 快速学习
-  - 阶段2 (100k-200k): 均值198, 策略精炼
-  - 阶段3 (200k-300k): 均值2108, 性能跃升（关键突破！）
-  - 🔥 阶段4 (300k-400k): 均值4392, 标准差14（退火开始，极度稳定！）
-  - 🔥 阶段5 (400k-500k): 均值4398, 标准差16（深度退火，持续稳定！）
+Training Curve Analysis:
+  - Phase 1 (0-100k): Mean 423, rapid learning
+  - Phase 2 (100k-200k): Mean 198, policy refinement
+  - Phase 3 (200k-300k): Mean 2108, performance leap (Key breakthrough!)
+  - 🔥 Phase 4 (300k-400k): Mean 4392, std 14 (Annealing starts, extremely stable!)
+  - 🔥 Phase 5 (400k-500k): Mean 4398, std 16 (Deep annealing, sustained stability!)
 
-300k步转折点效果:
-  - 300k步前 (280k-300k): 4413±28（高性能高方差）
-  - 300k步后 (300k-320k): 4392±7（性能保持，方差骤降73%！）
-  - 峰值: 4440.58 @ 293,600步（退火前达到巅峰）
+300k Step Turning Point Effect:
+  - Before 300k (280k-300k): 4413±28 (High performance, high variance)
+  - After 300k (300k-320k): 4392±7 (Performance maintained, variance drops 73%!)
+  - Peak: 4440.58 @ 293,600 steps (Peak reached before annealing)
 
-算法特点: Advantage Actor-Critic (同步策略梯度)
-性能分析: 🏆 **冠军成就！** 延迟余弦退火使A2C从低级层跃升至顶级层冠军！
-          超越PPO (4420)、TD7 (4352)、TD3 (3972)，成为最高性能算法！
-关键发现:
-  1. 学习率调度时机至关重要 - 300k步是A2C的黄金转折点
-  2. 过早退火抑制探索 → 延迟退火兼得探索与稳定
-  3. 余弦退火显著降低方差（73%↓），提升训练稳定性
-实验证明: 前期高lr探索（300k步）+ 后期低lr收敛（200k步）= 完美组合！
-理论突破: 首次系统性研究on-policy算法学习率调度时机，为超参数优化开辟新方向
+Algorithm Features: Advantage Actor-Critic (Synchronous Policy Gradient)
+Performance Analysis: 🏆 **Champion Achievement!** Delayed cosine annealing elevated A2C from low tier to top tier champion!
+          Surpasses PPO (4420), TD7 (4352), TD3 (3972), becoming the highest performance algorithm!
+Key Findings:
+  1. Learning rate scheduling timing is crucial - 300k steps is A2C's golden turning point
+  2. Early annealing suppresses exploration → Delayed annealing achieves both exploration and stability
+  3. Cosine annealing significantly reduces variance (73%↓), improves training stability
+Experimental Proof: Early high lr exploration (300k steps) + Late low lr convergence (200k steps) = Perfect combination!
+Theoretical Breakthrough: First systematic study of on-policy algorithm learning rate scheduling timing, opening new directions for hyperparameter optimization
 ```
 
 #### SB3_SAC
 ```bash
-命令: python run_baseline_comparison.py --algorithms SB3_SAC --timesteps 500000
-状态: ✅ 完成 ⚠️ 高方差
-训练时间: 15903.0秒 (265.1分钟)
-评估结果: 
-  - 平均奖励: 3659.63 ± 1386.03 ⚠️
-  - 平均回合长度: 200.0
-  - 评估回合数: 20
-  - 总训练步数: 500,000步
-  - 相比Random提升: +1142%！
-  - 相比Heuristic提升: +27.9%
-  - 标准差: 1386.03 (极高方差！)
-  - 性能范围: 146.31 - 4511.61 (巨大波动)
-算法特点: Soft Actor-Critic (最大熵强化学习)
-性能分析: ⚠️ **不稳定表现！** 平均性能不错但方差极高！
-关键问题: 标准差1386远超其他算法，存在严重的训练不稳定性
-实验发现: SAC在复杂调度环境中表现出显著的不一致性
+Command: python run_baseline_comparison.py --algorithms SB3_SAC --timesteps 500000
+Status: ✅ Complete ⚠️ High Variance
+Training Time: 15903.0 seconds (265.1 minutes)
+Evaluation Results:
+  - Average Reward: 3659.63 ± 1386.03 ⚠️
+  - Average Episode Length: 200.0
+  - Evaluation Episodes: 20
+  - Total Training Steps: 500,000 steps
+  - Improvement vs Random: +1142%!
+  - Improvement vs Heuristic: +27.9%
+  - Standard Deviation: 1386.03 (Extremely high variance!)
+  - Performance Range: 146.31 - 4511.61 (Huge fluctuation)
+Algorithm Features: Soft Actor-Critic (Maximum entropy reinforcement learning)
+Performance Analysis: ⚠️ **Unstable Performance!** Average performance decent but variance extremely high!
+Key Issues: Standard deviation 1386 far exceeds other algorithms, serious training instability exists
+Experimental Finding: SAC shows significant inconsistency in complex scheduling environments
 ```
 
 #### SB3_PPO
 ```bash
-命令: python run_baseline_comparison.py --algorithms SB3_PPO --timesteps 500000
-状态: ✅ 完成
-训练时间: 1848.4秒 (30.8分钟)
-评估结果: 
-  - 平均奖励: 4419.98 ± 135.71 🥇🥇🥇
-  - 平均回合长度: 197.0
-  - 评估回合数: 20
-  - 总训练步数: 500,000步
-  - 相比Random提升: +1400%！！！
-  - 相比Heuristic提升: +54.5%！
-  - 学习率: 余弦退火 0.0003 → 1e-06
-  - 熵损失: -12.7
-算法特点: Proximal Policy Optimization (信任域策略优化)
-性能分析: 🚀 **历史最佳表现！** 首次超越Heuristic算法！
-突破意义: 证明了DRL在复杂排队系统中的巨大潜力！
+Command: python run_baseline_comparison.py --algorithms SB3_PPO --timesteps 500000
+Status: ✅ Complete
+Training Time: 1848.4 seconds (30.8 minutes)
+Evaluation Results:
+  - Average Reward: 4419.98 ± 135.71 🥇🥇🥇
+  - Average Episode Length: 197.0
+  - Evaluation Episodes: 20
+  - Total Training Steps: 500,000 steps
+  - Improvement vs Random: +1400%!!!
+  - Improvement vs Heuristic: +54.5%!
+  - Learning Rate: Cosine annealing 0.0003 → 1e-06
+  - Entropy Loss: -12.7
+Algorithm Features: Proximal Policy Optimization (Trust region policy optimization)
+Performance Analysis: 🚀 **Best Historical Performance!** First time surpassing Heuristic algorithm!
+Breakthrough Significance: Proved the enormous potential of DRL in complex queueing systems!
 ```
 
 #### SB3_DDPG
 ```bash
-命令: python run_baseline_comparison.py --algorithms SB3_DDPG --timesteps 500000
-状态: ✅ 完成 ⚠️ 性能不佳
-训练时间: 12778.0秒 (213.0分钟)
-评估结果: 
-  - 平均奖励: 1889.25 ± 119.34 📉
-  - 平均回合长度: 160.0 (提前终止!)
-  - 评估回合数: 20
-  - 总训练步数: 500,000步
-  - 相比Random提升: +541%
-  - 相比Heuristic: -34.0% (显著低于启发式!)
-  - 比TD3差: -52.4% (巨大性能差距!)
-  - Actor损失: -18,000
-  - Critic损失: 16,100
-算法特点: Deep Deterministic Policy Gradient (确定性策略梯度)
-性能分析: ❌ **表现不佳！** 显著低于启发式算法和改进版TD3
-关键问题: 
-  1. 回合长度160 < 200，频繁提前终止
-  2. 性能远低于TD3，证明Twin Delayed改进的巨大价值
-  3. 原始DDPG在复杂环境中的局限性暴露
-重要发现: DDPG→TD3的性能跃升验证了算法改进的重要性！
+Command: python run_baseline_comparison.py --algorithms SB3_DDPG --timesteps 500000
+Status: ✅ Complete ⚠️ Poor Performance
+Training Time: 12778.0 seconds (213.0 minutes)
+Evaluation Results:
+  - Average Reward: 1889.25 ± 119.34 📉
+  - Average Episode Length: 160.0 (Early termination!)
+  - Evaluation Episodes: 20
+  - Total Training Steps: 500,000 steps
+  - Improvement vs Random: +541%
+  - vs Heuristic: -34.0% (Significantly below heuristic!)
+  - vs TD3: -52.4% (Huge performance gap!)
+  - Actor Loss: -18,000
+  - Critic Loss: 16,100
+Algorithm Features: Deep Deterministic Policy Gradient (Deterministic policy gradient)
+Performance Analysis: ❌ **Poor Performance!** Significantly below heuristic algorithm and improved TD3
+Key Issues:
+  1. Episode length 160 < 200, frequent early termination
+  2. Performance far below TD3, proves enormous value of Twin Delayed improvement
+  3. Limitations of original DDPG exposed in complex environments
+Important Finding: DDPG→TD3 performance leap verifies importance of algorithm improvements!
 ```
 
-### 传统基线算法详细结果
+### Traditional Baseline Algorithm Detailed Results
 
 #### Random
 ```bash
-命令: python run_baseline_comparison.py --algorithms Random --timesteps 500000
-状态: ✅ 完成
-训练时间: 57.90秒
-评估结果: 
-  - 平均奖励: 294.75 ± 308.75
-  - 平均回合长度: 21.9
-  - 评估回合数: 20
-  - 总训练回合: ~28,000回合
-算法特点: 随机策略基线，用于验证环境基础性能
+Command: python run_baseline_comparison.py --algorithms Random --timesteps 500000
+Status: ✅ Complete
+Training Time: 57.90 seconds
+Evaluation Results:
+  - Average Reward: 294.75 ± 308.75
+  - Average Episode Length: 21.9
+  - Evaluation Episodes: 20
+  - Total Training Episodes: ~28,000 episodes
+Algorithm Features: Random policy baseline, used to verify environment basic performance
 ```
 
 #### Heuristic
 ```bash
-命令: python run_baseline_comparison.py --algorithms Heuristic --timesteps 500000
-状态: ✅ 完成
-训练时间: 67.49秒
-评估结果: 
-  - 平均奖励: 2860.69 ± 87.96
-  - 平均回合长度: 200.0
-  - 评估回合数: 20
-  - 总训练回合: ~2500回合
-  - 相比Random提升: +871%
-算法特点: 启发式负载均衡策略 (阈值0.8, 目标利用率0.7)
+Command: python run_baseline_comparison.py --algorithms Heuristic --timesteps 500000
+Status: ✅ Completed
+Training time: 67.49s
+Evaluation results:
+  - Average reward: 2860.69 ± 87.96
+  - Average episode length: 200.0
+  - Evaluation episodes: 20
+  - Total training episodes: ~2500 episodes
+  - Improvement over Random: +871%
+Algorithm features: Heuristic load balancing strategy (threshold 0.8, target utilization 0.7)
 ```
 
 #### FCFS
 ```bash
-命令: python run_baseline_comparison.py --algorithms FCFS --timesteps 500000
-状态: ✅ 完成
-训练时间: 68.47秒
-评估结果: 
-  - 平均奖励: 2024.75 ± 66.64
-  - 平均回合长度: 200.0
-  - 评估回合数: 20
-  - 总训练回合: ~2500回合
-  - 相比Random提升: +587%
-算法特点: 先来先服务调度策略
+Command: python run_baseline_comparison.py --algorithms FCFS --timesteps 500000
+Status: ✅ Completed
+Training time: 68.47s
+Evaluation results:
+  - Average reward: 2024.75 ± 66.64
+  - Average episode length: 200.0
+  - Evaluation episodes: 20
+  - Total training episodes: ~2500 episodes
+  - Improvement over Random: +587%
+Algorithm features: First-Come-First-Served scheduling strategy
 ```
 
 #### SJF
 ```bash
-命令: python run_baseline_comparison.py --algorithms SJF --timesteps 500000
-状态: ✅ 完成
-训练时间: 86.80秒
-评估结果: 
-  - 平均奖励: 2011.16 ± 66.58
-  - 平均回合长度: 200.0
-  - 评估回合数: 20
-  - 总训练回合: ~2500回合
-  - 相比Random提升: +582%
-算法特点: 短任务优先调度策略
+Command: python run_baseline_comparison.py --algorithms SJF --timesteps 500000
+Status: ✅ Completed
+Training time: 86.80s
+Evaluation results:
+  - Average reward: 2011.16 ± 66.58
+  - Average episode length: 200.0
+  - Evaluation episodes: 20
+  - Total training episodes: ~2500 episodes
+  - Improvement over Random: +582%
+Algorithm features: Shortest Job First scheduling strategy
 ```
 
 #### Priority
 ```bash
-命令: python run_baseline_comparison.py --algorithms Priority --timesteps 500000
-状态: ✅ 完成
-训练时间: 99.94秒
-评估结果: 
-  - 平均奖励: 2040.04 ± 67.63
-  - 平均回合长度: 200.0
-  - 评估回合数: 20
-  - 总训练回合: ~2500回合
-  - 相比Random提升: +592%
-算法特点: 基于优先级的队列调度策略
+Command: python run_baseline_comparison.py --algorithms Priority --timesteps 500000
+Status: ✅ Completed
+Training time: 99.94s
+Evaluation results:
+  - Average reward: 2040.04 ± 67.63
+  - Average episode length: 200.0
+  - Evaluation episodes: 20
+  - Total training episodes: ~2500 episodes
+  - Improvement over Random: +592%
+Algorithm features: Priority-based queue scheduling strategy
 ```
 
-### 高级DRL算法详细结果
+### Advanced DRL Algorithm Detailed Results
 
 #### Rainbow DQN
 ```bash
-命令: python run_advanced_algorithm_comparison.py --algorithms rainbow_dqn --timesteps 500000 --eval-episodes 5
-状态: ✅ 完成 📉 表现一般
-训练时间: 33360.7秒 (556.3分钟)
-评估结果: 
-  - 平均奖励: 2413.46 ± 166.43 📉
-  - 平均回合长度: 200.0
-  - 评估回合数: 5
-  - 总训练回合: 2500回合
-  - 相比Random提升: +719%
-  - 相比Heuristic: -15.6% (低于启发式!)
-  - 动作离散化: 2^11 = 2048个离散动作
-  - 网络atoms: 51 (分布式Q学习)
-  - 价值范围: [-15.0, 15.0]
-  - 学习表现: 初期3788→后期2445 (性能下降!)
-算法特点: Rainbow DQN (6项DQN改进集成: Double DQN + Prioritized + Dueling + Multi-step + Distributional + Noisy)
-性能分析: 📉 **表现不佳！** 甚至低于简单启发式算法！
-关键问题: 
-  1. 训练过程中性能持续下降 (3788→2445)
-  2. 最终性能仅2413，远低于其他高级算法
-  3. Rainbow的复杂性在此环境中可能过拟合
-重要发现: 复杂算法不一定在所有环境中都表现最优
+Command: python run_advanced_algorithm_comparison.py --algorithms rainbow_dqn --timesteps 500000 --eval-episodes 5
+Status: ✅ Completed 📉 Average performance
+Training time: 33360.7s (556.3 minutes)
+Evaluation results:
+  - Average reward: 2413.46 ± 166.43 📉
+  - Average episode length: 200.0
+  - Evaluation episodes: 5
+  - Total training episodes: 2500 episodes
+  - Improvement over Random: +719%
+  - Compared to Heuristic: -15.6% (below heuristic!)
+  - Action discretization: 2^11 = 2048 discrete actions
+  - Network atoms: 51 (distributional Q-learning)
+  - Value range: [-15.0, 15.0]
+  - Learning performance: Early 3788→Late 2445 (performance degradation!)
+Algorithm features: Rainbow DQN (6 DQN improvements integrated: Double DQN + Prioritized + Dueling + Multi-step + Distributional + Noisy)
+Performance analysis: 📉 **Poor performance!** Even below simple heuristic algorithm!
+Key issues:
+  1. Performance continuously degraded during training (3788→2445)
+  2. Final performance only 2413, far below other advanced algorithms
+  3. Rainbow's complexity may overfit in this environment
+Important finding: Complex algorithms don't necessarily perform best in all environments
 ```
 
 #### IMPALA
 ```bash
-命令: python run_advanced_algorithm_comparison.py --algorithms impala --timesteps 500000 --eval-episodes 5
-状态: ✅ 完成
-训练时间: 1751.2秒 (29.2分钟)
-评估结果: 
-  - 平均奖励: 1705.13 ± 25.24
-  - 平均回合长度: 200.0
-  - 评估回合数: 5
-  - 总训练回合: 17,162回合
-  - 相比Random提升: +479%
-  - 训练收敛: 显著收敛到稳定水平
-算法特点: 分布式重要性加权Actor-Critic (V-trace off-policy correction)
-性能分析: 表现优秀，标准差很小(25.24)说明训练稳定
+Command: python run_advanced_algorithm_comparison.py --algorithms impala --timesteps 500000 --eval-episodes 5
+Status: ✅ Completed
+Training time: 1751.2s (29.2 minutes)
+Evaluation results:
+  - Average reward: 1705.13 ± 25.24
+  - Average episode length: 200.0
+  - Evaluation episodes: 5
+  - Total training episodes: 17,162 episodes
+  - Improvement over Random: +479%
+  - Training convergence: Significantly converged to stable level
+Algorithm features: Distributed Importance Weighted Actor-Critic (V-trace off-policy correction)
+Performance analysis: Excellent performance, very small standard deviation (25.24) indicates stable training
 ```
 
 #### R2D2
 ```bash
-命令: python run_advanced_algorithm_comparison.py --algorithms r2d2 --timesteps 500000 --eval-episodes 5
-状态: ✅ 完成
-训练时间: 6939.9秒 (115.7分钟)
-评估结果: 
-  - 平均奖励: 4289.22 ± 82.23 🥈🥈
-  - 平均回合长度: 200.0
-  - 评估回合数: 5
-  - 总训练回合: 26,601回合
-  - 相比Random提升: +1355%！！
-  - 相比Heuristic提升: +49.9%！
-  - 动作离散化: 2^11 = 2048个离散动作
-  - 序列长度: 3 + 1 burn-in
-算法特点: 循环经验回放DQN (LSTM记忆 + 序列学习)
-性能分析: 🎉 **突破性表现！** 仅次于PPO，大幅超越传统算法！
-突破意义: 证明了循环神经网络在复杂序列决策中的强大能力！
+Command: python run_advanced_algorithm_comparison.py --algorithms r2d2 --timesteps 500000 --eval-episodes 5
+Status: ✅ Completed
+Training time: 6939.9s (115.7 minutes)
+Evaluation results:
+  - Average reward: 4289.22 ± 82.23 🥈🥈
+  - Average episode length: 200.0
+  - Evaluation episodes: 5
+  - Total training episodes: 26,601 episodes
+  - Improvement over Random: +1355%!!
+  - Improvement over Heuristic: +49.9%!
+  - Action discretization: 2^11 = 2048 discrete actions
+  - Sequence length: 3 + 1 burn-in
+Algorithm features: Recurrent Experience Replay DQN (LSTM memory + sequence learning)
+Performance analysis: 🎉 **Breakthrough performance!** Second only to PPO, far exceeding traditional algorithms!
+Breakthrough significance: Proves the powerful capability of recurrent neural networks in complex sequential decision-making!
 ```
 
 #### SAC v2
 ```bash
-命令: python run_advanced_algorithm_comparison.py --algorithms sac_v2 --timesteps 500000 --eval-episodes 5
-状态: ✅ 完成 🏆 新纪录！
-训练时间: 17217.1秒 (287.0分钟)
-评估结果: 
-  - 平均奖励: 4282.94 ± 80.70 🏆🏆🏆
-  - 平均回合长度: 200.0
-  - 评估回合数: 5
-  - 总训练回合: 3,367回合
-  - 相比Random提升: +1353%！！！
-  - 相比Heuristic提升: +49.7%！
-  - 比原版SAC提升: +17.0% (解决高方差问题!)
-  - 自动熵调节: α从1.0降至0.7056
-  - 学习曲线: 平稳上升，最终稳定在4200+
-  - 标准差: 80.70 (超低方差，极稳定!)
-算法特点: SAC v2 自动熵调节改进版 (Haarnoja et al., 2019)
-性能分析: 🥈 **极佳表现！** 获得第二名，与PPO差距极小(137分)！
-突破意义: 
-  1. SAC v2完美解决了原版SAC的高方差问题 (1386→81)
-  2. 自动熵调节机制在复杂环境中展现出色适应性
-  3. 首次在UAV垂直分层调度中超越4280分大关！
-技术亮点: 改进的温度参数自适应算法显著提升稳定性
+Command: python run_advanced_algorithm_comparison.py --algorithms sac_v2 --timesteps 500000 --eval-episodes 5
+Status: ✅ Completed 🏆 New record!
+Training time: 17217.1s (287.0 minutes)
+Evaluation results:
+  - Average reward: 4282.94 ± 80.70 🏆🏆🏆
+  - Average episode length: 200.0
+  - Evaluation episodes: 5
+  - Total training episodes: 3,367 episodes
+  - Improvement over Random: +1353%!!!
+  - Improvement over Heuristic: +49.7%!
+  - Improvement over original SAC: +17.0% (solved high variance problem!)
+  - Automatic entropy adjustment: α from 1.0 to 0.7056
+  - Learning curve: Smooth ascent, finally stabilized at 4200+
+  - Standard deviation: 80.70 (ultra-low variance, extremely stable!)
+Algorithm features: SAC v2 automatic entropy adjustment improved version (Haarnoja et al., 2019)
+Performance analysis: 🥈 **Excellent performance!** Second place, minimal gap with PPO (137 points)!
+Breakthrough significance:
+  1. SAC v2 perfectly solved the high variance problem of original SAC (1386→81)
+  2. Automatic entropy adjustment mechanism shows excellent adaptability in complex environments
+  3. First time exceeding 4280 points in UAV vertical layered scheduling!
+Technical highlights: Improved temperature parameter adaptive algorithm significantly enhances stability
 ```
 
 #### TD7
 ```bash
-命令: python run_advanced_algorithm_comparison.py --algorithms td7 --timesteps 500000 --eval-episodes 5
-状态: ✅ 完成 🎆 "跳跃学习"现象！
-训练时间: 7566.4秒 (126.1分钟)
-评估结果:
-  - 最终评估奖励 (500k步): 4434.36 (评估)
-  - 完整训练评估奖励: 4433.16
-  - 平均奖励: 4358.38 ± 178.57 🥉🥉
-  - 平均回合长度: 200.0
-  - 评估回合数: 1
-  - 总训练回合: 3,794回合
-  - 总训练步数: 499,801步
-  - 相比Random提升: +1378%！！！
-  - 相比Heuristic提升: +52.3%！
-  - 第三名成绩 (A2C、PPO之后)
-  - SALE嵌入维度: 256维
-  - LAP优先级回放: 启用
-  - 检查点机制: 自动保存最佳性能点
-  - 标准差: 178.57
-算法特点: TD7 with SALE + LAP + Checkpoints (Fujimoto & Gu, 2021)
-性能分析: 🎆 **惊人的"跳跃学习"现象！** 获得第三名佳绩！
-重大发现 - TD7的两次质性跳跃:
-  🔍 学习阶段分析:
-  Phase 1: 探索期 (0-25k步)     - 性能~200-300,  随机探索环境
-  Phase 2: 第一次跳跃 (25,589步) - 215→1321 (+515%增长), SALE表示学习达到临界阈值
-  Phase 3: 过渡期 (26k-27k步)   - 1321→3086, 持续快速增长
-  Phase 4: 第二次跳跃 (26,989步) - 3086→4309 (+40%增长), 策略优化收敛
-  Phase 5: 稳定期 (27k-500k步)  - 稳定在4360±, 持续微调优化
+Command: python run_advanced_algorithm_comparison.py --algorithms td7 --timesteps 500000 --eval-episodes 5
+Status: ✅ Completed 🎆 "Jump learning" phenomenon!
+Training time: 7566.4s (126.1 minutes)
+Evaluation results:
+  - Final evaluation reward (500k steps): 4434.36 (evaluation)
+  - Complete training evaluation reward: 4433.16
+  - Average reward: 4358.38 ± 178.57 🥉🥉
+  - Average episode length: 200.0
+  - Evaluation episodes: 1
+  - Total training episodes: 3,794 episodes
+  - Total training steps: 499,801 steps
+  - Improvement over Random: +1378%!!!
+  - Improvement over Heuristic: +52.3%!
+  - Third place (after A2C, PPO)
+  - SALE embedding dimension: 256 dimensions
+  - LAP prioritized replay: Enabled
+  - Checkpoint mechanism: Automatically save best performance points
+  - Standard deviation: 178.57
+Algorithm features: TD7 with SALE + LAP + Checkpoints (Fujimoto & Gu, 2021)
+Performance analysis: 🎆 **Amazing "jump learning" phenomenon!** Third place achievement!
+Major discovery - TD7's two qualitative jumps:
+  🔍 Learning phase analysis:
+  Phase 1: Exploration period (0-25k steps)     - Performance ~200-300, random environment exploration
+  Phase 2: First jump (25,589 steps) - 215→1321 (+515% growth), SALE representation learning reaches critical threshold
+  Phase 3: Transition period (26k-27k steps)   - 1321→3086, continuous rapid growth
+  Phase 4: Second jump (26,989 steps) - 3086→4309 (+40% growth), policy optimization convergence
+  Phase 5: Stable period (27k-500k steps)  - Stable at 4360±, continuous fine-tuning optimization
 
-  🎯 两次跳跃关键时刻（1400步内完成约20个episodes）:
-     Jump 1 @ 25,589步: 215→1321 (+515%)
-       → SALE表示学习突破临界阈值
-       → 算法"理解"了环境的基础结构
+  🎯 Two jump critical moments (completed ~20 episodes within 1400 steps):
+     Jump 1 @ 25,589 steps: 215→1321 (+515%)
+       → SALE representation learning breakthrough critical threshold
+       → Algorithm "understands" the basic structure of the environment
 
-     Jump 2 @ 26,989步: 3086→4309 (+40%)
-       → 策略优化收敛到顶级性能
-       → 检查点机制锁定高性能策略
+     Jump 2 @ 26,989 steps: 3086→4309 (+40%)
+       → Policy optimization converges to top performance
+       → Checkpoint mechanism locks high-performance policy
 
-     最终性能: 4360.88 (稳定保持)
+     Final performance: 4360.88 (stable maintenance)
 
-突破意义:
-  1. 首次在UAV调度中观察到两次连续性能跳跃现象
-  2. SALE表示学习的临界阈值效应为深度强化学习理论提供新见解
-  3. 两次跳跃分别对应表示学习突破和策略收敛，揭示了TD7学习机制
-  4. 验证了TD7在复杂环境中的强大学习能力和稳定性
-技术亮点:
-  - SALE表示学习达到临界阈值后触发第一次跳跃
-  - LAP优先级经验回放加速策略优化导致第二次跳跃
-  - Checkpoints机制成功保存跳跃后的高性能策略
-  - 三大技术协同实现了突破性的跳跃学习模式
+Breakthrough significance:
+  1. First observation of two consecutive performance jumps in UAV scheduling
+  2. Critical threshold effect of SALE representation learning provides new insights for deep reinforcement learning theory
+  3. Two jumps correspond to representation learning breakthrough and policy convergence, revealing TD7 learning mechanism
+  4. Validates TD7's powerful learning capability and stability in complex environments
+Technical highlights:
+  - SALE representation learning triggers first jump after reaching critical threshold
+  - LAP prioritized experience replay accelerates policy optimization leading to second jump
+  - Checkpoints mechanism successfully saves high-performance policy after jumps
+  - Three technologies synergize to achieve breakthrough jump learning pattern
 ```
 
 ---
 
-## 📊 性能分析
+## 📊 Performance Analysis
 
-### 算法分类性能对比
+### Algorithm Classification Performance Comparison
 
-**按算法类型分类**:
-- **传统算法**: 待更新
-- **经典DRL**: 待更新  
-- **高级DRL**: 待更新
+**By Algorithm Type**:
+- **Traditional Algorithms**: To be updated
+- **Classic DRL**: To be updated
+- **Advanced DRL**: To be updated
 
-**按架构类型分类**:
+**By Architecture Type**:
 - **Value-based**: Rainbow DQN, R2D2
 - **Policy-based**: PPO
 - **Actor-Critic**: TD3, SAC, SAC v2, TD7, A2C, IMPALA
-- **传统方法**: Random, Heuristic, FCFS, SJF, Priority
+- **Traditional Methods**: Random, Heuristic, FCFS, SJF, Priority
 
-### 预期性能排名
+### Expected Performance Ranking
 
-基于理论分析和先前实验，预期性能排名：
-1. **TD7**: 集成SALE表示学习，预期最优
-2. **PPO**: 稳定可靠的基线算法
-3. **TD3**: Twin Delayed DDPG改进
-4. **SAC/SAC v2**: 连续控制专用
-5. **Rainbow DQN**: 价值函数方法代表
-6. **其他算法**: 待验证
-
----
-
-## 🔧 实验配置
-
-- **环境**: DRLOptimizedQueueEnvFixed
-- **训练步数**: 500,000 steps
-- **评估回合**: 5 episodes (高级算法) / 20 episodes (基线算法)
-- **回合长度**: **固定200步/回合** (硬时间约束)
-  - 200.0 = 算法成功运行完整回合
-  - <200 = 触发提前终止(队列溢出/系统崩溃)
-- **硬件**: CPU训练
-- **框架**: Stable-Baselines3 + 自定义实现
-
-### 📏 回合长度说明
-
-**环境设计**：每个episode严格限制为200步 (`truncated = self.step_count >= 200`)
-
-**实验观察**：
-- **Random算法**: 21.9步 → 随机策略频繁触发系统崩溃
-- **传统算法**: 200.0步 → 算法设计合理，能维持系统稳定运行
-- **回合长度意义**: 反映算法控制系统稳定性的能力
+Based on theoretical analysis and previous experiments, expected performance ranking:
+1. **TD7**: Integrates SALE representation learning, expected optimal
+2. **PPO**: Stable and reliable baseline algorithm
+3. **TD3**: Twin Delayed DDPG improvement
+4. **SAC/SAC v2**: Specialized for continuous control
+5. **Rainbow DQN**: Value function method representative
+6. **Other algorithms**: To be verified
 
 ---
 
-## 📝 更新日志
+## 🔧 Experimental Configuration
 
-- **2025-09-28 创建**: 创建结果文件，等待实验结果
-- **2025-09-28 11:35**: ✅ Random算法完成 - 294.75±308.75 (57.90s)
-- **2025-09-28 11:38**: ✅ Heuristic算法完成 - 2860.69±87.96 (67.49s) [+871% vs Random]
-- **2025-09-28 11:51**: ✅ Priority算法完成 - 2040.04±67.63 (99.94s) [+592% vs Random]
-- **2025-09-28 11:53**: ✅ SJF算法完成 - 2011.16±66.58 (86.80s) [+582% vs Random]
-- **2025-09-28 12:05**: ✅ FCFS算法完成 - 2024.75±66.64 (68.47s) [+587% vs Random]
-- **2025-09-28 12:50**: ✅ IMPALA算法完成 - 1705.13±25.24 (1751.2s/29.2min) [+479% vs Random]
-- **2025-09-28 13:25**: ✅ SB3_A2C算法完成 - 1724.72±52.68 (2143.5s/35.7min) [+485% vs Random]
-- **2025-10-01 邪修突破**: 🔥 SB3_A2C v3延迟余弦退火优化 - 4437.86±128.41 (325.9s/5.4min) [+1406% vs Random, +55% vs Heuristic] **跃升至第二名，仅次于TD7！**
-- **2025-09-28 14:15**: 🚀 **SB3_PPO算法完成** - **4419.98±135.71** (1848.4s/30.8min) [**+1400% vs Random, +54.5% vs Heuristic!**]
-- **2025-09-28 15:47**: 🎉 **R2D2算法完成** - **4289.22±82.23** (6939.9s/115.7min) [**+1355% vs Random, +49.9% vs Heuristic!**]
-- **2025-09-28 17:15**: 🥉 **SB3_TD3算法完成** - **3972.69±168.56** (13472.9s/224.5min) [**+1248% vs Random, +38.9% vs Heuristic!**]
-- **2025-09-28 20:21**: ⚠️ **SB3_SAC算法完成** - **3659.63±1386.03** (15903.0s/265.1min) [**+1142% vs Random, +27.9% vs Heuristic, 高方差警告!**]
-- **2025-09-28 20:45**: ❌ **SB3_DDPG算法完成** - **1889.25±119.34** (12778.0s/213.0min) [**+541% vs Random, -34.0% vs Heuristic, 性能不佳!**]
-- **2025-09-28 21:30**: 🏆 **SAC v2算法完成** - **4282.94±80.70** (17217.1s/287.0min) [**+1353% vs Random, +49.7% vs Heuristic, 新历史纪录!**]
-- **2025-09-28 22:45**: 🎆 **TD7算法完成** - **4351.84±51.07** (7566.4s/126.1min) [**+1376% vs Random, +52.1% vs Heuristic, "跃迁学习"现象!**]
-- **2025-09-29 05:41**: 📉 **Rainbow DQN算法完成** - **2413.46±166.43** (33360.7s/556.3min) [**+719% vs Random, -15.6% vs Heuristic, 性能不佳!**]
+- **Environment**: DRLOptimizedQueueEnvFixed
+- **Training Steps**: 500,000 steps
+- **Evaluation Episodes**: 5 episodes (advanced algorithms) / 20 episodes (baseline algorithms)
+- **Episode Length**: **Fixed 200 steps/episode** (hard time constraint)
+  - 200.0 = Algorithm successfully runs complete episode
+  - <200 = Triggers early termination (queue overflow/system crash)
+- **Hardware**: CPU training
+- **Framework**: Stable-Baselines3 + Custom implementation
+
+### 📏 Episode Length Explanation
+
+**Environment Design**: Each episode strictly limited to 200 steps (`truncated = self.step_count >= 200`)
+
+**Experimental Observations**:
+- **Random algorithm**: 21.9 steps → Random policy frequently triggers system crashes
+- **Traditional algorithms**: 200.0 steps → Algorithm design reasonable, can maintain system stable operation
+- **Episode length significance**: Reflects algorithm's ability to control system stability
+
+---
+
+## 📝 Update Log
+
+- **2025-09-28 Created**: Created results file, waiting for experimental results
+- **2025-09-28 11:35**: ✅ Random algorithm complete - 294.75±308.75 (57.90s)
+- **2025-09-28 11:38**: ✅ Heuristic algorithm complete - 2860.69±87.96 (67.49s) [+871% vs Random]
+- **2025-09-28 11:51**: ✅ Priority algorithm complete - 2040.04±67.63 (99.94s) [+592% vs Random]
+- **2025-09-28 11:53**: ✅ SJF algorithm complete - 2011.16±66.58 (86.80s) [+582% vs Random]
+- **2025-09-28 12:05**: ✅ FCFS algorithm complete - 2024.75±66.64 (68.47s) [+587% vs Random]
+- **2025-09-28 12:50**: ✅ IMPALA algorithm complete - 1705.13±25.24 (1751.2s/29.2min) [+479% vs Random]
+- **2025-09-28 13:25**: ✅ SB3_A2C algorithm complete - 1724.72±52.68 (2143.5s/35.7min) [+485% vs Random]
+- **2025-10-01 Breakthrough**: 🔥 SB3_A2C v3 delayed cosine annealing optimization - 4437.86±128.41 (325.9s/5.4min) [+1406% vs Random, +55% vs Heuristic] **Jumped to second place, only behind TD7!**
+- **2025-09-28 14:15**: 🚀 **SB3_PPO algorithm complete** - **4419.98±135.71** (1848.4s/30.8min) [**+1400% vs Random, +54.5% vs Heuristic!**]
+- **2025-09-28 15:47**: 🎉 **R2D2 algorithm complete** - **4289.22±82.23** (6939.9s/115.7min) [**+1355% vs Random, +49.9% vs Heuristic!**]
+- **2025-09-28 17:15**: 🥉 **SB3_TD3 algorithm complete** - **3972.69±168.56** (13472.9s/224.5min) [**+1248% vs Random, +38.9% vs Heuristic!**]
+- **2025-09-28 20:21**: ⚠️ **SB3_SAC algorithm complete** - **3659.63±1386.03** (15903.0s/265.1min) [**+1142% vs Random, +27.9% vs Heuristic, high variance warning!**]
+- **2025-09-28 20:45**: ❌ **SB3_DDPG algorithm complete** - **1889.25±119.34** (12778.0s/213.0min) [**+541% vs Random, -34.0% vs Heuristic, poor performance!**]
+- **2025-09-28 21:30**: 🏆 **SAC v2 algorithm complete** - **4282.94±80.70** (17217.1s/287.0min) [**+1353% vs Random, +49.7% vs Heuristic, new historical record!**]
+- **2025-09-28 22:45**: 🎆 **TD7 algorithm complete** - **4351.84±51.07** (7566.4s/126.1min) [**+1376% vs Random, +52.1% vs Heuristic, "jump learning" phenomenon!**]
+- **2025-09-29 05:41**: 📉 **Rainbow DQN algorithm complete** - **2413.46±166.43** (33360.7s/556.3min) [**+719% vs Random, -15.6% vs Heuristic, poor performance!**]
 
 ---
 
 ---
 
-## 🏆 最终实验总结
+## 🏆 Final Experimental Summary
 
-### 📊 最终排名 (所有算法)
+### 📊 Final Rankings (All Algorithms)
 
-| 排名 | 算法 | 平均奖励 | 标准差 | 训练时间 | 算法类型 |
+| Rank | Algorithm | Avg Reward | Std Dev | Training Time | Algorithm Type |
 |------|------|----------|--------|----------|----------|
-| 🥇 | **SB3_A2C v3** 🔥 | **4437.86** | 128.41 | 6.9min | 延迟余弦退火A2C (邪修秘法！) |
+| 🥇 | **SB3_A2C v3** 🔥 | **4437.86** | 128.41 | 6.9min | Delayed Cosine Annealing A2C (Secret Technique!) |
 | 🥈 | **SB3_PPO** | **4419.98** | 135.71 | 30.8min | Proximal Policy Optimization |
-| 🥉 | **TD7** | **4351.84** | 51.07 | 126.1min | SALE表示学习+检查点 |
-| 4 | **R2D2** | **4289.22** | 82.23 | 115.7min | 循环经验回放DQN |
-| 5 | SAC v2 | 4282.94 | 80.70 | 287.0min | 自动熵调节SAC |
+| 🥉 | **TD7** | **4351.84** | 51.07 | 126.1min | SALE Representation Learning + Checkpoints |
+| 4 | **R2D2** | **4289.22** | 82.23 | 115.7min | Recurrent Experience Replay DQN |
+| 5 | SAC v2 | 4282.94 | 80.70 | 287.0min | Automatic Entropy Tuning SAC |
 | 6 | SB3_TD3 | 3972.69 | 168.56 | 224.5min | Twin Delayed DDPG |
 | 7 | SB3_SAC | 3659.63 | 1386.03 | 265.1min | Soft Actor-Critic |
-| 8 | Heuristic | 2860.69 | 87.96 | 1.1min | 启发式策略 |
-| 9 | Rainbow DQN (优化v2) | 2360.53 | 45.50 | 655.9min | 6项DQN改进集成 (稳定版) |
-| 10 | Priority | 2040.04 | 67.63 | 1.7min | 优先级调度 |
-| 11 | FCFS | 2024.75 | 66.64 | 1.1min | 先来先服务 |
-| 12 | SJF | 2011.16 | 66.58 | 1.4min | 短任务优先 |
-| 13 | IMPALA (优化v2) | 1682.19 | 73.85 | 61.4min | 分布式重要性加权 (保守V-trace) |
-| 14 | SB3_DDPG (放弃) | 1490.48 | 102.20 | 230.7min | Deep Deterministic PG |
-| 15 | Random | 294.75 | 308.75 | 1.0min | 随机策略基线 |
+| 8 | Heuristic | 2860.69 | 87.96 | 1.1min | Heuristic Strategy |
+| 9 | Rainbow DQN (Optimized v2) | 2360.53 | 45.50 | 655.9min | 6 DQN Improvements Integrated (Stable Version) |
+| 10 | Priority | 2040.04 | 67.63 | 1.7min | Priority Scheduling |
+| 11 | FCFS | 2024.75 | 66.64 | 1.1min | First Come First Serve |
+| 12 | SJF | 2011.16 | 66.58 | 1.4min | Shortest Job First |
+| 13 | IMPALA (Optimized v2) | 1682.19 | 73.85 | 61.4min | Distributed Importance Weighted (Conservative V-trace) |
+| 14 | SB3_DDPG (Abandoned) | 1490.48 | 102.20 | 230.7min | Deep Deterministic PG |
+| 15 | Random | 294.75 | 308.75 | 1.0min | Random Policy Baseline |
 
-### 🎯 关键发现
+### 🎯 Key Findings
 
-1. **🔥 邪修惊喜 - A2C逆袭登顶！**:
-   - **延迟余弦退火** (前300k固定lr=7e-4, 后200k退火至1e-5) 使A2C从低级层(1724)跃升至顶级层(4437)！
-   - **+157%性能提升** (1724→4437)，超越PPO/TD7成为冠军！
-   - **学习率调度时机的重要性**: 过早退火→抑制探索(SB3_A2C_3: -15收敛)；延迟退火→探索+稳定兼得
-   - **邪修秘法验证**: 前期高lr充分探索策略空间，后期低lr精细收敛至最优策略
+1. **🔥 Surprise Breakthrough - A2C Counterattack to Top!**:
+   - **Delayed Cosine Annealing** (first 300k fixed lr=7e-4, last 200k annealing to 1e-5) elevated A2C from low tier (1724) to top tier (4437)!
+   - **+157% performance improvement** (1724→4437), surpassing PPO/TD7 to become champion!
+   - **Importance of learning rate scheduling timing**: Early annealing→suppresses exploration (SB3_A2C_3: -15 convergence); Delayed annealing→achieves both exploration and stability
+   - **Secret technique verification**: Early high lr fully explores policy space, late low lr fine-tunes convergence to optimal policy
 
-2. **🏆 顶级层三强**: A2C v3 (4437) > PPO (4420) > TD7 (4352)
-   - A2C v3以**5.4分钟**训练时间获得最高性能，效率惊人！
-   - PPO保持稳定第二，标准差控制良好(135.71)
-   - TD7训练时间126.1min，展现独特的跳跃学习现象
+2. **🏆 Top Three**: A2C v3 (4437) > PPO (4420) > TD7 (4352)
+   - A2C v3 achieves highest performance with **5.4 minutes** training time, amazing efficiency!
+   - PPO maintains stable second place, good standard deviation control (135.71)
+   - TD7 training time 126.1min, shows unique jump learning phenomenon
 
-3. **🎆 算法优化成果**:
-   - **Rainbow DQN**: 优化后稳定性大幅提升(166.43→45.50方差降低73%)，但性能有所牺牲
-   - **IMPALA**: 保守V-trace策略消除崩溃，稳定收敛至1682
-   - **DDPG**: 两次优化尝试均失败，最终放弃，使用TD3/TD7作为改进版
+3. **🎆 Algorithm Optimization Results**:
+   - **Rainbow DQN**: Stability greatly improved after optimization (variance reduced 73% from 166.43→45.50), but performance sacrificed
+   - **IMPALA**: Conservative V-trace strategy eliminates crashes, stably converges to 1682
+   - **DDPG**: Two optimization attempts both failed, finally abandoned, using TD3/TD7 as improved versions
 
-4. **📉 复杂度悖论**: Rainbow DQN复杂集成算法性能反而低于简单的PPO/A2C
-5. **⚠️ SAC不稳定**: 原版SAC方差极高(1386)，v2版本显著改善(80.70)
-6. **🔧 DDPG局限**: 原始DDPG表现远不如TD3改进版
+4. **📉 Complexity Paradox**: Rainbow DQN complex integrated algorithm performs worse than simple PPO/A2C
+5. **⚠️ SAC Instability**: Original SAC has extremely high variance (1386), v2 version significantly improved (80.70)
+6. **🔧 DDPG Limitations**: Original DDPG performs far worse than TD3 improved version
 
-### 🧠 理论意义
+### 🧠 Theoretical Significance
 
-这次实验在UAV垂直分层队列系统中验证了：
-- **PPO的稳定性优势**：在复杂环境中表现最佳
-- **表示学习的威力**：TD7的SALE机制展现突破性学习
-- **循环记忆的价值**：R2D2在序列决策中的优越性
-- **算法复杂度悖论**：更复杂不一定更好(Rainbow vs PPO)
-- **改进算法的必要性**：TD3 vs DDPG, SAC v2 vs SAC
+This experiment verified in UAV vertical layered queue systems:
+- **PPO's stability advantage**: Best performance in complex environments
+- **Power of representation learning**: TD7's SALE mechanism shows breakthrough learning
+- **Value of recurrent memory**: R2D2's superiority in sequential decision-making
+- **Algorithm complexity paradox**: More complex is not necessarily better (Rainbow vs PPO)
+- **Necessity of improved algorithms**: TD3 vs DDPG, SAC v2 vs SAC
 
-**实验完成！所有15个算法测试完毕。**
+**Experiment Complete! All 15 algorithms tested.**

@@ -1,64 +1,63 @@
-# 消融实验最终数据分析报告
 # Final Ablation Study Data Analysis Report
 
-**生成时间**: 2026-01-05
-**实验总数**: 21 (7配置 × 3算法)
-**评估轮次**: 50 episodes
-**高负载倍数**: 10x
+**Generation Time**: 2026-01-05
+**Total Experiments**: 21 (7 configurations × 3 algorithms)
+**Evaluation Episodes**: 50 episodes
+**High Load Multiplier**: 10x
 
 ---
 
-## 一、实验概览
+## I. Experiment Overview
 
-### 容量配置分布
+### Capacity Configuration Distribution
 
-| 总容量 | 容量分布 | 配置类型 | 算法数 |
+| Total Capacity | Capacity Distribution | Configuration Type | Number of Algorithms |
 |--------|---------|---------|--------|
-| 10 | [2, 2, 2, 2, 2] | 低容量 | 3 |
-| 20 | [4, 4, 4, 4, 4] | 均匀20 | 3 |
-| 23 | [8, 6, 4, 3, 2] | 倒金字塔 | 3 |
-| 25 | [5, 5, 5, 5, 5] | 均匀 | 3 |
-| 30 | [6, 6, 6, 6, 6] | 均匀30 | 3 |
-| 40 | [8, 8, 8, 8, 8] | 高容量 | 3 |
+| 10 | [2, 2, 2, 2, 2] | Low capacity | 3 |
+| 20 | [4, 4, 4, 4, 4] | Uniform20 | 3 |
+| 23 | [8, 6, 4, 3, 2] | Inverted pyramid | 3 |
+| 25 | [5, 5, 5, 5, 5] | Uniform | 3 |
+| 30 | [6, 6, 6, 6, 6] | Uniform30 | 3 |
+| 40 | [8, 8, 8, 8, 8] | High capacity | 3 |
 
-## 二、关键发现
+## II. Key Findings
 
-### 1. 最优容量配置
+### 1. Optimal Capacity Configuration
 
-**按平均奖励排名（A2C+PPO）**:
+**Ranked by Average Reward (A2C+PPO)**:
 
-| 排名 | 配置 | 类型 | 总容量 | 平均奖励 | 平均崩溃率 | 平均完成率 |
+| Rank | Configuration | Type | Total Capacity | Avg Reward | Avg Crash Rate | Avg Completion Rate |
 |------|------|------|--------|---------|-----------|-----------|
-| 1 🥇 | low_capacity | 低容量 | 10 | 11180.17 | 0.0% | 100.0% |
-| 2 🥈 | capacity_4x5 | 均匀20 | 20 | 10854.55 | 10.0% | 90.0% |
-| 3 🥉 | inverted_pyramid | 倒金字塔 | 23 | 8843.70 | 29.0% | 71.0% |
-| 4  | uniform | 均匀 | 25 | 7817.07 | 35.0% | 65.0% |
-| 5  | reverse_pyramid | 正金字塔 | 23 | 3950.14 | 65.0% | 35.0% |
-| 6  | capacity_6x5 | 均匀30 | 30 | 13.50 | 100.0% | 0.0% |
-| 7  | high_capacity | 高容量 | 40 | -32.41 | 100.0% | 0.0% |
+| 1 🥇 | low_capacity | Low capacity | 10 | 11180.17 | 0.0% | 100.0% |
+| 2 🥈 | capacity_4x5 | Uniform20 | 20 | 10854.55 | 10.0% | 90.0% |
+| 3 🥉 | inverted_pyramid | Inverted pyramid | 23 | 8843.70 | 29.0% | 71.0% |
+| 4  | uniform | Uniform | 25 | 7817.07 | 35.0% | 65.0% |
+| 5  | reverse_pyramid | Normal pyramid | 23 | 3950.14 | 65.0% | 35.0% |
+| 6  | capacity_6x5 | Uniform30 | 30 | 13.50 | 100.0% | 0.0% |
+| 7  | high_capacity | High capacity | 40 | -32.41 | 100.0% | 0.0% |
 
-**✅ 最优配置**: `low_capacity` (低容量, 总容量10)
-- 平均奖励: 11180.17
-- 平均崩溃率: 0.0%
-- 平均完成率: 100.0%
+**✅ Optimal Configuration**: `low_capacity` (Low capacity, total capacity 10)
+- Average Reward: 11180.17
+- Average Crash Rate: 0.0%
+- Average Completion Rate: 100.0%
 
-### 2. 算法性能对比
+### 2. Algorithm Performance Comparison
 
-| 算法 | 平均奖励 | 奖励标准差 | 平均崩溃率 | 平均完成率 | 平均Episode长度 |
+| Algorithm | Avg Reward | Reward Std Dev | Avg Crash Rate | Avg Completion Rate | Avg Episode Length |
 |------|---------|-----------|-----------|-----------|----------------|
 | A2C | 6454.84 | 4411.80 | 40.6% | 59.4% | 128.74 |
 | PPO | 5724.23 | 4646.93 | 56.3% | 43.7% | 108.60 |
 | TD7 | 375294.33 | 244253.89 | 28.6% | 71.4% | 7143.14 |
 
-### 3. 容量效应分析
+### 3. Capacity Effect Analysis
 
-**可行配置（非100%崩溃）**:
+**Feasible Configurations (Non-100% crash)**:
 
-| 总容量 | 平均奖励 | 平均崩溃率 | 状态 |
+| Total Capacity | Avg Reward | Avg Crash Rate | Status |
 |--------|---------|-----------|------|
-| 10 | 11180.17 | 0.0% | ✅ 优秀 |
-| 20 | 10854.55 | 10.0% | ✅ 优秀 |
-| 23 | 6396.92 | 47.0% | ⚠️ 可用 |
-| 25 | 7817.07 | 35.0% | ⚠️ 可用 |
+| 10 | 11180.17 | 0.0% | ✅ Excellent |
+| 20 | 10854.55 | 10.0% | ✅ Excellent |
+| 23 | 6396.92 | 47.0% | ⚠️ Usable |
+| 25 | 7817.07 | 35.0% | ⚠️ Usable |
 
-**关键观察**: 容量 ≤ 25 可以在10x高负载下维持系统稳定
+**Key Observation**: Capacity ≤ 25 can maintain system stability under 10x high load

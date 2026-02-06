@@ -280,18 +280,18 @@ Current experimental coverage is exceptional:
 
 ## 📞 Key Questions Answered
 
-### Q1: 如何可以提升论文的可接受性？
+### Q1: How can we improve the paper's acceptability?
 **A:** Fix Cohen's d presentation (Phase 1), add effect size interpretation section, create supporting visualizations, integrate running experiments (Phase 2)
 
-### Q2: 还要加入什么吗？
+### Q2: What else needs to be added?
 **A:** Methods section 3.4.6, distribution plots, variance analysis table, full text expansion from outlines
 
-### Q3: 两个实验做好以后能起到作用吗？
+### Q3: Will the two experiments be effective after completion?
 **A:** Yes! Reward sensitivity (⭐⭐⭐⭐) addresses robustness concerns. Extended training (⭐⭐⭐⭐⭐) directly tests capacity paradox mechanism. Combined impact: 80-85% → 85-90% acceptance probability.
 
-### Q4: 还有什么实验要做？
+### Q4: What other experiments need to be done?
 **A:** No additional experiments needed. Current coverage (260+ runs) is exceptional. Focus on manuscript completion.
 
 ---
 
-**论文已经具备发表条件，主要需要完成文本扩展和实验整合。**
+**The paper is ready for publication, mainly needs to complete text expansion and experiment integration.**

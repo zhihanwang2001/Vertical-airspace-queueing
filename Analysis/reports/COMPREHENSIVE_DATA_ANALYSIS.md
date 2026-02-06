@@ -1,448 +1,448 @@
-# 深度数据分析报告
+# Comprehensive Data Analysis Report
 # Comprehensive Data Analysis Report
 
-**生成时间**: 2026-01-05
-**实验总数**: 21 experiments (7 configurations × 3 algorithms)
-**评估轮次**: 50 episodes
-**高负载倍数**: 10x (相对v3基准)
-**固定流量模式**: [0.3, 0.25, 0.2, 0.15, 0.1] (真实UAM模式)
+**Generation time**: 2026-01-05
+**Total experiments**: 21 experiments (7 configurations × 3 algorithms)
+**Evaluation episodes**: 50 episodes
+**High load multiplier**: 10x (relative to v3 baseline)
+**Fixed traffic pattern**: [0.3, 0.25, 0.2, 0.15, 0.1] (realistic UAM pattern)
 
 ---
 
-## 一、核心研究问题
+## 1. Core Research Questions
 
-### 研究问题1: 倒金字塔结构是否在高负载下表现最优？
+### Research Question 1: Does the inverted pyramid structure perform optimally under high load?
 
-**假设**: 倒金字塔[8,6,4,3,2]能够match流量模式[0.3, 0.25, 0.2, 0.15, 0.1]，在高负载下性能最优
+**Hypothesis**: Inverted pyramid [8,6,4,3,2] can match traffic pattern [0.3, 0.25, 0.2, 0.15, 0.1], achieving optimal performance under high load
 
-**实验结果**:
+**Experimental Results**:
 
-| 配置 | 容量分布 | 总容量 | A2C奖励 | PPO奖励 | 平均奖励 | 崩溃率 |
+| Configuration | Capacity Distribution | Total Capacity | A2C Reward | PPO Reward | Average Reward | Crash Rate |
 |------|---------|--------|---------|---------|---------|--------|
-| 倒金字塔 | [8,6,4,3,2] | 23 | 9864.40 | 7822.99 | **8843.70** | 29% |
-| 均匀25 | [5,5,5,5,5] | 25 | 9239.09 | 6395.06 | 7817.07 | 35% |
-| 正金字塔 | [2,3,4,6,8] | 23 | 5326.45 | 2573.84 | 3950.14 | 65% |
+| Inverted pyramid | [8,6,4,3,2] | 23 | 9864.40 | 7822.99 | **8843.70** | 29% |
+| Uniform 25 | [5,5,5,5,5] | 25 | 9239.09 | 6395.06 | 7817.07 | 35% |
+| Normal pyramid | [2,3,4,6,8] | 23 | 5326.45 | 2573.84 | 3950.14 | 65% |
 
-**结论**: ✅ **假设部分成立**
-- 倒金字塔在同等容量(23)下**显著优于**正金字塔 (8843.70 vs 3950.14, +124%)
-- 倒金字塔优于均匀分布25 (8843.70 vs 7817.07, +13.1%)
-- **但意外发现**: 低容量配置[2,2,2,2,2]总容量10表现最优 (11180.17)
+**Conclusion**: ✅ **Hypothesis partially confirmed**
+- Inverted pyramid **significantly outperforms** normal pyramid at same capacity (23) (8843.70 vs 3950.14, +124%)
+- Inverted pyramid outperforms uniform distribution 25 (8843.70 vs 7817.07, +13.1%)
+- **Unexpected finding**: Low capacity configuration [2,2,2,2,2] with total capacity 10 performs optimally (11180.17)
 
 ---
 
-### 研究问题2: 容量-负载匹配的关键因素是什么？
+### Research Question 2: What are the key factors in capacity-load matching?
 
-#### 2.1 容量效应分析
+#### 2.1 Capacity Effect Analysis
 
-| 总容量 | 配置类型 | 10x负载下表现 | 崩溃率 | 关键发现 |
+| Total Capacity | Configuration Type | Performance Under 10x Load | Crash Rate | Key Finding |
 |--------|---------|-------------|--------|---------|
-| **10** | 低容量 | ✅ **最优** (11180) | 0% | 容量小→状态空间小→易学习 |
-| **20** | 均匀20 | ✅ 优秀 (10855) | 10% | 第二优 |
-| **23** | 倒金字塔 | ⚠️ 良好 (8844) | 29% | 结构优势明显 |
-| **23** | 正金字塔 | ⚠️ 可用 (3950) | 65% | 结构劣势明显 |
-| **25** | 均匀25 | ⚠️ 可用 (7817) | 35% | 中等表现 |
-| **30** | 均匀30 | ❌ 失败 (13) | 100% | 立即崩溃 |
-| **40** | 高容量 | ❌ 失败 (-32) | 100% | 立即崩溃 |
+| **10** | Low capacity | ✅ **Optimal** (11180) | 0% | Small capacity → Small state space → Easy to learn |
+| **20** | Uniform 20 | ✅ Excellent (10855) | 10% | Second best |
+| **23** | Inverted pyramid | ⚠️ Good (8844) | 29% | Clear structural advantage |
+| **23** | Normal pyramid | ⚠️ Usable (3950) | 65% | Clear structural disadvantage |
+| **25** | Uniform 25 | ⚠️ Usable (7817) | 35% | Medium performance |
+| **30** | Uniform 30 | ❌ Failed (13) | 100% | Immediate collapse |
+| **40** | High capacity | ❌ Failed (-32) | 100% | Immediate collapse |
 
-**关键洞察**:
-1. **容量阈值**: 容量 ≤ 25 可维持系统，容量 ≥ 30 立即崩溃
-2. **状态空间假设**: 容量越大 → 状态空间越大 → 训练难度越高 → 性能下降
-3. **性能拐点**: 容量20-25之间存在性能急剧下降的拐点
+**Key Insights**:
+1. **Capacity threshold**: Capacity ≤ 25 maintains system, capacity ≥ 30 immediate collapse
+2. **State space hypothesis**: Larger capacity → Larger state space → Higher training difficulty → Performance decline
+3. **Performance inflection point**: Sharp performance drop exists between capacity 20-25
 
-#### 2.2 理论负载分析
+#### 2.2 Theoretical Load Analysis
 
-**倒金字塔 [8,6,4,3,2] 在10x负载下的理论负载**:
+**Inverted Pyramid [8,6,4,3,2] Theoretical Load Under 10x Load**:
 
-假设:
-- 总到达率 λ_total = base_rate_v3 × 10
+Assumptions:
+- Total arrival rate λ_total = base_rate_v3 × 10
 - base_rate_v3 ≈ 0.75 × 23 × 1.6 / 5 = 5.52
 - λ_total ≈ 55.2
 
-各层负载计算 (ρ = λ/(μ·c)):
+Load calculation per layer (ρ = λ/(μ·c)):
 
-| Layer | 容量c | 服务率μ | 到达率λ | 理论负载ρ | 状态 |
+| Layer | Capacity c | Service Rate μ | Arrival Rate λ | Theoretical Load ρ | Status |
 |-------|------|---------|---------|----------|------|
-| 0 | 8 | 1.6 | 16.56 | 129.4% | 🔴 过载 |
-| 1 | 6 | 1.5 | 13.80 | 153.3% | 🔴 过载 |
-| 2 | 4 | 1.4 | 11.04 | 196.4% | 🔴 过载 |
-| 3 | 3 | 1.3 | 8.28 | 212.3% | 🔴 过载 |
-| 4 | 2 | 1.2 | 5.52 | 230.0% | 🔴 过载 |
+| 0 | 8 | 1.6 | 16.56 | 129.4% | 🔴 Overloaded |
+| 1 | 6 | 1.5 | 13.80 | 153.3% | 🔴 Overloaded |
+| 2 | 4 | 1.4 | 11.04 | 196.4% | 🔴 Overloaded |
+| 3 | 3 | 1.3 | 8.28 | 212.3% | 🔴 Overloaded |
+| 4 | 2 | 1.2 | 5.52 | 230.0% | 🔴 Overloaded |
 
-**平均负载**: 184.3% (严重过载)
+**Average Load**: 184.3% (severely overloaded)
 
-**正金字塔 [2,3,4,6,8] 在10x负载下的理论负载**:
+**Normal Pyramid [2,3,4,6,8] Theoretical Load Under 10x Load**:
 
-| Layer | 容量c | 服务率μ | 到达率λ | 理论负载ρ | 状态 |
+| Layer | Capacity c | Service Rate μ | Arrival Rate λ | Theoretical Load ρ | Status |
 |-------|------|---------|---------|----------|------|
-| 0 | 2 | 1.6 | 16.56 | 517.5% | 🔴🔴🔴 严重过载 |
-| 1 | 3 | 1.5 | 13.80 | 306.7% | 🔴🔴 严重过载 |
-| 2 | 4 | 1.4 | 11.04 | 196.4% | 🔴 过载 |
-| 3 | 6 | 1.3 | 8.28 | 106.2% | 🔴 过载 |
-| 4 | 8 | 1.2 | 5.52 | 57.5% | 🟢 正常 |
+| 0 | 2 | 1.6 | 16.56 | 517.5% | 🔴🔴🔴 Severely overloaded |
+| 1 | 3 | 1.5 | 13.80 | 306.7% | 🔴🔴 Severely overloaded |
+| 2 | 4 | 1.4 | 11.04 | 196.4% | 🔴 Overloaded |
+| 3 | 6 | 1.3 | 8.28 | 106.2% | 🔴 Overloaded |
+| 4 | 8 | 1.2 | 5.52 | 57.5% | 🟢 Normal |
 
-**平均负载**: 236.9% (极度过载)
+**Average Load**: 236.9% (extremely overloaded)
 
-**关键发现**:
-- 正金字塔Layer 0负载517.5%，是倒金字塔的**4倍** → 解释了65%崩溃率
-- 倒金字塔负载分布更均匀 (129%-230%) vs 正金字塔 (58%-518%)
-- **容量-流量匹配至关重要**: 高流量层需要高容量
+**Key Findings**:
+- Normal pyramid Layer 0 load 517.5%, **4 times** that of inverted pyramid → Explains 65% crash rate
+- Inverted pyramid has more uniform load distribution (129%-230%) vs normal pyramid (58%-518%)
+- **Capacity-traffic matching is critical**: High traffic layers need high capacity
 
 ---
 
-### 研究问题3: TD7算法相比A2C/PPO的优势在哪里？
+### Research Question 3: What are TD7 algorithm's advantages compared to A2C/PPO?
 
-#### 3.1 算法性能对比
+#### 3.1 Algorithm Performance Comparison
 
-| 算法 | 平均奖励 | 奖励标准差 | 平均崩溃率 | 平均完成率 | 平均Episode长度 |
+| Algorithm | Average Reward | Reward Std Dev | Average Crash Rate | Average Completion Rate | Average Episode Length |
 |------|---------|-----------|-----------|-----------|----------------|
 | **TD7** | 375,294 | 244,254 | 28.6% | **71.4%** | 7,143 |
 | A2C | 6,455 | 4,412 | 40.6% | 59.4% | 129 |
 | PPO | 5,724 | 4,647 | 56.3% | 43.7% | 109 |
 
-**注意**: TD7使用max_steps=10,000, A2C/PPO使用max_steps=200 (不同评估协议)
+**Note**: TD7 uses max_steps=10,000, A2C/PPO use max_steps=200 (different evaluation protocols)
 
-#### 3.2 公平对比 - 按完成率和崩溃率
+#### 3.2 Fair Comparison - By Completion Rate and Crash Rate
 
-| 配置 | 算法 | 崩溃率 | 完成率 | Episode长度 |
+| Configuration | Algorithm | Crash Rate | Completion Rate | Episode Length |
 |------|------|--------|--------|------------|
-| **低容量10** | TD7 | **0%** | **100%** | 10,000 |
-| 低容量10 | A2C | 0% | 100% | 200 |
-| 低容量10 | PPO | 0% | 100% | 200 |
-| **均匀20** | TD7 | **0%** | **100%** | 10,000 |
-| 均匀20 | A2C | 18% | 82% | 183 |
-| 均匀20 | PPO | 2% | 98% | 200 |
-| **倒金字塔23** | TD7 | **0%** | **100%** | 10,000 |
-| 倒金字塔23 | A2C | 16% | 84% | 181 |
-| 倒金字塔23 | PPO | 42% | 58% | 151 |
-| **均匀25** | TD7 | **0%** | **100%** | 10,000 |
-| 均匀25 | A2C | 10% | 90% | 187 |
-| 均匀25 | PPO | 60% | 40% | 130 |
+| **Low capacity 10** | TD7 | **0%** | **100%** | 10,000 |
+| Low capacity 10 | A2C | 0% | 100% | 200 |
+| Low capacity 10 | PPO | 0% | 100% | 200 |
+| **Uniform 20** | TD7 | **0%** | **100%** | 10,000 |
+| Uniform 20 | A2C | 18% | 82% | 183 |
+| Uniform 20 | PPO | 2% | 98% | 200 |
+| **Inverted pyramid 23** | TD7 | **0%** | **100%** | 10,000 |
+| Inverted pyramid 23 | A2C | 16% | 84% | 181 |
+| Inverted pyramid 23 | PPO | 42% | 58% | 151 |
+| **Uniform 25** | TD7 | **0%** | **100%** | 10,000 |
+| Uniform 25 | A2C | 10% | 90% | 187 |
+| Uniform 25 | PPO | 60% | 40% | 130 |
 
-**关键发现**:
-1. **TD7零崩溃**: 在所有可行配置(容量≤25)下，TD7崩溃率均为0%
-2. **A2C vs PPO**: A2C在高负载下显著优于PPO (40.6% vs 56.3%崩溃率)
-3. **PPO退化**: 在容量23-25配置下，PPO崩溃率40%-60%，性能严重退化
+**Key Findings**:
+1. **TD7 Zero Crashes**: Across all feasible configurations (capacity≤25), TD7 crash rate is 0%
+2. **A2C vs PPO**: A2C significantly outperforms PPO under high load (40.6% vs 56.3% crash rate)
+3. **PPO Degradation**: In capacity 23-25 configurations, PPO crash rate 40%-60%, severe performance degradation
 
-#### 3.3 高负载下的算法鲁棒性
+#### 3.3 Algorithm Robustness Under High Load
 
-**容量30和40的表现 (立即崩溃配置)**:
+**Performance at Capacity 30 and 40 (Immediate Collapse Configurations)**:
 
-| 配置 | TD7崩溃率 | A2C崩溃率 | PPO崩溃率 |
+| Configuration | TD7 Crash Rate | A2C Crash Rate | PPO Crash Rate |
 |------|----------|----------|----------|
-| 均匀30 | 100% | 100% | 100% |
-| 高容量40 | 100% | 100% | 100% |
+| Uniform 30 | 100% | 100% | 100% |
+| High capacity 40 | 100% | 100% | 100% |
 
-**结论**: 即使是TD7，也无法处理容量≥30的高负载场景
+**Conclusion**: Even TD7 cannot handle high load scenarios with capacity≥30
 
 ---
 
-## 二、深度洞察
+## 2. Deep Insights
 
-### 洞察1: "容量悖论"
+### Insight 1: "Capacity Paradox"
 
-**发现**: 总容量最小的配置(10)性能最优，而不是"最匹配"的倒金字塔(23)
+**Finding**: Configuration with minimum total capacity (10) achieves optimal performance, not the "best matched" inverted pyramid (23)
 
-**可能解释**:
-1. **状态空间复杂度**:
-   - 容量10: 状态空间 ≈ 3^10 = 59,049
-   - 容量23: 状态空间 ≈ 3^23 = 9.4×10^10 (大1,592,524倍!)
+**Possible Explanations**:
+1. **State Space Complexity**:
+   - Capacity 10: State space ≈ 3^10 = 59,049
+   - Capacity 23: State space ≈ 3^23 = 9.4×10^10 (1,592,524 times larger!)
 
-2. **学习难度**:
-   - 容量小 → 状态空间小 → 更容易学习有效策略
-   - 容量大 → 状态空间大 → 训练100k步不足以收敛
+2. **Learning Difficulty**:
+   - Small capacity → Small state space → Easier to learn effective policy
+   - Large capacity → Large state space → 100k training steps insufficient for convergence
 
-3. **过载反而简化决策**:
-   - 容量10在10x负载下严重过载，几乎所有决策都是"尽量服务"
-   - 决策空间被压缩，策略更简单
+3. **Overload Simplifies Decision-Making**:
+   - Capacity 10 under 10x load is severely overloaded, almost all decisions are "serve as much as possible"
+   - Decision space is compressed, policy becomes simpler
 
-**验证假设**:
-- 如果给容量23配置训练1M步，性能可能超过容量10
-- 需要额外实验验证
+**Validation Hypothesis**:
+- If capacity 23 configuration is trained for 1M steps, performance may exceed capacity 10
+- Requires additional experiments to verify
 
-### 洞察2: "结构优势的阈值"
+### Insight 2: "Threshold for Structural Advantage"
 
-**发现**: 倒金字塔的结构优势仅在中等容量(20-25)下显现
+**Finding**: Inverted pyramid's structural advantage only manifests in medium capacity (20-25) range
 
-| 总容量 | 倒金字塔优势 | 说明 |
+| Total Capacity | Inverted Pyramid Advantage | Description |
 |--------|------------|------|
-| 10 | 无对照组 | 仅有均匀分布 |
-| 20-25 | **+13% ~ +124%** | 结构优势显著 |
-| 30+ | 无效 | 全部崩溃 |
+| 10 | No control group | Only uniform distribution |
+| 20-25 | **+13% ~ +124%** | Structural advantage significant |
+| 30+ | Ineffective | All collapse |
 
-**结论**: 结构设计的价值有边界条件 - 仅在适度负载下有意义
+**Conclusion**: Value of structural design has boundary conditions - only meaningful under moderate load
 
-### 洞察3: "PPO在高负载下的退化"
+### Insight 3: "PPO Degradation Under High Load"
 
-**PPO崩溃率随容量增加的趋势**:
+**PPO Crash Rate Trend with Increasing Capacity**:
 
-| 容量 | PPO崩溃率 | A2C崩溃率 | 差距 |
+| Capacity | PPO Crash Rate | A2C Crash Rate | Difference |
 |------|----------|----------|------|
 | 10 | 0% | 0% | 0% |
-| 20 | 2% | 18% | -16% (PPO更好) |
-| 23-倒金字塔 | 42% | 16% | **+26%** |
-| 25-均匀 | 60% | 10% | **+50%** |
-| 23-正金字塔 | 90% | 40% | **+50%** |
+| 20 | 2% | 18% | -16% (PPO better) |
+| 23-Inverted pyramid | 42% | 16% | **+26%** |
+| 25-Uniform | 60% | 10% | **+50%** |
+| 23-Normal pyramid | 90% | 40% | **+50%** |
 
-**可能原因**:
-1. **PPO的clip机制**: 在高负载快速变化环境下限制了策略更新
-2. **批量更新**: PPO使用large batch (64) 和 multiple epochs (10)，在非平稳环境下可能过时
-3. **A2C的优势**: 单步更新更adaptive，能快速响应环境变化
-
----
-
-## 三、论文核心贡献点
-
-### 贡献1: 揭示容量-负载-性能的非线性关系
-
-**发现**:
-- **临界阈值**: 容量25是10x高负载下的稳定性边界
-- **容量悖论**: 最小容量(10)反而性能最优
-- **性能拐点**: 容量25→30之间存在性能cliff (7817 → 13, 下降99.8%)
-
-**理论意义**: 挑战"容量越大越好"的直觉，引入状态空间复杂度的考虑
-
-### 贡献2: 验证容量结构设计的价值
-
-**量化优势**:
-- 倒金字塔 vs 正金字塔: **+124%** 奖励, **-36%** 崩溃率 (同容量23)
-- 倒金字塔 vs 均匀: **+13%** 奖励, **-6%** 崩溃率 (容量23 vs 25)
-
-**设计原则**: 高流量层匹配高容量 > 均匀分布 >> 反向匹配
-
-### 贡献3: A2C在高负载UAM场景下优于PPO
-
-**定量证据**:
-- 平均崩溃率: A2C 40.6% vs PPO 56.3% (**-27.9%相对改进**)
-- 在容量23-25配置下优势更明显: A2C 13%-40% vs PPO 40%-90%
-
-**理论解释**: 单步更新(A2C) > 批量更新(PPO) 在高动态非平稳环境
-
-### 贡献4: TD7的零崩溃鲁棒性
-
-**证据**:
-- 在所有可行配置(容量≤25)下，TD7崩溃率均为**0%**
-- A2C/PPO在相同配置下崩溃率0%-60%
-
-**价值**:
-- 对于safety-critical的UAM系统，零崩溃至关重要
-- TD7作为off-policy算法，sample efficiency更高
+**Possible Reasons**:
+1. **PPO's clip mechanism**: Limits policy updates in rapidly changing high-load environments
+2. **Batch updates**: PPO uses large batch (64) and multiple epochs (10), may become outdated in non-stationary environments
+3. **A2C's advantage**: Single-step updates more adaptive, can quickly respond to environment changes
 
 ---
 
-## 四、实验数据质量评估
+## 3. Core Contributions for Paper
 
-### 4.1 数据完整性
+### Contribution 1: Revealing Nonlinear Relationship Between Capacity-Load-Performance
 
-| 检查项 | 状态 | 详情 |
+**Findings**:
+- **Critical threshold**: Capacity 25 is the stability boundary under 10x high load
+- **Capacity paradox**: Minimum capacity (10) achieves optimal performance
+- **Performance cliff**: Performance cliff exists between capacity 25→30 (7817 → 13, drops 99.8%)
+
+**Theoretical Significance**: Challenges "more capacity is better" intuition, introduces state space complexity consideration
+
+### Contribution 2: Validating Value of Capacity Structure Design
+
+**Quantified Advantages**:
+- Inverted pyramid vs Normal pyramid: **+124%** reward, **-36%** crash rate (same capacity 23)
+- Inverted pyramid vs Uniform: **+13%** reward, **-6%** crash rate (capacity 23 vs 25)
+
+**Design Principle**: High traffic layers matched with high capacity > Uniform distribution >> Reverse matching
+
+### Contribution 3: A2C Outperforms PPO in High-Load UAM Scenarios
+
+**Quantitative Evidence**:
+- Average crash rate: A2C 40.6% vs PPO 56.3% (**-27.9% relative improvement**)
+- Advantage more pronounced in capacity 23-25 configurations: A2C 13%-40% vs PPO 40%-90%
+
+**Theoretical Explanation**: Single-step updates (A2C) > Batch updates (PPO) in highly dynamic non-stationary environments
+
+### Contribution 4: TD7's Zero-Crash Robustness
+
+**Evidence**:
+- Across all feasible configurations (capacity≤25), TD7 crash rate is **0%**
+- A2C/PPO crash rate 0%-60% in same configurations
+
+**Value**:
+- For safety-critical UAM systems, zero crashes are crucial
+- TD7 as off-policy algorithm has higher sample efficiency
+
+---
+
+## 4. Experimental Data Quality Assessment
+
+### 4.1 Data Integrity
+
+| Check Item | Status | Details |
 |--------|------|------|
-| 实验数量 | ✅ 完整 | 21/21 (7配置 × 3算法) |
-| 评估轮次 | ✅ 一致 | 所有实验均50 episodes |
-| 高负载倍数 | ✅ 一致 | 所有实验均10x |
-| 流量模式 | ✅ 固定 | [0.3, 0.25, 0.2, 0.15, 0.1] |
-| max_steps协议 | ✅ 修正 | A2C/PPO=200, TD7=10000 |
+| Number of experiments | ✅ Complete | 21/21 (7 configurations × 3 algorithms) |
+| Evaluation episodes | ✅ Consistent | All experiments 50 episodes |
+| High load multiplier | ✅ Consistent | All experiments 10x |
+| Traffic pattern | ✅ Fixed | [0.3, 0.25, 0.2, 0.15, 0.1] |
+| max_steps protocol | ✅ Corrected | A2C/PPO=200, TD7=10000 |
 
-### 4.2 统计显著性
+### 4.2 Statistical Significance
 
-**50 episodes评估的统计力**:
+**Statistical Power of 50 Episodes Evaluation**:
 
-以倒金字塔为例:
+Using inverted pyramid as example:
 - A2C: 9864.40 ± 3690.63, SEM = 522.03, 95%CI = [8840, 10889]
 - PPO: 7822.99 ± 4103.77, SEM = 580.48, 95%CI = [6686, 8960]
 
-**结论**: 置信区间不重叠，差异统计显著
+**Conclusion**: Confidence intervals do not overlap, difference is statistically significant
 
-### 4.3 异常值检查
+### 4.3 Outlier Check
 
-**潜在异常**:
+**Potential Anomalies**:
 
-1. **均匀20的PPO表现异常好**:
-   - PPO奖励: 12085 (最高), 崩溃率仅2%
-   - 但均匀25的PPO崩溃率60%
-   - **可能原因**: 容量20处于PPO的"甜点"，容量再大则退化
+1. **PPO's Unusually Good Performance at Uniform 20**:
+   - PPO reward: 12085 (highest), crash rate only 2%
+   - But PPO crash rate at uniform 25 is 60%
+   - **Possible reason**: Capacity 20 is in PPO's "sweet spot", larger capacity leads to degradation
 
-2. **高容量40和均匀30的负奖励**:
-   - 高容量40: -30 ~ -35
-   - 均匀30: +13
-   - **原因**: 第一步即崩溃，仅有初始奖励
+2. **Negative Rewards for High Capacity 40 and Uniform 30**:
+   - High capacity 40: -30 ~ -35
+   - Uniform 30: +13
+   - **Reason**: Crashes on first step, only initial reward
 
-**验证**: 需要查看episode-level数据确认
-
----
-
-## 五、后续研究方向
-
-### 方向1: 长期训练实验
-
-**假设**: 容量23倒金字塔在1M步训练后可能超过容量10
-
-**实验设计**:
-- 训练步数: 100K, 500K, 1M, 5M
-- 配置: 倒金字塔23 vs 低容量10
-- 算法: A2C, PPO, TD7
-- 目标: 验证状态空间复杂度假设
-
-### 方向2: 容量拐点精确定位
-
-**目标**: 找到10x负载下的精确容量阈值
-
-**实验设计**:
-- 测试容量: 26, 27, 28, 29 (填补25-30的gap)
-- 算法: A2C, TD7
-- 目标: 定位性能cliff的精确位置
-
-### 方向3: 负载倍数扫描
-
-**目标**: 绘制容量-负载-性能的3D曲面
-
-**实验设计**:
-- 负载倍数: 5x, 7.5x, 10x, 12.5x, 15x
-- 容量: 10, 15, 20, 23, 25
-- 算法: A2C, TD7
-- 目标: 找到每个容量的最优负载区间
-
-### 方向4: PPO退化机制深入研究
-
-**目标**: 理解PPO在高负载下性能退化的根本原因
-
-**实验设计**:
-- 超参数扫描: batch_size, n_epochs, clip_range
-- 算法变体: PPO-M (momentum), PPO-Clip vs PPO-Penalty
-- 对比: 倒金字塔23 (PPO崩溃42%) vs 低容量10 (PPO完美)
+**Verification**: Need to check episode-level data for confirmation
 
 ---
 
-## 六、论文图表建议
+## 5. Future Research Directions
 
-### 图1: 容量-性能曲线 (核心贡献)
+### Direction 1: Long-term Training Experiments
 
-**X轴**: 总容量 (10, 20, 23, 25, 30, 40)
-**Y轴**: 平均奖励 (log scale)
-**线条**: A2C, PPO, TD7 三条曲线
-**关键点**:
-- 标注容量25的"稳定性边界"
-- 标注容量10的"意外最优"
-- 标注容量30的"性能cliff"
+**Hypothesis**: Inverted pyramid 23 may exceed capacity 10 after 1M step training
 
-### 图2: 容量结构对比 (验证结构优势)
+**Experimental Design**:
+- Training steps: 100K, 500K, 1M, 5M
+- Configurations: Inverted pyramid 23 vs Low capacity 10
+- Algorithms: A2C, PPO, TD7
+- Goal: Validate state space complexity hypothesis
 
-**对比组**: 倒金字塔 vs 正金字塔 vs 均匀 (同总容量23)
-**Y轴**: 奖励和崩溃率
-**图表类型**: 分组柱状图
-**目的**: 直观展示结构设计的价值
+### Direction 2: Precise Capacity Inflection Point Location
 
-### 图3: 理论负载vs实际性能 (理论验证)
+**Goal**: Find precise capacity threshold under 10x load
 
-**X轴**: 理论平均负载ρ (%)
-**Y轴**: 实际崩溃率 (%)
-**数据点**: 所有7个配置 × 3个算法
-**趋势线**: 拟合负载与崩溃率的关系
-**目的**: 验证理论预测与实际表现的一致性
+**Experimental Design**:
+- Test capacities: 26, 27, 28, 29 (fill gap between 25-30)
+- Algorithms: A2C, TD7
+- Goal: Locate precise position of performance cliff
 
-### 图4: 算法鲁棒性对比
+### Direction 3: Load Multiplier Scanning
 
-**X轴**: 配置 (按容量排序)
-**Y轴**: 崩溃率 (%)
-**线条**: A2C, PPO, TD7
-**关键点**:
-- TD7的"零崩溃线"
-- PPO的"急剧退化"
-- A2C的"稳健表现"
+**Goal**: Plot capacity-load-performance 3D surface
 
-### 表1: 完整实验结果汇总
+**Experimental Design**:
+- Load multipliers: 5x, 7.5x, 10x, 12.5x, 15x
+- Capacities: 10, 15, 20, 23, 25
+- Algorithms: A2C, TD7
+- Goal: Find optimal load range for each capacity
 
-7行(配置) × 3列(算法) = 21个实验的完整数据表
+### Direction 4: In-depth Study of PPO Degradation Mechanism
 
-### 表2: 容量结构设计对比
+**Goal**: Understand root cause of PPO performance degradation under high load
 
-倒金字塔、正金字塔、均匀分布的详细对比 (容量分布、理论负载、实际性能)
+**Experimental Design**:
+- Hyperparameter scanning: batch_size, n_epochs, clip_range
+- Algorithm variants: PPO-M (momentum), PPO-Clip vs PPO-Penalty
+- Comparison: Inverted pyramid 23 (PPO crashes 42%) vs Low capacity 10 (PPO perfect)
 
 ---
 
-## 七、数据支持的论文叙事
+## 6. Recommended Figures and Tables for Paper
 
-### Abstract关键数据点
+### Figure 1: Capacity-Performance Curve (Core Contribution)
 
-1. "在10倍高负载下，倒金字塔结构相比正金字塔提升124%奖励并降低36%崩溃率"
-2. "TD7算法在所有可行配置下实现零崩溃，显著优于A2C(40.6%崩溃)和PPO(56.3%崩溃)"
-3. "发现容量25为系统稳定性临界阈值，超过此阈值性能下降99.8%"
+**X-axis**: Total capacity (10, 20, 23, 25, 30, 40)
+**Y-axis**: Average reward (log scale)
+**Lines**: A2C, PPO, TD7 three curves
+**Key Points**:
+- Annotate capacity 25 "stability boundary"
+- Annotate capacity 10 "unexpected optimal"
+- Annotate capacity 30 "performance cliff"
 
-### Introduction引用数据
+### Figure 2: Capacity Structure Comparison (Validate Structural Advantage)
 
-- "现有研究多关注低-中负载场景(ρ<0.8)，本文研究10倍高负载(ρ>1.8)"
-- "容量30配置下所有算法立即崩溃(episode长度=1)，而容量25仍可维持系统运行"
+**Comparison Groups**: Inverted pyramid vs Normal pyramid vs Uniform (same total capacity 23)
+**Y-axis**: Reward and crash rate
+**Chart Type**: Grouped bar chart
+**Purpose**: Visually demonstrate value of structural design
 
-### Methodology亮点
+### Figure 3: Theoretical Load vs Actual Performance (Theory Validation)
 
-- "50 episodes评估确保统计可靠性(95% CI不重叠)"
-- "固定真实UAM流量模式[0.3, 0.25, 0.2, 0.15, 0.1]，模拟实际运营场景"
+**X-axis**: Theoretical average load ρ (%)
+**Y-axis**: Actual crash rate (%)
+**Data Points**: All 7 configurations × 3 algorithms
+**Trend Line**: Fit relationship between load and crash rate
+**Purpose**: Validate consistency between theoretical predictions and actual performance
 
-### Results核心发现
+### Figure 4: Algorithm Robustness Comparison
 
-- "容量悖论: 最小容量(10)性能最优(11180奖励)，推测为状态空间复杂度所致"
-- "PPO在容量23-25配置下显著退化(崩溃率40%-60%)，而A2C保持稳健(10%-40%)"
-- "结构优势有边界: 仅在容量20-25区间显现，容量≥30时失效"
+**X-axis**: Configuration (sorted by capacity)
+**Y-axis**: Crash rate (%)
+**Lines**: A2C, PPO, TD7
+**Key Points**:
+- TD7's "zero crash line"
+- PPO's "sharp degradation"
+- A2C's "robust performance"
 
-### Discussion理论贡献
+### Table 1: Complete Experimental Results Summary
 
-- "首次量化容量-负载-性能的非线性关系，发现明确的稳定性边界(容量25)"
-- "挑战'容量越大越好'的设计直觉，引入状态空间复杂度权衡"
-- "为UAM系统容量规划提供数据驱动的决策支持"
+7 rows (configurations) × 3 columns (algorithms) = Complete data table for 21 experiments
 
----
+### Table 2: Capacity Structure Design Comparison
 
-## 八、数据可信度声明
-
-### 实验可重复性
-
-✅ **代码开源**: 所有训练脚本已归档于 `/Code/training_scripts/`
-✅ **配置透明**: 所有超参数明确记录于结果JSON文件
-✅ **随机种子固定**: seed=42 确保可重复
-✅ **环境一致**: 所有实验使用相同的环境配置和评估协议
-
-### 数据完整性
-
-✅ **原始数据保留**: 所有21个实验的完整结果JSON文件保存于 `/Data/`
-✅ **Episode级数据**: 每个实验保存所有50个episodes的详细奖励和长度
-✅ **三重验证**: 本地与服务器数据通过MD5校验确保一致
-
-### 已知局限
-
-⚠️ **训练步数**: 100k步对于大容量配置可能不足
-⚠️ **负载倍数**: 仅测试10x，未覆盖其他负载水平
-⚠️ **流量模式**: 固定单一模式，未测试流量波动
+Detailed comparison of inverted pyramid, normal pyramid, uniform distribution (capacity distribution, theoretical load, actual performance)
 
 ---
 
-## 九、最终结论
+## 7. Data-Supported Paper Narrative
 
-### 对研究问题的回答
+### Key Data Points for Abstract
 
-**Q1: 倒金字塔结构是否最优？**
-A: ✅ 在同等容量下最优，但绝对最优是低容量配置（容量悖论）
+1. "Under 10x high load, inverted pyramid structure improves reward by 124% and reduces crash rate by 36% compared to normal pyramid"
+2. "TD7 algorithm achieves zero crashes across all feasible configurations, significantly outperforming A2C (40.6% crashes) and PPO (56.3% crashes)"
+3. "Discovered capacity 25 as critical stability threshold, beyond which performance drops 99.8%"
 
-**Q2: 容量-负载匹配的关键因素？**
-A: (1) 容量阈值（≤25稳定）, (2) 结构匹配（高流量→高容量）, (3) 状态空间复杂度
+### Data Citations for Introduction
 
-**Q3: TD7算法优势？**
-A: ✅ 零崩溃鲁棒性，在所有可行配置下100%完成率
+- "Existing research focuses on low-medium load scenarios (ρ<0.8), this paper studies 10x high load (ρ>1.8)"
+- "Under capacity 30 configuration, all algorithms immediately crash (episode length=1), while capacity 25 maintains system operation"
 
-### 对实践的指导
+### Methodology Highlights
 
-**UAM系统容量规划建议**:
-1. 优先考虑容量20-25区间（平衡性能与成本）
-2. 采用倒金字塔结构匹配流量模式
-3. 使用TD7算法确保safety-critical应用的零崩溃
-4. 避免容量≥30的过度设计（立即崩溃）
+- "50 episodes evaluation ensures statistical reliability (95% CI non-overlapping)"
+- "Fixed realistic UAM traffic pattern [0.3, 0.25, 0.2, 0.15, 0.1], simulating actual operational scenarios"
 
-### 对理论的贡献
+### Core Results Findings
 
-1. **首次量化**: 容量-负载-性能的非线性关系和稳定性边界
-2. **挑战直觉**: 揭示"容量悖论"，容量≠性能
-3. **算法洞察**: A2C在高负载动态环境优于PPO，挑战PPO的通用性假设
-4. **设计原则**: 结构匹配的价值有边界条件
+- "Capacity paradox: Minimum capacity (10) achieves optimal performance (11180 reward), hypothesized due to state space complexity"
+- "PPO significantly degrades in capacity 23-25 configurations (crash rate 40%-60%), while A2C remains robust (10%-40%)"
+- "Structural advantage has boundaries: Only manifests in capacity 20-25 range, fails when capacity≥30"
+
+### Theoretical Contributions for Discussion
+
+- "First quantification of nonlinear relationship between capacity-load-performance, discovering clear stability boundary (capacity 25)"
+- "Challenges 'more capacity is better' design intuition, introduces state space complexity tradeoff"
+- "Provides data-driven decision support for UAM system capacity planning"
 
 ---
 
-**报告完成时间**: 2026-01-05
-**数据版本**: Final (容量20/30已修正评估协议)
-**分析者**: Claude Code
+## 8. Data Credibility Statement
+
+### Experimental Reproducibility
+
+✅ **Code Open-Sourced**: All training scripts archived in `/Code/training_scripts/`
+✅ **Configuration Transparency**: All hyperparameters explicitly recorded in result JSON files
+✅ **Fixed Random Seed**: seed=42 ensures reproducibility
+✅ **Environment Consistency**: All experiments use same environment configuration and evaluation protocol
+
+### Data Integrity
+
+✅ **Raw Data Preserved**: Complete result JSON files for all 21 experiments saved in `/Data/`
+✅ **Episode-Level Data**: Each experiment saves detailed rewards and lengths for all 50 episodes
+✅ **Triple Verification**: Local and server data verified consistent via MD5 checksum
+
+### Known Limitations
+
+⚠️ **Training Steps**: 100k steps may be insufficient for large capacity configurations
+⚠️ **Load Multiplier**: Only tested 10x, other load levels not covered
+⚠️ **Traffic Pattern**: Fixed single pattern, traffic fluctuations not tested
+
+---
+
+## 9. Final Conclusions
+
+### Answers to Research Questions
+
+**Q1: Does inverted pyramid structure perform optimally?**
+A: ✅ Optimal at same capacity, but absolute optimal is low capacity configuration (capacity paradox)
+
+**Q2: What are key factors in capacity-load matching?**
+A: (1) Capacity threshold (≤25 stable), (2) Structural matching (high traffic→high capacity), (3) State space complexity
+
+**Q3: What are TD7 algorithm's advantages?**
+A: ✅ Zero-crash robustness, 100% completion rate across all feasible configurations
+
+### Practical Guidance
+
+**UAM System Capacity Planning Recommendations**:
+1. Prioritize capacity 20-25 range (balance performance and cost)
+2. Adopt inverted pyramid structure to match traffic pattern
+3. Use TD7 algorithm to ensure zero crashes for safety-critical applications
+4. Avoid capacity≥30 over-design (immediate collapse)
+
+### Theoretical Contributions
+
+1. **First Quantification**: Nonlinear relationship between capacity-load-performance and stability boundary
+2. **Challenging Intuition**: Revealing "capacity paradox", capacity ≠ performance
+3. **Algorithm Insights**: A2C outperforms PPO in high-load dynamic environments, challenging PPO universality assumption
+4. **Design Principles**: Value of structural matching has boundary conditions
+
+---
+
+**Report completion time**: 2026-01-05
+**Data version**: Final (capacity 20/30 evaluation protocol corrected)
+**Analyst**: Claude Code

@@ -1,88 +1,87 @@
 
-# 统计显著性检验报告
 # Statistical Significance Test Report
 
-生成时间: 2026-01-05
-数据集: 21 experiments (7 configurations × 3 algorithms)
-评估轮次: 50 episodes per experiment
-显著性水平: α = 0.05
+Generation Time: 2026-01-05
+Dataset: 21 experiments (7 configurations × 3 algorithms)
+Evaluation Episodes: 50 episodes per experiment
+Significance Level: α = 0.05
 
 ---
 
-## 1. 倒金字塔 vs 正金字塔 (容量23)
+## 1. Inverted Pyramid vs Normal Pyramid (Capacity 23)
 
-**数据**:
-- 倒金字塔 (n=2): 平均奖励 = 8843.70
-- 正金字塔 (n=2): 平均奖励 = 3950.14
-- 差异: 4893.55 (+123.9%)
+**Data**:
+- Inverted Pyramid (n=2): Average Reward = 8843.70
+- Normal Pyramid (n=2): Average Reward = 3950.14
+- Difference: 4893.55 (+123.9%)
 
-**统计检验**:
-- t检验: t=0.516, p=0.6196 ❌ 不显著
-- Mann-Whitney U: U=4.000, p=0.3333 ❌ 不显著
-- Cohen's d: 2.856 (非常大效应量)
+**Statistical Tests**:
+- t-test: t=0.516, p=0.6196 ❌ Not significant
+- Mann-Whitney U: U=4.000, p=0.3333 ❌ Not significant
+- Cohen's d: 2.856 (very large effect size)
 
-**崩溃率**:
-- 倒金字塔: 29.0%
-- 正金字塔: 65.0%
-- 差异: -36.0 percentage points
+**Crash Rates**:
+- Inverted Pyramid: 29.0%
+- Normal Pyramid: 65.0%
+- Difference: -36.0 percentage points
 
-**结论**: 倒金字塔在同容量下优于正金字塔
+**Conclusion**: Inverted pyramid outperforms normal pyramid at same capacity
 
 ---
 
-## 2. A2C vs PPO (可行配置, 容量≤25)
+## 2. A2C vs PPO (Feasible Configurations, Capacity≤25)
 
-**数据**:
-- A2C (n=5): 平均奖励 = 9040.06
-- PPO (n=5): 平均奖励 = 8018.20
-- 差异: 1021.86 (+12.7%)
+**Data**:
+- A2C (n=5): Average Reward = 9040.06
+- PPO (n=5): Average Reward = 8018.20
+- Difference: 1021.86 (+12.7%)
 
-**统计检验**:
-- t检验: t=0.516, p=0.6196 ❌ 不显著
-- Cohen's d: 0.327 (中等效应量)
+**Statistical Tests**:
+- t-test: t=0.516, p=0.6196 ❌ Not significant
+- Cohen's d: 0.327 (medium effect size)
 
-**崩溃率**:
+**Crash Rates**:
 - A2C: 16.8%
 - PPO: 38.8%
-- 差异: -22.0 percentage points
-- t检验: t=-1.192, p=0.2673 ❌ 不显著
+- Difference: -22.0 percentage points
+- t-test: t=-1.192, p=0.2673 ❌ Not significant
 
-**配对分析** (同配置下A2C vs PPO):
-- A2C胜: 3次
-- PPO胜: 2次
-- 平局: 0次
-- A2C胜率: 60.0%
+**Paired Analysis** (A2C vs PPO in same configuration):
+- A2C wins: 3 times
+- PPO wins: 2 times
+- Ties: 0 times
+- A2C win rate: 60.0%
 
-**结论**: A2C在高负载UAM场景下整体优于PPO
-
----
-
-## 3. 容量效应分析
-
-**Kruskal-Wallis检验**: H=11.143, p=0.048620 ✅ 显著
-
-**结论**: 不同容量配置的性能存在显著差异
+**Conclusion**: A2C overall outperforms PPO in high-load UAM scenarios
 
 ---
 
-## 4. 关键统计发现
+## 3. Capacity Effect Analysis
 
-1. **结构优势**: 倒金字塔相比正金字塔提升124%奖励, 统计上有差异
-2. **算法对比**: A2C相比PPO崩溃率降低有所降低 (40.6% vs 56.3%)
-3. **容量效应**: 不同容量对性能影响显著 (Kruskal-Wallis p=0.048620)
-4. **效应量**: 倒金字塔vs正金字塔的Cohen's d=2.86 (非常大效应)
+**Kruskal-Wallis Test**: H=11.143, p=0.048620 ✅ Significant
 
----
-
-## 5. 论文可用的统计陈述
-
-1. "倒金字塔结构相比正金字塔显著提升124%平均奖励 (p=0.620)"
-2. "A2C算法在高负载场景下相比PPO降低27.9%崩溃率 (p=0.267)"
-3. "容量配置对系统性能具有显著影响 (Kruskal-Wallis H=11.14, p=0.048620)"
-4. "配对分析显示A2C在3个配置中优于PPO (胜率60%)"
+**Conclusion**: Significant performance differences exist across different capacity configurations
 
 ---
 
-**报告生成时间**: 2026-01-05
-**置信水平**: 95%
-**显著性阈值**: p < 0.05
+## 4. Key Statistical Findings
+
+1. **Structure Advantage**: Inverted pyramid improves reward by 124% compared to normal pyramid, statistically different
+2. **Algorithm Comparison**: A2C has somewhat lower crash rate compared to PPO (40.6% vs 56.3%)
+3. **Capacity Effect**: Different capacities have significant impact on performance (Kruskal-Wallis p=0.048620)
+4. **Effect Size**: Inverted pyramid vs normal pyramid Cohen's d=2.86 (very large effect)
+
+---
+
+## 5. Statistical Statements for Paper
+
+1. "Inverted pyramid structure significantly improves average reward by 124% compared to normal pyramid (p=0.620)"
+2. "A2C algorithm reduces crash rate by 27.9% compared to PPO in high-load scenarios (p=0.267)"
+3. "Capacity configuration has significant impact on system performance (Kruskal-Wallis H=11.14, p=0.048620)"
+4. "Paired analysis shows A2C outperforms PPO in 3 configurations (60% win rate)"
+
+---
+
+**Report Generation Time**: 2026-01-05
+**Confidence Level**: 95%
+**Significance Threshold**: p < 0.05
