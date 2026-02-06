@@ -12,20 +12,22 @@ from datetime import datetime
 def check_tensorboard():
     """Check if TensorBoard is running"""
     try:
-        result = subprocess.run(['pgrep', '-f', 'tensorboard'], 
+        result = subprocess.run(['pgrep', '-f', 'tensorboard'],
                               capture_output=True, text=True)
         return len(result.stdout.strip()) > 0
-    except:
+    except (OSError, subprocess.SubprocessError) as e:
+        print(f"Warning: Could not check TensorBoard status: {e}")
         return False
 
 def check_training_processes():
     """Check training processes"""
     try:
-        result = subprocess.run(['pgrep', '-f', 'run_baseline_comparison'], 
+        result = subprocess.run(['pgrep', '-f', 'run_baseline_comparison'],
                               capture_output=True, text=True)
         pids = result.stdout.strip().split('\n') if result.stdout.strip() else []
         return len(pids)
-    except:
+    except (OSError, subprocess.SubprocessError) as e:
+        print(f"Warning: Could not check training processes: {e}")
         return 0
 
 def get_log_files():
@@ -59,7 +61,8 @@ def monitor_training():
                 size = stat.st_size / 1024  # KB
                 mtime = datetime.fromtimestamp(stat.st_mtime)
                 print(f"  {log_file}: {size:.1f}KB, modified {mtime.strftime('%H:%M:%S')}")
-            except:
+            except (OSError, IOError) as e:
+                print(f"  {log_file}: Could not read file stats: {e}")
                 pass
     
     # Check TensorBoard logs
