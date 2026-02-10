@@ -796,13 +796,6 @@ The exploration challenge scales with the product of state and action space size
 
 Table~\ref{tab:algorithm-performance} presents the performance comparison across all 15 DRL algorithms and 4 heuristic baselines. A2C achieves the highest performance (4,437.86 reward), followed by PPO (4,419.98) and TD7 (4,324.12). All DRL algorithms demonstrate over 50\% improvement compared to the best heuristic baseline (2,845.67), establishing the superiority of learning-based approaches for vertical queueing optimization.
 
-\begin{figure}[!htb]
-\centering
-\includegraphics[width=0.75\textwidth]{figures/fig4_algorithm_radar_en.pdf}
-\caption{Algorithm Performance Comparison: Radar chart showing multi-dimensional performance metrics across 15 DRL algorithms and 4 heuristic baselines.}
-\label{fig:algorithm-radar}
-\end{figure}
-
 \input{tables/tab_algorithm_performance.tex}
 
 \subsubsection{Statistical Validation}
@@ -849,6 +842,13 @@ We conducted a systematic comparison of inverted pyramid [8,6,4,3,2] versus norm
 The inverted pyramid configuration achieved a combined mean reward of 722,952.90 (95\% CI: [721,194.42, 724,711.38]), while the normal pyramid configuration achieved 660,181.65 (95\% CI: [656,001.81, 664,361.49]). This represents a difference of 62,771.25 reward points, corresponding to a 9.5\% performance improvement at 5$\times$ load. The difference is highly statistically significant (p < 0.001) with a Cohen's d effect size of 6.31, indicating a very large effect with coefficient of variation below 0.2\%.
 
 Importantly, this structural advantage exhibits load-dependent scaling. At 3$\times$ load, the effect size is d=0.28 (small effect, CV=2.1\%), increasing to d=6.31 at 5$\times$ load (very large effect, CV=0.12\%), d=302.55 at 7$\times$ load (extremely large effect, CV=0.05\%), and d=412.62 at 10$\times$ load (extremely large effect, CV=0.02\%). As explained in Section~\ref{subsec:statistical-analysis}, these increasing effect sizes reflect decreasing variance as system behavior becomes more deterministic under stress, rather than growing performance differences.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.75\textwidth]{figures/fig2_structure_comparison_en.pdf}
+\caption{Structural Comparison: Performance comparison between inverted pyramid [8,6,4,3,2] and normal pyramid [2,3,4,6,8] configurations across different load levels.}
+\label{fig:structural-comparison}
+\end{figure}
 
 \input{tables/tab_structural_comparison.tex}
 

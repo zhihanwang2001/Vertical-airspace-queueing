@@ -481,56 +481,16 @@ class ParetoAnalyzer:
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close()
         
-        # 2. Objective conflict matrix (Publication Quality)
+        # 2. Objective conflict matrix
         corr_matrix = np.corrcoef(self.pareto_front.T)
-
-        # Set publication style
-        sns.set_style("white")
-        plt.rcParams.update({
-            'font.family': 'serif',
-            'font.serif': ['Times New Roman', 'DejaVu Serif'],
-            'font.size': 9,
-            'axes.labelsize': 10,
-            'axes.titlesize': 11
-        })
-
-        fig, ax = plt.subplots(figsize=(7, 6), dpi=300)
-
-        sns.heatmap(
-            corr_matrix,
-            annot=True,
-            fmt='.2f',  # Two decimal places
-            cmap='RdBu_r',
-            center=0,
-            vmin=-1,
-            vmax=1,
-            square=True,
-            linewidths=0.5,
-            linecolor='white',
-            cbar_kws={
-                'label': 'Correlation Coefficient',
-                'shrink': 0.8,
-                'aspect': 20,
-                'ticks': [-1, -0.5, 0, 0.5, 1]
-            },
-            xticklabels=self.objective_names,
-            yticklabels=self.objective_names,
-            ax=ax,
-            annot_kws={'fontsize': 8, 'fontweight': 'normal'}
-        )
-
-        ax.set_title('Objective Correlation Matrix', fontweight='bold', pad=12)
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
-        ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
-
+        
+        fig, ax = plt.subplots(figsize=(10, 8))
+        sns.heatmap(corr_matrix, annot=True, cmap='RdBu_r', center=0, 
+                   xticklabels=self.objective_names, yticklabels=self.objective_names,
+                   ax=ax, vmin=-1, vmax=1, fmt='.3f')
+        ax.set_title('Objective Conflicts Matrix (Red = Conflict)', fontsize=14, fontweight='bold')
         plt.tight_layout()
-
-        # Save both PNG and PDF
-        conflicts_path = save_path.replace('.png', '_conflicts.png')
-        conflicts_pdf = conflicts_path.replace('.png', '.pdf')
-        plt.savefig(conflicts_pdf, dpi=300, bbox_inches='tight', pad_inches=0.05)
-        plt.savefig(conflicts_path, dpi=300, bbox_inches='tight', pad_inches=0.05)
-        print(f"✓ Saved: objective_conflicts_matrix (PDF + PNG)")
+        plt.savefig(save_path.replace('.png', '_conflicts.png'), dpi=300, bbox_inches='tight')
         plt.close()
         
         # 3. 3D Pareto front (first 3 most important objectives)
