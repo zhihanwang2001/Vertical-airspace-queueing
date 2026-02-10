@@ -1108,13 +1108,18 @@ Our findings translate into concrete design guidelines for UAM system operators 
 
 \subsection{Limitations and Future Research}
 
-\textbf{Model Simplifications.} Our MCRPS/D/K framework makes several simplifying assumptions that may limit direct applicability to real-world UAM systems:
+\textbf{Model Simplifications.} Our MCRPS/D/K framework makes several simplifying assumptions that may limit direct applicability to real-world UAM systems. We discuss each assumption and its potential impact on our findings:
+
 \begin{itemize}
-\item \textit{Fixed five-layer structure}: Real UAM airspace may require dynamic layer allocation based on traffic density and weather conditions. Our model assumes static layer boundaries.
-\item \textit{Homogeneous aircraft}: We assume identical service requirements across all aircraft, whereas real UAM involves heterogeneous vehicle types (delivery drones, air taxis, emergency vehicles) with different priorities and service times.
-\item \textit{Centralized control}: Our DRL agent has global state visibility and centralized decision-making authority. Real UAM systems may require distributed control with partial observability and communication constraints.
-\item \textit{Simplified dynamics}: We model arrivals as Poisson processes with fixed weights, omitting time-varying demand patterns, weather disruptions, and regulatory constraints (e.g., no-fly zones, altitude restrictions).
-\item \textit{Custom simulator}: All experiments use our MCRPS/D/K simulator rather than established UAM simulation platforms, limiting validation of real-world applicability.
+\item \textit{Fixed five-layer structure}: Real UAM airspace may require dynamic layer allocation based on traffic density and weather conditions. Our model assumes static layer boundaries. \textbf{Impact}: The structural findings (inverted pyramid optimality) should generalize to systems with more layers, as the capacity-flow matching principle (Theorem~\ref{thm:optimal-allocation}) is layer-count agnostic. However, the specific capacity ratios [8,6,4,3,2] are optimized for our five-layer configuration.
+
+\item \textit{Homogeneous aircraft}: We assume identical service requirements across all aircraft, whereas real UAM involves heterogeneous vehicle types (delivery drones, air taxis, emergency vehicles) with different priorities and service times. \textbf{Impact}: Heterogeneous priorities would require extending the action space to include priority-based service decisions. The capacity paradox finding may be amplified in heterogeneous systems due to increased state space complexity.
+
+\item \textit{Centralized control}: Our DRL agent has global state visibility and centralized decision-making authority. Real UAM systems may require distributed control with partial observability and communication constraints. \textbf{Impact}: Distributed implementations would likely require multi-agent DRL formulations, potentially reducing performance due to coordination overhead. The algorithm ranking (A2C > PPO > TD7) may change under partial observability.
+
+\item \textit{Simplified dynamics}: We model arrivals as Poisson processes with fixed weights, omitting time-varying demand patterns, weather disruptions, and regulatory constraints (e.g., no-fly zones, altitude restrictions). \textbf{Impact}: Time-varying patterns would require recurrent architectures or meta-learning approaches. Our generalization tests across five traffic patterns provide partial validation, but fundamentally non-stationary environments remain untested.
+
+\item \textit{Custom simulator}: All experiments use our MCRPS/D/K simulator rather than established UAM simulation platforms (e.g., BlueSky, SUMO), limiting validation of real-world applicability. \textbf{Impact}: While our simulator captures essential queueing dynamics, it omits physical constraints (aircraft dynamics, collision avoidance, weather effects). Integration with established platforms is a priority for future work.
 \end{itemize}
 
 \textbf{Experimental Limitations.} Several experimental choices may affect generalizability:
