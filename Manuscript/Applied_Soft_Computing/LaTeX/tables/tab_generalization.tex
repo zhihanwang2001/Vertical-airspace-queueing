@@ -3,20 +3,20 @@
 \caption{Generalization Testing Across 5 Heterogeneous Traffic Patterns}
 \label{tab:generalization}
 \small
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrrrc}
 \toprule
-\textbf{Traffic Pattern} & \textbf{A2C} & \textbf{PPO} & \textbf{TD7} & \textbf{Ranking} & \textbf{CV} \\
+\textbf{Traffic Pattern} & \textbf{A2C} & \textbf{PPO} & \textbf{TD7} & \textbf{Ranking} \\
 \midrule
-Uniform [0.20 each] & 4,438 & 4,420 & 4,324 & A2C$>$PPO$>$TD7 & 1.4\% \\
-Heavy-Top [0.35,0.25,0.20,0.12,0.08] & 4,156 & 4,089 & 3,999 & A2C$>$PPO$>$TD7 & 1.9\% \\
-Heavy-Bottom [0.08,0.12,0.20,0.25,0.35] & 4,523 & 4,499 & 4,401 & A2C$>$PPO$>$TD7 & 1.4\% \\
-Bimodal [0.30,0.10,0.20,0.10,0.30] & 4,312 & 4,287 & 4,198 & A2C$>$PPO$>$TD7 & 1.4\% \\
-Random [0.22,0.18,0.24,0.19,0.17] & 4,389 & 4,356 & 4,267 & A2C$>$PPO$>$TD7 & 1.5\% \\
+Region A (Standard) & 3,766 & 3,766 & 3,766 & Tied \\
+Region B (Weather) & 3,999 & 3,998 & 4,003 & TD7$>$A2C$>$PPO \\
+Region C (Traffic) & 5,121 & 5,123 & 5,130 & TD7$>$PPO$>$A2C \\
+Region D (Regulation) & 3,892 & 3,893 & 3,888 & PPO$>$A2C$>$TD7 \\
+Region E (EnergyCost) & 3,889 & 3,887 & 3,888 & A2C$>$TD7$>$PPO \\
 \midrule
-\textbf{Mean $\pm$ Std} & 4,364$\pm$138 & 4,330$\pm$150 & 4,238$\pm$147 & \multicolumn{2}{c}{Consistent} \\
+\textbf{Mean} & 4,133 & 4,133 & 4,135 & \multicolumn{1}{c}{Similar} \\
 \bottomrule
 \end{tabular}
 \vspace{0.1cm}
 
-\small\textit{Note: Algorithm ranking (A2C$>$PPO$>$TD7) remains consistent across all traffic patterns. Low CV ($<$2\%) indicates robust generalization.}
+\small\textit{Note: All three algorithms achieve similar performance across different traffic patterns, demonstrating robust generalization. Rankings vary by pattern but overall performance is comparable.}
 \end{table}
