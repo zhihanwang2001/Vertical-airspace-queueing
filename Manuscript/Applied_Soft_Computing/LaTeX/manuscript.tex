@@ -314,7 +314,7 @@ The DRL algorithms are implemented using standard architectures with fully conne
 
 \begin{table}[htbp]
 \centering
-\caption{Summary of All DRL Algorithms and Heuristic Baselines Evaluated}
+\caption{Summary of Evaluated DRL Algorithms}
 \label{tab:algorithm-summary}
 \small
 \begin{tabular}{llllp{3.5cm}}
@@ -326,30 +326,12 @@ A2C & On-policy & Advantage estimation, synchronous & 1 & \cite{mnih2016a2c} \\
 PPO & On-policy & Clipped objective, stable & 2 & \cite{schulman2017ppo} \\
 \midrule
 \multicolumn{5}{l}{\textit{Actor-Critic Methods}} \\
-TD3 & Off-policy & Twin critics, delayed updates & 5 & \cite{fujimoto2018td3} \\
-SAC & Off-policy & Entropy regularization & 4 & \cite{haarnoja2018sac} \\
 TD7 & Off-policy & 7 improvements, LAP, SALE & 3 & \cite{fujimoto2023td7} \\
-DDPG & Off-policy & Deterministic policy gradient & 6 & \cite{lillicrap2015ddpg} \\
-\midrule
-\multicolumn{5}{l}{\textit{Value-Based Methods}} \\
-DQN & Off-policy & Deep Q-learning, replay & 8 & \cite{mnih2015dqn} \\
-Rainbow & Off-policy & 6 DQN improvements & 7 & \cite{hessel2018rainbow} \\
-R2D2 & Off-policy & Recurrent, distributed & 9 & \cite{kapturowski2018r2d2} \\
-QRDQN & Off-policy & Quantile regression & 12 & \cite{dabney2018qrdqn} \\
-C51 & Off-policy & Categorical distributional & 13 & \cite{bellemare2017c51} \\
-IQN & Off-policy & Implicit quantile networks & 14 & \cite{dabney2018iqn} \\
-\midrule
-\multicolumn{5}{l}{\textit{Distributed Methods}} \\
-IMPALA & Off-policy & V-trace, distributed & 10 & \cite{espeholt2018impala} \\
-APEX & Off-policy & Distributed prioritized replay & 11 & \cite{horgan2018apex} \\
-\midrule
-\multicolumn{5}{l}{\textit{Heuristic Baselines}} \\
-Adaptive & Heuristic & Dynamic priority adjustment & 12 & Baseline \\
-Priority & Heuristic & Fixed priority ordering & 13 & Baseline \\
-SJF & Heuristic & Shortest job first & 14 & Baseline \\
-FCFS & Heuristic & First-come first-served & 15 & Baseline \\
 \bottomrule
 \end{tabular}
+\vspace{0.1cm}
+
+\small\textit{Note: Based on preliminary experiments, we selected the top 3 performing algorithms for comprehensive validation testing.}
 \end{table}
 
 \subsubsection{State and Action Space Design}
