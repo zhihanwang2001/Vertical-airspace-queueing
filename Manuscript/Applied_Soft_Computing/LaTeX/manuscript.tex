@@ -310,28 +310,52 @@ We evaluate top-performing DRL algorithms spanning multiple categories, providin
 
 \textbf{Distributed and Advanced Methods:} This category encompasses IMPALA (Importance Weighted Actor-Learner Architecture) \cite{impala} with decoupled acting and learning, APEX-DQN \cite{apex} with distributed prioritized experience replay, Quantile Regression DQN (QRDQN) \cite{qrdqn} for distributional RL, C51 \cite{c51} for categorical distributional RL, and Implicit Quantile Networks (IQN) \cite{iqn} for implicit quantile function approximation.
 
-The DRL algorithms are implemented using standard architectures with fully connected networks. Based on preliminary experiments, we selected the top 3 performing algorithms (A2C, PPO, TD7) for comprehensive validation testing. Table~\ref{tab:algorithm-summary} provides a summary of the evaluated methods. Detailed network architectures and hyperparameters are provided in the supplementary materials.
+\textbf{Hierarchical Architecture:} We also evaluate HCA2C (Hierarchical Capacity-Aware A2C), a custom architecture that extends A2C with capacity-aware action clipping and hierarchical policy decomposition. HCA2C is designed to encode domain knowledge about capacity constraints directly into the policy architecture, providing a comparison point for understanding the value of architectural inductive biases versus standard algorithm improvements.
+
+The DRL algorithms are implemented using standard architectures with fully connected networks. We conducted preliminary experiments evaluating all 15 algorithms (11 DRL algorithms + 4 heuristic baselines) under identical conditions. Figure~\ref{fig:preliminary-ranking} presents the complete performance ranking from these preliminary experiments, revealing a clear performance hierarchy with three distinct tiers: Top-Tier ($>$4,000 reward: A2C, PPO, TD7, R2D2, SAC), Mid-Tier (2,000--4,000: TD3, Heuristic, Rainbow, Priority, FCFS, SJF), and Low-Tier ($<$2,000: IMPALA, DDPG, Random).
+
+Based on these preliminary results, we selected the top 3 performing algorithms (A2C, PPO, TD7) for comprehensive validation testing, as they consistently achieved Top-Tier performance with rewards exceeding 4,300. This selection strategy ensures that our detailed analysis focuses on the most promising candidates while the preliminary screening provides a complete algorithmic landscape. Table~\ref{tab:algorithm-summary} summarizes all evaluated algorithms with their performance tiers.
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/figure3_performance_ranking.png}
+\caption{Preliminary Algorithm Performance Ranking: Complete evaluation of 15 algorithms (11 DRL + 4 heuristic baselines) under identical conditions. Performance tiers are indicated by color: Top-Tier (green, $>$4,000), Mid-Tier (orange, 2,000--4,000), and Low-Tier (red, $<$2,000). Based on these results, we selected the top 3 performers (A2C, PPO, TD7) for comprehensive validation testing.}
+\label{fig:preliminary-ranking}
+\end{figure}
 
 \begin{table}[htbp]
 \centering
-\caption{Summary of Evaluated DRL Algorithms}
+\caption{Summary of All Evaluated Algorithms (15 Total)}
 \label{tab:algorithm-summary}
 \small
-\begin{tabular}{llllp{3.5cm}}
+\begin{tabular}{llccp{3.2cm}}
 \toprule
-\textbf{Algorithm} & \textbf{Type} & \textbf{Key Features} & \textbf{Rank} & \textbf{Reference} \\
+\textbf{Algorithm} & \textbf{Type} & \textbf{Mean Reward} & \textbf{Tier} & \textbf{Reference} \\
 \midrule
-\multicolumn{5}{l}{\textit{Policy Gradient Methods}} \\
-A2C & On-policy & Advantage estimation, synchronous & 1 & \cite{mnih2016a2c} \\
-PPO & On-policy & Clipped objective, stable & 2 & \cite{schulman2017ppo} \\
+\multicolumn{5}{l}{\textit{Top-Tier Performers (Selected for Validation)}} \\
+A2C & On-policy & 4,438 & Top & \cite{mnih2016a2c} \\
+PPO & On-policy & 4,420 & Top & \cite{schulman2017ppo} \\
+TD7 & Off-policy & 4,352 & Top & \cite{fujimoto2023td7} \\
 \midrule
-\multicolumn{5}{l}{\textit{Actor-Critic Methods}} \\
-TD7 & Off-policy & 7 improvements, LAP, SALE & 3 & \cite{fujimoto2023td7} \\
+\multicolumn{5}{l}{\textit{Other DRL Algorithms}} \\
+R2D2 & Value-based & 4,289 & Top & \cite{kapturowski2018r2d2} \\
+SAC & Off-policy & 4,283 & Top & \cite{haarnoja2018sac} \\
+TD3 & Off-policy & 3,973 & Mid & \cite{fujimoto2018td3} \\
+Rainbow & Value-based & 2,361 & Mid & \cite{hessel2018rainbow} \\
+IMPALA & Distributed & 1,682 & Low & \cite{espeholt2018impala} \\
+DDPG & Off-policy & 1,490 & Low & \cite{lillicrap2015ddpg} \\
+\midrule
+\multicolumn{5}{l}{\textit{Heuristic Baselines}} \\
+Heuristic & Rule-based & 2,861 & Mid & --- \\
+Priority & Rule-based & 2,040 & Mid & --- \\
+FCFS & Rule-based & 2,025 & Mid & --- \\
+SJF & Rule-based & 2,011 & Mid & --- \\
+Random & Baseline & 295 & Low & --- \\
 \bottomrule
 \end{tabular}
 \vspace{0.1cm}
 
-\small\textit{Note: Based on preliminary experiments, we selected the top 3 performing algorithms for comprehensive validation testing.}
+\small\textit{Note: All 15 algorithms were evaluated in preliminary experiments. Top 3 performers (A2C, PPO, TD7) were selected for comprehensive validation testing across multiple configurations and load conditions.}
 \end{table}
 
 \subsubsection{State and Action Space Design}
@@ -776,7 +800,9 @@ The exploration challenge scales with the product of state and action space size
 
 \subsubsection{Overall Performance Ranking}
 
-Based on preliminary experiments, we selected the top 3 performing algorithms (A2C, PPO, TD7) for comprehensive validation testing. A2C achieves the highest performance among the evaluated algorithms, followed by PPO and TD7. All three DRL algorithms demonstrate robust performance across different experimental conditions, establishing the effectiveness of learning-based approaches for vertical queueing optimization.
+As shown in Figure~\ref{fig:preliminary-ranking} and Table~\ref{tab:algorithm-summary}, our preliminary experiments evaluated all 15 algorithms under identical conditions, revealing a clear three-tier performance hierarchy. The Top-Tier algorithms (A2C, PPO, TD7, R2D2, SAC) achieved mean rewards exceeding 4,200, significantly outperforming Mid-Tier algorithms (TD3, Heuristic, Rainbow, Priority, FCFS, SJF) with rewards between 2,000--4,000, and Low-Tier algorithms (IMPALA, DDPG, Random) with rewards below 2,000.
+
+Based on these preliminary results, we selected the top 3 performing algorithms (A2C, PPO, TD7) for comprehensive validation testing. A2C achieves the highest performance (4,438 $\pm$ 128) among all evaluated algorithms, followed by PPO (4,420 $\pm$ 136) and TD7 (4,352 $\pm$ 51). Notably, TD7 exhibits the lowest variance among top performers, indicating exceptional training stability. All three selected DRL algorithms demonstrate robust performance across different experimental conditions, establishing the effectiveness of learning-based approaches for vertical queueing optimization.
 
 \subsubsection{Statistical Validation}
 
