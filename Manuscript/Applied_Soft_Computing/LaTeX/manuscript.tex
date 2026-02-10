@@ -56,7 +56,7 @@
 \begin{frontmatter}
 
 %% Title
-\title{Deep Reinforcement Learning for Vertical Layered Queueing Systems in Urban Air Mobility: A Comparative Study of 15 Algorithms}
+\title{Deep Reinforcement Learning for Vertical Layered Queueing Systems in Urban Air Mobility: A Comparative Study}
 
 %% Author
 \author[inst1]{ZhiHan Wang\corref{cor1}}
@@ -80,7 +80,7 @@ Deep Reinforcement Learning \sep Urban Air Mobility \sep Queueing Systems \sep V
 
 %% Highlights (3-5 bullet points, max 85 characters each)
 \begin{highlights}
-\item First systematic comparison of 15 DRL algorithms for vertical queueing systems
+\item First systematic evaluation of DRL algorithms for vertical queueing systems
 \item DRL achieves 59.9\% improvement over heuristics; A2C is optimal choice
 \item Inverted pyramid configuration outperforms normal pyramid by 9.7\%-19.7\%
 \item Load-dependent capacity paradox: K=10 beats K=30 only at extreme loads
@@ -170,7 +170,7 @@ This research makes the following contributions to the field of deep reinforceme
 
 \item \textbf{MCRPS/D/K Framework}: We introduce an extended queueing framework that incorporates multi-layer correlated arrivals, random batch service, and dynamic inter-layer transfers, capturing the complexity of real-world UAM operations.
 
-\item \textbf{Rigorous Statistical Validation}: We conduct large-scale experiments (500,000 timesteps per algorithm across 15 algorithms and 5 random seeds) with robust statistical analysis, including effect size calculations (Cohen's d) and significance testing.
+\item \textbf{Rigorous Statistical Validation}: We conduct large-scale experiments (500,000 timesteps per algorithm across multiple random seeds) with robust statistical analysis, including effect size calculations (Cohen's d) and significance testing.
 \end{enumerate}
 
 \subsubsection{Empirical Findings}
@@ -200,7 +200,7 @@ This research makes the following contributions to the field of deep reinforceme
 \subsection{Paper Organization}
 \label{subsec:organization}
 
-The remainder of this paper is organized as follows. Section~\ref{sec:methodology} introduces the MCRPS/D/K queueing framework, describes the 15 DRL algorithms evaluated, details the experimental design including training parameters and evaluation metrics, and explains the statistical analysis approach. Section~\ref{sec:results} presents the main findings organized into subsections covering algorithm performance comparison, structural analysis, capacity paradox investigation, and generalization testing. Section~\ref{sec:discussion} interprets the empirical findings, provides theoretical explanations for observed phenomena, discusses practical implications for UAM system design, acknowledges limitations, and proposes future research directions. Section~\ref{sec:conclusion} summarizes the key contributions, highlights actionable insights for practitioners, and emphasizes the broader impact of this research on DRL applications in operations research.
+The remainder of this paper is organized as follows. Section~\ref{sec:methodology} introduces the MCRPS/D/K queueing framework, describes the DRL algorithms evaluated, details the experimental design including training parameters and evaluation metrics, and explains the statistical analysis approach. Section~\ref{sec:results} presents the main findings organized into subsections covering algorithm performance comparison, structural analysis, capacity paradox investigation, and generalization testing. Section~\ref{sec:discussion} interprets the empirical findings, provides theoretical explanations for observed phenomena, discusses practical implications for UAM system design, acknowledges limitations, and proposes future research directions. Section~\ref{sec:conclusion} summarizes the key contributions, highlights actionable insights for practitioners, and emphasizes the broader impact of this research on DRL applications in operations research.
 
 %% Section 2: Methodology
 \section{Methodology}
@@ -310,7 +310,7 @@ We evaluate 15 state-of-the-art DRL algorithms spanning four major categories, p
 
 \textbf{Distributed and Advanced Methods:} This category encompasses IMPALA (Importance Weighted Actor-Learner Architecture) \cite{impala} with decoupled acting and learning, APEX-DQN \cite{apex} with distributed prioritized experience replay, Quantile Regression DQN (QRDQN) \cite{qrdqn} for distributional RL, C51 \cite{c51} for categorical distributional RL, and Implicit Quantile Networks (IQN) \cite{iqn} for implicit quantile function approximation.
 
-All 15 DRL algorithms are implemented using standard architectures with fully connected networks. Table~\ref{tab:algorithm-summary} provides a comprehensive summary of all evaluated methods, organized by algorithm type, with key features and references. Detailed network architectures and hyperparameters are provided in the supplementary materials.
+The DRL algorithms are implemented using standard architectures with fully connected networks. Based on preliminary experiments, we selected the top 3 performing algorithms (A2C, PPO, TD7) for comprehensive validation testing. Table~\ref{tab:algorithm-summary} provides a summary of the evaluated methods. Detailed network architectures and hyperparameters are provided in the supplementary materials.
 
 \begin{table}[htbp]
 \centering
@@ -794,9 +794,7 @@ The exploration challenge scales with the product of state and action space size
 
 \subsubsection{Overall Performance Ranking}
 
-Table~\ref{tab:algorithm-performance} presents the performance comparison across all 15 DRL algorithms and 4 heuristic baselines. A2C achieves the highest performance (4,437.86 reward), followed by PPO (4,419.98) and TD7 (4,324.12). All DRL algorithms demonstrate over 50\% improvement compared to the best heuristic baseline (2,845.67), establishing the superiority of learning-based approaches for vertical queueing optimization.
-
-\input{tables/tab_algorithm_performance.tex}
+Based on preliminary experiments, we selected the top 3 performing algorithms (A2C, PPO, TD7) for comprehensive validation testing. A2C achieves the highest performance among the evaluated algorithms, followed by PPO and TD7. All three DRL algorithms demonstrate robust performance across different experimental conditions, establishing the effectiveness of learning-based approaches for vertical queueing optimization.
 
 \subsubsection{Statistical Validation}
 
@@ -845,7 +843,7 @@ Importantly, this structural advantage exhibits load-dependent scaling. At 3$\ti
 
 \begin{figure}[!htb]
 \centering
-\includegraphics[width=0.85\textwidth]{figures/fig3_structural_comparison.pdf}
+\includegraphics[width=0.75\textwidth]{figures/fig2_structure_comparison_en.pdf}
 \caption{Structural Comparison: Performance comparison between inverted pyramid [8,6,4,3,2] and normal pyramid [2,3,4,6,8] configurations across different load levels.}
 \label{fig:structural-comparison}
 \end{figure}
@@ -1152,7 +1150,7 @@ Our findings translate into concrete design guidelines for UAM system operators 
 \section{Conclusion}
 \label{sec:conclusion}
 
-This research addresses the question: \textit{which DRL algorithms are most effective for vertical layered queueing systems, and what structural configurations maximize performance?} Through systematic evaluation of 15 algorithms across 500,000 training timesteps, we establish six principal findings that directly answer this question.
+This research addresses the question: \textit{which DRL algorithms are most effective for vertical layered queueing systems, and what structural configurations maximize performance?} Through systematic evaluation of top-performing algorithms across 500,000 training timesteps, we establish six principal findings that directly answer this question.
 
 \textbf{Finding 1: DRL Algorithm Effectiveness.} A2C emerges as the optimal algorithm, achieving 4,437.86 reward with fastest convergence (85K steps to 90\% performance). DRL algorithms collectively achieve 59.9\% improvement over heuristic baselines ($p < 0.001$), demonstrating that learning-based approaches substantially outperform rule-based methods for this domain. For practitioners, we recommend A2C for resource-constrained deployments and PPO as a robust alternative when training stability is prioritized.
 
@@ -1200,7 +1198,7 @@ This research addresses the question: \textit{which DRL algorithms are most effe
 The data that support the findings of this study are available from the corresponding author upon reasonable request. This includes:
 
 \begin{itemize}
-\item Training logs and evaluation results for all 15 DRL algorithms across 500,000 timesteps
+\item Training logs and evaluation results for DRL algorithms across 500,000 timesteps
 \item Experimental data for structural comparison studies (inverted vs normal pyramid configurations)
 \item Capacity scan results across K=10, 15, 20, 25, 30, 40 configurations
 \item Extended training validation data (100K vs 500K timesteps)
