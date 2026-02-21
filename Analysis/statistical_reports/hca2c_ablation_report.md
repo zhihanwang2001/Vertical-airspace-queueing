@@ -1,6 +1,6 @@
 # HCA2C Final Comparison Analysis Report
 
-**Generated:** 2026-01-29 15:01:04
+**Generated:** 2026-02-21 17:05:09
 
 **Total Experiments:** 45
 - Algorithms: A2C, HCA2C, PPO

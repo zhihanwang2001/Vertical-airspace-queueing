@@ -169,80 +169,50 @@ def pairwise_comparisons(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def create_summary_figure(df: pd.DataFrame, stats_df: pd.DataFrame):
-    """Create comprehensive summary figure."""
+    """Create simplified 2-subplot summary figure focusing on performance-stability trade-off."""
 
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-    fig.suptitle('HCA2C Final Comparison: 45 Experiments Analysis', fontsize=16, fontweight='bold')
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    fig.suptitle('HCA2C Ablation Study: Performance-Stability Trade-off', fontsize=16, fontweight='bold')
 
-    # 1. Bar plot with error bars
-    ax1 = axes[0, 0]
+    # Subplot A: Performance comparison with error bars
+    ax1 = axes[0]
     algorithms = sorted(df['algorithm'].unique())
     loads = sorted(df['load'].unique())
     x = np.arange(len(loads))
     width = 0.25
 
+    colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']  # HCA2C, A2C, PPO
     for i, algo in enumerate(algorithms):
         algo_stats = stats_df[stats_df['algorithm'] == algo]
         means = [algo_stats[algo_stats['load'] == load]['mean'].values[0] for load in loads]
         stds = [algo_stats[algo_stats['load'] == load]['std'].values[0] for load in loads]
-        ax1.bar(x + i * width, means, width, label=algo, yerr=stds, capsize=5)
+        ax1.bar(x + i * width, means, width, label=algo, yerr=stds, capsize=5,
+                color=colors[i], alpha=0.8, edgecolor='black', linewidth=1.2)
 
-    ax1.set_xlabel('Load Multiplier', fontsize=12)
-    ax1.set_ylabel('Mean Reward', fontsize=12)
-    ax1.set_title('Performance Across Loads', fontsize=13, fontweight='bold')
+    ax1.set_xlabel('Load Multiplier', fontsize=13, fontweight='bold')
+    ax1.set_ylabel('Mean Reward', fontsize=13, fontweight='bold')
+    ax1.set_title('(A) Performance Comparison', fontsize=14, fontweight='bold', pad=15)
     ax1.set_xticks(x + width)
-    ax1.set_xticklabels([f'{load}×' for load in loads])
-    ax1.legend()
-    ax1.grid(axis='y', alpha=0.3)
+    ax1.set_xticklabels([f'{load}×' for load in loads], fontsize=12)
+    ax1.legend(fontsize=11, framealpha=0.95)
+    ax1.grid(axis='y', alpha=0.3, linestyle='--')
+    ax1.axhline(y=0, color='red', linestyle='--', linewidth=1, alpha=0.5)
 
-    # 2. Box plot
-    ax2 = axes[0, 1]
-    data_for_box = []
-    labels_for_box = []
-    for algo in algorithms:
-        for load in loads:
-            data = df[(df['algorithm'] == algo) & (df['load'] == load)]['mean_reward'].values
-            if len(data) > 0:
-                data_for_box.append(data)
-                labels_for_box.append(f'{algo}\n{load}×')
-
-    bp = ax2.boxplot(data_for_box, labels=labels_for_box, patch_artist=True)
-    for patch, i in zip(bp['boxes'], range(len(data_for_box))):
-        algo_idx = i // len(loads)
-        colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']
-        patch.set_facecolor(colors[algo_idx % len(colors)])
-        patch.set_alpha(0.7)
-
-    ax2.set_ylabel('Mean Reward', fontsize=12)
-    ax2.set_title('Distribution Comparison', fontsize=13, fontweight='bold')
-    ax2.tick_params(axis='x', rotation=45, labelsize=9)
-    ax2.grid(axis='y', alpha=0.3)
-
-    # 3. Coefficient of Variation (Stability)
-    ax3 = axes[1, 0]
-    for algo in algorithms:
+    # Subplot B: Coefficient of Variation (Stability)
+    ax2 = axes[1]
+    for i, algo in enumerate(algorithms):
         algo_stats = stats_df[stats_df['algorithm'] == algo]
         cvs = [algo_stats[algo_stats['load'] == load]['cv'].values[0] for load in loads]
-        ax3.plot(loads, cvs, marker='o', linewidth=2, markersize=8, label=algo)
+        ax2.plot(loads, cvs, marker='o', linewidth=2.5, markersize=10, label=algo,
+                color=colors[i], alpha=0.8)
 
-    ax3.set_xlabel('Load Multiplier', fontsize=12)
-    ax3.set_ylabel('Coefficient of Variation (%)', fontsize=12)
-    ax3.set_title('Stability Analysis (Lower is Better)', fontsize=13, fontweight='bold')
-    ax3.legend()
-    ax3.grid(alpha=0.3)
-
-    # 4. Training time comparison
-    ax4 = axes[1, 1]
-    for algo in algorithms:
-        algo_stats = stats_df[stats_df['algorithm'] == algo]
-        times = [algo_stats[algo_stats['load'] == load]['train_time_mean'].values[0] / 60 for load in loads]
-        ax4.plot(loads, times, marker='s', linewidth=2, markersize=8, label=algo)
-
-    ax4.set_xlabel('Load Multiplier', fontsize=12)
-    ax4.set_ylabel('Training Time (minutes)', fontsize=12)
-    ax4.set_title('Computational Efficiency', fontsize=13, fontweight='bold')
-    ax4.legend()
-    ax4.grid(alpha=0.3)
+    ax2.set_xlabel('Load Multiplier', fontsize=13, fontweight='bold')
+    ax2.set_ylabel('Coefficient of Variation (%)', fontsize=13, fontweight='bold')
+    ax2.set_title('(B) Stability Analysis (Lower is Better)', fontsize=14, fontweight='bold', pad=15)
+    ax2.set_xticks(loads)
+    ax2.set_xticklabels([f'{load}×' for load in loads], fontsize=12)
+    ax2.legend(fontsize=11, framealpha=0.95)
+    ax2.grid(alpha=0.3, linestyle='--')
 
     plt.tight_layout()
 
